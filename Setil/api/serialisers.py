@@ -24,3 +24,26 @@ class GroupSerialiser(serializers.ModelSerializer):
         group = Group(name=validData["name"])
         group.save()
         return group
+
+
+class GroupDataSerialiser(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=42)
+
+
+class UserDataSerialiser(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=42)
+
+
+class GroupCodeSerialiser(serializers.Serializer):
+    code = serializers.CharField(max_length=6)
+
+
+class GroupIdSerialiser(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
+class GroupAddTransactionSerialiser(GroupIdSerialiser):
+    amount = serializers.DecimalField(max_digits=6, decimal_places=2)
+    userfor = serializers.ListField(child=serializers.IntegerField())

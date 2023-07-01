@@ -6,7 +6,15 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 
-from .serialisers import UserSerialiser, GroupSerialiser
+from .serialisers import (
+    UserSerialiser,
+    GroupSerialiser,
+    UserDataSerialiser,
+    GroupDataSerialiser,
+    GroupCodeSerialiser,
+    GroupIdSerialiser,
+    GroupAddTransactionSerialiser,
+)
 from .models import User, Group, GroupUser, Transaction, TransactionFor
 
 # Create your views here.
@@ -30,7 +38,7 @@ class CreateGroup(APIView):
     def post(self, req, format=None):
         # Use serialiser to validate input
         serializer = GroupSerialiser(data=req.data)
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             # If valid then create group
             group = serializer.save()
             # Add the current user to group
@@ -38,7 +46,7 @@ class CreateGroup(APIView):
             newGroupUser.save()
             return Response(status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetGroups(APIView):
@@ -47,9 +55,7 @@ class GetGroups(APIView):
     def get(self, req, format=None):
         # Get list of groups user is in
         groups = GroupUser.objects.filter(user=req.user)
-        groupList = [
-            {"id": group.group.id, "name": group.group.name} for group in groups
-        ]
+        groupList = [GroupDataSerialiser(group.group).data for group in groups]
 
         return JsonResponse({"groups": groupList}, status=status.HTTP_200_OK)
 
@@ -58,17 +64,19 @@ class JoinGroup(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, req, format=None):
-        if "code" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = GroupCodeSerialiser(data=req.data)
+        if serializer.is_valid():
+            try:
+                # Add to group if group exists
+                group = Group.objects.get(code=serializer.data["code"])
+                newGroupUser = GroupUser(user=req.user, group=group)
+                newGroupUser.save()
+                return Response(status=status.HTTP_200_OK)
 
-        try:
-            # Add to group if group exists
-            group = Group.objects.get(code=req.data["code"])
-            newGroupUser = GroupUser(user=req.user, group=group)
-            newGroupUser.save()
-            return Response(status=status.HTTP_200_OK)
+            except Group.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        except Group.DoesNotExist:
+        else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -76,17 +84,18 @@ class LeaveGroup(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, req, format=None):
-        if "id" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = GroupIdSerialiser(data=req.data)
+        if serializer.is_valid():
+            try:
+                # Remove from group if group exists and user is in it
+                group = Group.objects.get(id=serializer.data["id"])
+                groupUser = GroupUser.objects.get(user=req.user, group=group)
+                groupUser.delete()
+                return Response(status=status.HTTP_200_OK)
 
-        try:
-            # Remove from group if group exists and user is in it
-            group = Group.objects.get(id=req.data["id"])
-            groupUser = GroupUser.objects.get(user=req.user, group=group)
-            groupUser.delete()
-            return Response(status=status.HTTP_200_OK)
-
-        except Group.DoesNotExist or GroupUser.DoesNotExist:
+            except Group.DoesNotExist or GroupUser.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -94,39 +103,34 @@ class LoadGroupTransactions(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, req, format=None):
-        if "id" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = GroupIdSerialiser(data=req.data)
+        if serializer.is_valid():
+            try:
+                # Get list of transactions of group
+                group = Group.objects.get(id=req.data["id"])
+                transactions = Transaction.objects.filter(group=group)
 
-        try:
-            # Get list of transactions of group
-            group = Group.objects.get(id=req.data["id"])
-            transactions = Transaction.objects.filter(group=group)
+                transactionList = [
+                    {
+                        "amount": transaction.amount,
+                        "by": UserDataSerialiser(transaction.userby).data,
+                        "for": [
+                            UserDataSerialiser(transactionfor.userfor).data
+                            for transactionfor in TransactionFor.objects.filter(
+                                transaction=transaction
+                            )
+                        ],
+                    }
+                    for transaction in transactions
+                ]
 
-            transactionList = [
-                {
-                    "amount": transaction.amount,
-                    "by": {
-                        "id": transaction.userby.id,
-                        "name": transaction.userby.name,
-                    },
-                    "for": [
-                        {
-                            "id": transactionfor.userfor.id,
-                            "name": transactionfor.userfor.name,
-                        }
-                        for transactionfor in TransactionFor.objects.filter(
-                            transaction=transaction
-                        )
-                    ],
-                }
-                for transaction in transactions
-            ]
+                return JsonResponse(
+                    {"transactions": transactionList}, status=status.HTTP_200_OK
+                )
 
-            return JsonResponse(
-                {"transactions": transactionList}, status=status.HTTP_200_OK
-            )
-
-        except Group.DoesNotExist:
+            except Group.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -134,35 +138,29 @@ class AddTransactions(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, req, format=None):
-        if "id" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer = GroupAddTransactionSerialiser(data=req.data)
+        if serializer.is_valid():
+            try:
+                group = Group.objects.get(id=req.data["id"])
 
-        if "amount" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        if "for" not in req.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            group = Group.objects.get(id=req.data["id"])
-
-            newTransaction = Transaction(
-                group=group, amount=req.data["amount"], userby=req.user
-            )
-            newTransactionFors = [
-                TransactionFor(
-                    transaction=newTransaction, userfor=User.objects.get(id=user)
+                newTransaction = Transaction(
+                    group=group, amount=serializer.data["amount"], userby=req.user
                 )
-                for user in req.data["for"]
-            ]
+                newTransactionFors = [
+                    TransactionFor(
+                        transaction=newTransaction, userfor=User.objects.get(id=user)
+                    )
+                    for user in serializer.data["userfor"]
+                ]
 
-            newTransaction.save()
-            for newTransactionFor in newTransactionFors:
-                newTransactionFor.save()
+                newTransaction.save()
+                for newTransactionFor in newTransactionFors:
+                    newTransactionFor.save()
 
-            return Response(status=status.HTTP_201_CREATED)
-
-        except Group.DoesNotExist:
+                return Response(status=status.HTTP_201_CREATED)
+            except Group.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
