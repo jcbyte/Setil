@@ -31,20 +31,34 @@ def userInGroup(user, group, groupUser=[None]):  # groupUser is by ref
 
 def serializerErrorResponse(errors):
     return JsonResponse(
-        {key: [detail.code for detail in data] for key, data in errors.items()},
+        {
+            **GENERALRESPONSES["FAIL"],
+            **{key: [detail.code for detail in data] for key, data in errors.items()},
+        },
         status=status.HTTP_400_BAD_REQUEST,
     )
 
 
+GENERALRESPONSES = {
+    "SUCCESS": {"success": True},
+    "FAIL": {"success": False},
+}
 RESPONSES = {
+    "SUCCESS": JsonResponse(GENERALRESPONSES["SUCCESS"], status=status.HTTP_200_OK),
+    "CREATED": JsonResponse(
+        GENERALRESPONSES["SUCCESS"], status=status.HTTP_201_CREATED
+    ),
     "GROUP_NOT_FOUND": JsonResponse(
-        {"group": ["not_found"]}, status=status.HTTP_404_NOT_FOUND
+        {**GENERALRESPONSES["FAIL"], "group": ["not_found"]},
+        status=status.HTTP_404_NOT_FOUND,
     ),
     "USER_IN_GROUP": JsonResponse(
-        {"user": ["already_in_group"]}, status=status.HTTP_409_CONFLICT
+        {**GENERALRESPONSES["FAIL"], "user": ["already_in_group"]},
+        status=status.HTTP_409_CONFLICT,
     ),
     "USER_NOT_IN_GROUP": JsonResponse(
-        {"user": ["not_in_group"]}, status=status.HTTP_401_UNAUTHORIZED
+        {**GENERALRESPONSES["FAIL"], "user": ["not_in_group"]},
+        status=status.HTTP_401_UNAUTHORIZED,
     ),
 }
 
@@ -56,7 +70,7 @@ class CreateUser(APIView):
         if serializer.is_valid():
             # If valid then create user
             serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return RESPONSES["CREATED"]
 
         else:
             return serializerErrorResponse(serializer.errors)
@@ -81,7 +95,7 @@ class CreateGroup(APIView):
             # Add the current user to group
             newGroupUser = GroupUser(user=req.user, group=group)
             newGroupUser.save()
-            return Response(status=status.HTTP_201_CREATED)
+            return RESPONSES["CREATED"]
 
         else:
             return serializerErrorResponse(serializer.errors)
@@ -102,7 +116,10 @@ class GetGroups(APIView):
         groups = GroupUser.objects.filter(user=req.user)
         groupList = [GroupDataSerialiser(group.group).data for group in groups]
 
-        return JsonResponse({"groups": groupList}, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {**GENERALRESPONSES["SUCCESS"], "groups": groupList},
+            status=status.HTTP_200_OK,
+        )
 
 
 class JoinGroup(APIView):
@@ -122,7 +139,7 @@ class JoinGroup(APIView):
                 # Add user if not in group
                 newGroupUser = GroupUser(user=req.user, group=group)
                 newGroupUser.save()
-                return Response(status=status.HTTP_200_OK)
+                return RESPONSES["SUCCESS"]
 
             except Group.DoesNotExist:
                 return RESPONSES["GROUP_NOT_FOUND"]
@@ -147,7 +164,7 @@ class LeaveGroup(APIView):
                     # If user in group then remove them
                     groupUser[0].delete()
 
-                    return Response(status=status.HTTP_200_OK)
+                    return RESPONSES["SUCCESS"]
 
                 return RESPONSES["USER_NOT_IN_GROUP"]
 
@@ -187,7 +204,11 @@ class LoadGroupTransactions(APIView):
                     ]
 
                     return JsonResponse(
-                        {"transactions": transactionList}, status=status.HTTP_200_OK
+                        {
+                            **GENERALRESPONSES["SUCCESS"],
+                            "transactions": transactionList,
+                        },
+                        status=status.HTTP_200_OK,
                     )
 
                 else:
@@ -228,7 +249,7 @@ class AddTransactions(APIView):
                     for newTransactionFor in newTransactionFors:
                         newTransactionFor.save()
 
-                    return Response(status=status.HTTP_201_CREATED)
+                    return RESPONSES["CREATED"]
 
                 else:
                     return RESPONSES["USER_NOT_IN_GROUP"]
