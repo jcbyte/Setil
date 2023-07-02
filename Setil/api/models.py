@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser, AbstractBaseUser
 
+from django.conf import settings
+
 # Create your models here
 
 import string
@@ -8,9 +10,10 @@ import random
 
 
 def genUniqueCode():
-    LENGTH = 6
     while True:
-        code = "".join(random.choices(string.ascii_uppercase, k=LENGTH))
+        code = "".join(
+            random.choices(string.ascii_uppercase, k=settings.CONFIG["CODELENGTH"])
+        )
         if not Group.objects.filter(code=code).exists():
             return code
 
@@ -34,7 +37,9 @@ class User(AbstractBaseUser):
 
 class Group(models.Model):
     name = models.TextField(max_length=42)
-    code = models.TextField(max_length=42, default=genUniqueCode, unique=True)
+    code = models.TextField(
+        max_length=settings.CONFIG["CODELENGTH"], default=genUniqueCode, unique=True
+    )
 
 
 class GroupUser(models.Model):
@@ -44,7 +49,9 @@ class GroupUser(models.Model):
 
 class Transaction(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=6, decimal_places=2)
+    amount = models.DecimalField(
+        max_digits=settings.CONFIG["AMOUNTDIGITS"], decimal_places=2
+    )
     userby = models.ForeignKey(User, on_delete=models.CASCADE)
 
 

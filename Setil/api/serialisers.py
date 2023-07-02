@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from .models import User, Group
 
+from django.conf import settings
+
 
 class UserSerialiser(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +39,7 @@ class UserDataSerialiser(serializers.Serializer):
 
 
 class GroupCodeSerialiser(serializers.Serializer):
-    code = serializers.CharField(max_length=6)
+    code = serializers.CharField(max_length=settings.CONFIG["CODELENGTH"])
 
 
 class GroupIdSerialiser(serializers.Serializer):
@@ -45,5 +47,7 @@ class GroupIdSerialiser(serializers.Serializer):
 
 
 class GroupAddTransactionSerialiser(GroupIdSerialiser):
-    amount = serializers.DecimalField(max_digits=6, decimal_places=2)
+    amount = serializers.DecimalField(
+        max_digits=settings.CONFIG["AMOUNTDIGITS"], decimal_places=2
+    )
     userfor = serializers.ListField(child=serializers.IntegerField())
