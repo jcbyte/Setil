@@ -38,7 +38,7 @@ def serializerErrorResponse(errors):
 
 RESPONSES = {
     "GROUP_NOT_FOUND": JsonResponse(
-        {"group": ["unknown"]}, status=status.HTTP_404_NOT_FOUND
+        {"group": ["not_found"]}, status=status.HTTP_404_NOT_FOUND
     ),
     "USER_IN_GROUP": JsonResponse(
         {"user": ["already_in_group"]}, status=status.HTTP_409_CONFLICT
@@ -62,6 +62,13 @@ class CreateUser(APIView):
             return serializerErrorResponse(serializer.errors)
 
 
+class DeleteUser(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post():
+        pass
+
+
 class CreateGroup(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -78,6 +85,13 @@ class CreateGroup(APIView):
 
         else:
             return serializerErrorResponse(serializer.errors)
+
+
+class DeleteGroup(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post():
+        pass
 
 
 class GetGroups(APIView):
