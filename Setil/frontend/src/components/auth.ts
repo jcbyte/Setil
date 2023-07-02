@@ -1,5 +1,10 @@
 const jwtLocalStorage = { access: "jwt_access", refresh: "jwt_refresh" };
 
+interface jwtToken {
+	access: string;
+	refresh?: string;
+}
+
 export function obtainToken(username, password) {
 	return fetch("/api/token/obtain", {
 		method: "POST",

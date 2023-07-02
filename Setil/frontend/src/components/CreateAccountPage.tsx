@@ -1,67 +1,107 @@
 import React from "react";
 import { useState } from "react";
-import { TextField, Button } from "@mui/material";
+import { TextField, Box, Link } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { Link as RouterLink } from "react-router-dom";
 
 import { createAccount, AccountDetails } from "./api";
+import { AlertNotificationParameterData } from "./AlertInterfaces";
 
-export default function LoginPage() {
+export default function CreateAccountPage({
+	showAlert,
+}: {
+	showAlert: (data: AlertNotificationParameterData) => void;
+}) {
 	const [typedAccountDetails, setTypedAccountDetails] = useState<AccountDetails>({
 		name: "",
 		username: "",
 		password: "",
 	});
-	const [resultText, setResultText] = useState("No data");
+	const [tryingCreateAccount, setTryingCreateAccount] = useState(false);
 
 	function tryCreateAccount() {
+		setTryingCreateAccount(true);
+
 		createAccount(typedAccountDetails).then((result) => {
 			if (result.success) {
-				setResultText("account created");
+				showAlert({ details: "Account created", severity: "success", timeout: 3000 });
 			} else {
-				if (result.name == "blank") {
-					setResultText("Give name");
-				}
-				if (result.username == "blank") {
-					setResultText("Give username");
-				}
-				if (result.username == "unique") {
-					setResultText("Username already exists");
-				}
-				if (result.password == "blank") {
-					setResultText("Give password");
+				if (result.name) {
+					if (result.name[0] == "blank")
+						showAlert({ details: "Please give a name", severity: "warning", timeout: 3000 });
+				} else if (result.username) {
+					if (result.username[0] == "blank")
+						showAlert({ details: "Please give a username", severity: "warning", timeout: 3000 });
+					else if (result.username[0] == "unique")
+						showAlert({ details: "Username already exists", severity: "warning", timeout: 3000 });
+				} else if (result.password) {
+					if (result.password[0] == "blank")
+						showAlert({ details: "Please give a password", severity: "warning", timeout: 3000 });
 				}
 			}
+
+			setTryingCreateAccount(false);
 		});
 	}
 
 	return (
 		<>
-			Create account page
-			<TextField
-				placeholder="Name"
-				onChange={(e) => {
-					setTypedAccountDetails((prev) => {
-						return { ...prev, name: e.target.value };
-					});
+			<Box
+				sx={{
+					position: "fixed",
+					bottom: "10%",
+					left: 0,
+					right: 0,
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					margin: "10px",
+					gap: "10px",
 				}}
-			/>
-			<TextField
-				placeholder="Username"
-				onChange={(e) => {
-					setTypedAccountDetails((prev) => {
-						return { ...prev, username: e.target.value };
-					});
-				}}
-			/>
-			<TextField
-				placeholder="Password"
-				onChange={(e) => {
-					setTypedAccountDetails((prev) => {
-						return { ...prev, password: e.target.value };
-					});
-				}}
-			/>
-			<Button onClick={tryCreateAccount}>Login</Button>
-			{resultText}
+			>
+				<TextField
+					variant="outlined"
+					placeholder="Name"
+					fullWidth
+					onChange={(e) => {
+						setTypedAccountDetails((prev) => {
+							return { ...prev, name: e.target.value };
+						});
+					}}
+				/>
+				<TextField
+					variant="outlined"
+					placeholder="Username"
+					fullWidth
+					onChange={(e) => {
+						setTypedAccountDetails((prev) => {
+							return { ...prev, username: e.target.value };
+						});
+					}}
+				/>
+				<TextField
+					variant="outlined"
+					placeholder="Password"
+					fullWidth
+					onChange={(e) => {
+						setTypedAccountDetails((prev) => {
+							return { ...prev, password: e.target.value };
+						});
+					}}
+				/>
+				<LoadingButton
+					variant="contained"
+					fullWidth
+					loading={tryingCreateAccount}
+					//loadingPosition="end"
+					onClick={tryCreateAccount}
+				>
+					Create Account
+				</LoadingButton>
+				<Link variant="body2" component={RouterLink} to="/login">
+					Login
+				</Link>
+			</Box>
 		</>
 	);
 }
