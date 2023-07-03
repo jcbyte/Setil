@@ -10,6 +10,8 @@ import AlertNotification from "./AlertNotification";
 
 import { AlertNotificationParameterData, AlertNotificationComponentData } from "./AlertInterfaces";
 import { logout } from "./api";
+import LoginArea from "./LoginArea";
+import AppArea from "./AppArea";
 
 export default function App() {
 	const [alertData, setAlertData] = useState<AlertNotificationComponentData>({
@@ -39,9 +41,17 @@ export default function App() {
 			<button onClick={logout}>logout</button>
 			<Router>
 				<Routes>
-					<Route path="/" element={<GroupListPage />} />
+					{/* <Route path="/" element={<GroupListPage />} />
 					<Route path="/createAccount" element={<CreateAccountPage showAlert={showAlert} />} />
-					<Route path="/login" element={<LoginPage showAlert={showAlert} />} />
+					<Route path="/login" element={<LoginPage showAlert={showAlert} />} /> */}
+
+					<Route path="/" element={<AppArea />}>
+						<Route path="" element={<GroupListPage />} />
+					</Route>
+					<Route path="/login/" element={<LoginArea />}>
+						<Route path="" element={<LoginPage showAlert={() => {}} />} />
+						<Route path="create/" element={<CreateAccountPage showAlert={() => {}} />} />
+					</Route>
 				</Routes>
 			</Router>
 		</>
