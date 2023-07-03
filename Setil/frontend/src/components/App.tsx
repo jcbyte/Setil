@@ -46,7 +46,5 @@ export default function App() {
 	);
 }
 
-// Login Page
-// Create account page
 // Group list page - inc edit/delete
 // Transaction list - inc edit/delete - inc payments

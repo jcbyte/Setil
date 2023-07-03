@@ -1,28 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { authFetch } from "./auth";
+import { getGroups } from "./api";
+import { Group } from "./apiInterfaces";
+import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 
 export default function GroupListPage() {
 	const navigate = useNavigate();
 
-	function getFoo() {
-		authFetch("/api/Foo", {
-			method: "GET",
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				console.log(data);
-			})
-			.catch(() => {
+	const [groupsList, setGroupsList] = useState<Array<Group>>([]);
+
+	function loadGroups() {
+		getGroups().then((res) => {
+			if (!res) {
 				navigate("/login");
-			});
+				return;
+			}
+			setGroupsList(res.groups);
+		});
 	}
+
+	useEffect(() => {
+		loadGroups();
+	}, []);
 
 	return (
 		<>
 			GroupListPage
-			<button onClick={getFoo}>click</button>
+			<List>
+				{groupsList.map((group) => {
+					return (
+						<ListItem key={group.id} disablePadding>
+							<ListItemButton
+								onClick={() => {
+									console.log(group.id);
+								}}
+							>
+								<ListItemText primary={group.name} />
+							</ListItemButton>
+						</ListItem>
+					);
+				})}
+			</List>
 		</>
 	);
 }

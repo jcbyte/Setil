@@ -16,3 +16,12 @@ export interface CreateAccountResponse extends APIResponse {
 	username?: Array<String>;
 	password?: Array<String>;
 }
+
+export interface Group {
+	id: number;
+	name: string;
+}
+
+export interface GetGroupsResponse extends APIResponse {
+	groups: Array<Group>;
+}
