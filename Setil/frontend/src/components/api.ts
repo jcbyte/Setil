@@ -1,4 +1,5 @@
-import { AccountDetails, CreateAccountResponse, LoginDetails } from "./apiInterfaces";
+import { APIResponse, AccountDetails, CreateAccountResponse, LoginDetails } from "./apiInterfaces";
+import { obtainToken } from "./auth";
 
 export function createAccount(account: AccountDetails): Promise<CreateAccountResponse> {
 	return fetch("/api/user/create", {
@@ -10,4 +11,12 @@ export function createAccount(account: AccountDetails): Promise<CreateAccountRes
 	}).then((res) => res.json());
 }
 
-export function login(account: LoginDetails) {}
+export function login(account: LoginDetails): Promise<APIResponse> {
+	return obtainToken(account)
+		.then(() => {
+			return { success: true };
+		})
+		.catch(() => {
+			return { success: false };
+		});
+}

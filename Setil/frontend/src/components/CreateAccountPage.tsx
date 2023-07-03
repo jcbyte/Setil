@@ -28,16 +28,15 @@ export default function CreateAccountPage({
 				showAlert({ details: "Account created", severity: "success", timeout: 3000 });
 			} else {
 				if (result.name) {
-					if (result.name[0] == "blank")
-						showAlert({ details: "Please give a name", severity: "warning", timeout: 3000 });
+					if (result.name[0] == "blank") showAlert({ details: "Please give a name", severity: "error", timeout: 3000 });
 				} else if (result.username) {
 					if (result.username[0] == "blank")
-						showAlert({ details: "Please give a username", severity: "warning", timeout: 3000 });
+						showAlert({ details: "Please give a username", severity: "error", timeout: 3000 });
 					else if (result.username[0] == "unique")
-						showAlert({ details: "Username already exists", severity: "warning", timeout: 3000 });
+						showAlert({ details: "Username already exists", severity: "error", timeout: 3000 });
 				} else if (result.password) {
 					if (result.password[0] == "blank")
-						showAlert({ details: "Please give a password", severity: "warning", timeout: 3000 });
+						showAlert({ details: "Please give a password", severity: "error", timeout: 3000 });
 				}
 			}
 

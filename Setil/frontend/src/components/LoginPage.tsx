@@ -6,6 +6,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 import { LoginDetails } from "./apiInterfaces";
 import { AlertNotificationParameterData } from "./AlertInterfaces";
+import { login } from "./api";
 
 export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotificationParameterData) => void }) {
 	const [typedLoginDetails, settypedLoginDetails] = useState<LoginDetails>({
@@ -15,26 +16,15 @@ export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotifi
 	const [tryingLogin, setTryingLogin] = useState(false);
 
 	function tryLogin() {
-		// setTryingCreateAccount(true);
-		// createAccount(typedLoginDetails).then((result) => {
-		// 	if (result.success) {
-		// 		showAlert({ details: "Account created", severity: "success", timeout: 3000 });
-		// 	} else {
-		// 		if (result.name) {
-		// 			if (result.name[0] == "blank")
-		// 				showAlert({ details: "Please give a name", severity: "warning", timeout: 3000 });
-		// 		} else if (result.username) {
-		// 			if (result.username[0] == "blank")
-		// 				showAlert({ details: "Please give a username", severity: "warning", timeout: 3000 });
-		// 			else if (result.username[0] == "unique")
-		// 				showAlert({ details: "Username already exists", severity: "warning", timeout: 3000 });
-		// 		} else if (result.password) {
-		// 			if (result.password[0] == "blank")
-		// 				showAlert({ details: "Please give a password", severity: "warning", timeout: 3000 });
-		// 		}
-		// 	}
-		// 	setTryingCreateAccount(false);
-		// });
+		setTryingLogin(true);
+		login(typedLoginDetails).then((result) => {
+			if (result.success) {
+				showAlert({ details: "Logged in", severity: "success", timeout: 3000 });
+			} else {
+				showAlert({ details: "Invalid credentials", severity: "error", timeout: 3000 });
+			}
+			setTryingLogin(false);
+		});
 	}
 
 	return (
