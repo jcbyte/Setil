@@ -9,6 +9,7 @@ import CreateAccountPage from "./CreateAccountPage";
 import AlertNotification from "./AlertNotification";
 
 import { AlertNotificationParameterData, AlertNotificationComponentData } from "./AlertInterfaces";
+import { logout } from "./api";
 
 export default function App() {
 	const [alertData, setAlertData] = useState<AlertNotificationComponentData>({
@@ -35,6 +36,7 @@ export default function App() {
 	return (
 		<>
 			<AlertNotification alertData={alertData} setAlertData={setAlertData} />
+			<button onClick={logout}>logout</button>
 			<Router>
 				<Routes>
 					<Route path="/" element={<GroupListPage />} />

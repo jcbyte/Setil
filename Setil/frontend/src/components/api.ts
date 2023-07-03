@@ -1,5 +1,5 @@
 import { APIResponse, AccountDetails, CreateAccountResponse, GetGroupsResponse, LoginDetails } from "./apiInterfaces";
-import { obtainToken, authFetch } from "./auth";
+import { obtainToken, authFetch, removeToken } from "./auth";
 
 export function createAccount(account: AccountDetails): Promise<CreateAccountResponse> {
 	return fetch("/api/user/create", {
@@ -19,6 +19,12 @@ export function login(account: LoginDetails): Promise<APIResponse> {
 		.catch(() => {
 			return { success: false };
 		});
+}
+
+export function logout(): Promise<APIResponse> {
+	return removeToken().then(() => {
+		return { success: true };
+	});
 }
 
 export function getGroups(): Promise<GetGroupsResponse | false> {

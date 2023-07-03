@@ -96,3 +96,9 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
 	init.headers = { ...init.headers, Authorization: "Bearer " + getJwtAccessToken().access };
 	return fetch(input, init);
 }
+
+export async function removeToken() {
+	Object.values(jwtLocalStorage).forEach((localStorageKey) => {
+		localStorage.removeItem(localStorageKey);
+	});
+}
