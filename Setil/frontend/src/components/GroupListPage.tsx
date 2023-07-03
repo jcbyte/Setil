@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { getGroups } from "./api";
 import { Group } from "./apiInterfaces";
-import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Box, Button, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 
 export default function GroupListPage() {
 	const navigate = useNavigate();
@@ -26,22 +26,38 @@ export default function GroupListPage() {
 
 	return (
 		<>
-			GroupListPage
-			<List>
-				{groupsList.map((group) => {
-					return (
-						<ListItem key={group.id} disablePadding>
-							<ListItemButton
-								onClick={() => {
-									console.log(group.id);
-								}}
-							>
-								<ListItemText primary={group.name} />
-							</ListItemButton>
-						</ListItem>
-					);
-				})}
-			</List>
+			<Box
+				sx={{
+					position: "fixed",
+					bottom: "10%",
+					left: 0,
+					right: 0,
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					margin: "10px",
+					gap: "10px",
+				}}
+			>
+				<List sx={{ width: "100%" }}>
+					{groupsList.map((group) => {
+						return (
+							<ListItem key={group.id} disablePadding>
+								<ListItemButton
+									onClick={() => {
+										console.log(group.id);
+									}}
+								>
+									<ListItemText primary={group.name} />
+								</ListItemButton>
+							</ListItem>
+						);
+					})}
+				</List>
+				<Button variant="contained" fullWidth onClick={() => {}}>
+					Join Group
+				</Button>
+			</Box>
 		</>
 	);
 }
