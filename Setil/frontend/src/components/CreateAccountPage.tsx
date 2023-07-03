@@ -1,12 +1,11 @@
-import React from "react";
-import { useState } from "react";
-import { TextField, Box, Link } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { Box, Link, TextField } from "@mui/material";
+import React, { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
+import { AlertNotificationParameterData } from "./AlertInterfaces";
 import { createAccount } from "./api";
 import { AccountDetails } from "./apiInterfaces";
-import { AlertNotificationParameterData } from "./AlertInterfaces";
 
 export default function CreateAccountPage({
 	showAlert,

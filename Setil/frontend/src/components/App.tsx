@@ -1,17 +1,15 @@
-import React from "react";
-import { useState, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useRef, useState } from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import CreateAccountPage from "./CreateAccountPage";
 import GroupListPage from "./GroupListPage";
 import LoginPage from "./LoginPage";
-import CreateAccountPage from "./CreateAccountPage";
 
 import AlertNotification from "./AlertNotification";
 
-import { AlertNotificationParameterData, AlertNotificationComponentData } from "./AlertInterfaces";
-import { logout } from "./api";
-import LoginArea from "./LoginArea";
+import { AlertNotificationComponentData, AlertNotificationParameterData } from "./AlertInterfaces";
 import AppArea from "./AppArea";
+import LoginArea from "./LoginArea";
 
 export default function App() {
 	const [alertData, setAlertData] = useState<AlertNotificationComponentData>({
@@ -38,13 +36,9 @@ export default function App() {
 	return (
 		<>
 			<AlertNotification alertData={alertData} setAlertData={setAlertData} />
-			<button onClick={logout}>logout</button>
+
 			<Router>
 				<Routes>
-					{/* <Route path="/" element={<GroupListPage />} />
-					<Route path="/createAccount" element={<CreateAccountPage showAlert={showAlert} />} />
-					<Route path="/login" element={<LoginPage showAlert={showAlert} />} /> */}
-
 					<Route path="/" element={<AppArea />}>
 						<Route path="" element={<GroupListPage />} />
 					</Route>

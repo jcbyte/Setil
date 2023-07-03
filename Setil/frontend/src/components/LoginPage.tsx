@@ -1,12 +1,11 @@
-import React from "react";
-import { useState } from "react";
-import { TextField, Box, Link } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { Box, Link, TextField } from "@mui/material";
+import React, { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-import { LoginDetails } from "./apiInterfaces";
 import { AlertNotificationParameterData } from "./AlertInterfaces";
 import { login } from "./api";
+import { LoginDetails } from "./apiInterfaces";
 
 export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotificationParameterData) => void }) {
 	const [typedLoginDetails, settypedLoginDetails] = useState<LoginDetails>({

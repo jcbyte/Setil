@@ -1,7 +1,5 @@
 import React from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
-import LoginPage from "./LoginPage";
-import CreateAccountPage from "./CreateAccountPage";
+import { Outlet } from "react-router-dom";
 
 export default function LoginArea() {
 	return (

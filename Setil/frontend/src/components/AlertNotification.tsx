@@ -1,6 +1,6 @@
-import React from "react";
-import { Box, Collapse, Alert, IconButton, AlertColor } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { Alert, Box, Collapse, IconButton } from "@mui/material";
+import React from "react";
 
 import { AlertNotificationComponentData } from "./AlertInterfaces";
 

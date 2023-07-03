@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Box, Button, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { getGroups } from "./api";
 import { Group } from "./apiInterfaces";
-import { Box, Button, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 
 export default function GroupListPage() {
 	const navigate = useNavigate();

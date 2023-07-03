@@ -1,5 +1,5 @@
 import { APIResponse, AccountDetails, CreateAccountResponse, GetGroupsResponse, LoginDetails } from "./apiInterfaces";
-import { obtainToken, authFetch, removeToken } from "./auth";
+import { authFetch, obtainToken, removeToken } from "./auth";
 
 export function createAccount(account: AccountDetails): Promise<CreateAccountResponse> {
 	return fetch("/api/user/create", {
