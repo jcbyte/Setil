@@ -4,7 +4,8 @@ import { TextField, Box, Link } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { Link as RouterLink } from "react-router-dom";
 
-import { createAccount, AccountDetails } from "./api";
+import { createAccount } from "./api";
+import { AccountDetails } from "./apiInterfaces";
 import { AlertNotificationParameterData } from "./AlertInterfaces";
 
 export default function CreateAccountPage({
