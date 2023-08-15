@@ -1,13 +1,15 @@
 import { LoadingButton } from "@mui/lab";
 import { Box, Link, TextField } from "@mui/material";
 import React, { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 import { AlertNotificationParameterData } from "./AlertInterfaces";
 import { login } from "./api";
 import { LoginDetails } from "./apiInterfaces";
 
 export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotificationParameterData) => void }) {
+	const navigate = useNavigate();
+
 	const [typedLoginDetails, settypedLoginDetails] = useState<LoginDetails>({
 		username: "",
 		password: "",
@@ -19,6 +21,7 @@ export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotifi
 		login(typedLoginDetails).then((result) => {
 			if (result.success) {
 				showAlert({ details: "Logged in", severity: "success", timeout: 3000 });
+				navigate("/");
 			} else {
 				showAlert({ details: "Invalid credentials", severity: "error", timeout: 3000 });
 			}
@@ -70,7 +73,7 @@ export default function LoginPage({ showAlert }: { showAlert: (data: AlertNotifi
 				>
 					Login
 				</LoadingButton>
-				<Link variant="body2" component={RouterLink} to="/createAccount">
+				<Link variant="body2" component={RouterLink} to="/login/create">
 					Create Account
 				</Link>
 			</Box>

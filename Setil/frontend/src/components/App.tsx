@@ -39,12 +39,12 @@ export default function App() {
 
 			<Router>
 				<Routes>
-					<Route path="/" element={<AppArea />}>
+					<Route path="/" element={<AppArea showAlert={showAlert} />}>
 						<Route path="" element={<GroupListPage />} />
 					</Route>
 					<Route path="/login/" element={<LoginArea />}>
-						<Route path="" element={<LoginPage showAlert={() => {}} />} />
-						<Route path="create/" element={<CreateAccountPage showAlert={() => {}} />} />
+						<Route path="" element={<LoginPage showAlert={showAlert} />} />
+						<Route path="create/" element={<CreateAccountPage showAlert={showAlert} />} />
 					</Route>
 				</Routes>
 			</Router>
