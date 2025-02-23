@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import type { Group } from "../types";
-
-defineProps<{
-	group: Group;
-}>();
+const group = {
+	name: "group",
+	owner: "owner",
+	users: [{ id: "owner", name: "OWNER" }],
+	transactions: [
+		{ title: "title", amount: 0, from: ["aa", "bb"], to: ["cc"], date: new Date() },
+		{ title: "title2", amount: 1000, from: ["aa"], to: ["bb", "cc"], date: new Date() },
+	],
+};
 
 function joinList(l: string[]): string {
 	return l.join(", ");

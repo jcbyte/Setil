@@ -2,7 +2,6 @@
 import { getAuth } from "firebase/auth";
 import { Button, Toast, useToast, type ToastMessageOptions } from "primevue";
 import { onMounted, ref } from "vue";
-import GroupPage from "./components/GroupPage.vue";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
 
@@ -98,18 +97,7 @@ function signOut() {
 
 	<div class="flex justify-center items-center">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
-		<GroupPage
-			v-else
-			:group="{
-				name: 'group',
-				owner: 'owner',
-				users: [{ id: 'owner', name: 'OWNER' }],
-				transactions: [
-					{ title: 'title', amount: 0, from: ['aa', 'bb'], to: ['cc'], date: new Date() },
-					{ title: 'title2', amount: 1000, from: ['aa'], to: ['bb', 'cc'], date: new Date() },
-				],
-			}"
-		/>
+		<router-view v-else />
 	</div>
 
 	<Toast position="top-center" />
