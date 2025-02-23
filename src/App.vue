@@ -1,10 +1,39 @@
 <script setup lang="ts">
+import { Button, Toast, useToast, type ToastMessageOptions } from "primevue";
 import GroupPage from "./components/GroupPage.vue";
-import { auth } from "./firebase/auth";
-
-import Button from "primevue/button";
-
+import { auth, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
+
+const toast = useToast();
+
+function signIn() {
+	const persistentMessage: ToastMessageOptions = {
+		summary: "Signing In",
+		detail: "Continue in the popup window",
+		closable: false,
+	};
+
+	toast.add(persistentMessage);
+	signInWithGoogle()
+		.then(() => {
+			toast.remove(persistentMessage);
+			toast.add({
+				severity: "success",
+				summary: "Signed In",
+				detail: "You are now signed in",
+				life: 3000,
+			});
+		})
+		.catch((error) => {
+			toast.remove(persistentMessage);
+			toast.add({
+				severity: "error",
+				summary: "Sign In Failed",
+				detail: error.message,
+				life: 5000,
+			});
+		});
+}
 </script>
 
 <template>
@@ -22,7 +51,7 @@ import SignInPage from "./pages/signInPage.vue";
 				<div>Account icon</div>
 				<div>Settings</div>
 			</div>
-			<Button v-else @click="">
+			<Button v-else @click="signIn()">
 				<div class="flex items-center justify-center gap-2">
 					<i class="pi pi-google" />
 					<span class="font-semibold">Sign In</span>
@@ -32,7 +61,7 @@ import SignInPage from "./pages/signInPage.vue";
 	</div>
 
 	<div class="flex justify-center items-center">
-		<SignInPage v-if="!auth.currentUser" />
+		<SignInPage v-if="!auth.currentUser" :signIn="signIn" />
 		<GroupPage
 			v-else
 			:group="{
@@ -46,4 +75,6 @@ import SignInPage from "./pages/signInPage.vue";
 			}"
 		/>
 	</div>
+
+	<Toast position="top-center" />
 </template>
