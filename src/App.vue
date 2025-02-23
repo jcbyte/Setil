@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import GroupPage from "./components/GroupPage.vue";
+import { auth } from "./firebase/auth";
+
+import SignInPage from "./pages/signInPage.vue";
 </script>
 
 <template>
 	<div class="flex justify-center items-center">
+		<SignInPage v-if="!auth.currentUser" />
 		<GroupPage
+			v-else
 			:group="{
 				name: 'group',
 				owner: 'owner',
