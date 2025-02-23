@@ -7,7 +7,7 @@
 	line-height: 1.5;
 	font-weight: 400;
 
-	color-scheme: light dark;
+	color-scheme: dark;
 	@apply text-zinc-100 bg-zinc-800;
 
 	font-synthesis: none;
