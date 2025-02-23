@@ -1,10 +1,20 @@
 <script setup lang="ts">
+import { getAuth } from "firebase/auth";
 import { Button, Toast, useToast, type ToastMessageOptions } from "primevue";
+import { onMounted, ref } from "vue";
 import GroupPage from "./components/GroupPage.vue";
-import { auth, signInWithGoogle } from "./firebase/auth";
+import { signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
 
 const toast = useToast();
+
+const currentUser = ref(getAuth().currentUser);
+onMounted(() => {
+	getAuth().onAuthStateChanged((user) => {
+		console.log("AAA");
+		currentUser.value = user;
+	});
+});
 
 function signIn() {
 	const persistentMessage: ToastMessageOptions = {
@@ -47,7 +57,7 @@ function signIn() {
 		</div>
 
 		<div>
-			<div v-if="auth.currentUser">
+			<div v-if="currentUser">
 				<div>Account icon</div>
 				<div>Settings</div>
 			</div>
@@ -61,7 +71,7 @@ function signIn() {
 	</div>
 
 	<div class="flex justify-center items-center">
-		<SignInPage v-if="!auth.currentUser" :signIn="signIn" />
+		<SignInPage v-if="!currentUser" :signIn="signIn" />
 		<GroupPage
 			v-else
 			:group="{
