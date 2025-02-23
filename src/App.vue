@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { Button, Toast, useToast, type ToastMessageOptions } from "primevue";
 import { onMounted, ref } from "vue";
 import GroupPage from "./components/GroupPage.vue";
-import { signInWithGoogle } from "./firebase/auth";
+import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
 
 const toast = useToast();
@@ -44,6 +44,26 @@ function signIn() {
 			});
 		});
 }
+
+function signOut() {
+	firebaseSignOut()
+		.then(() => {
+			toast.add({
+				severity: "success",
+				summary: "Signed Out",
+				detail: "You have been signed out",
+				life: 3000,
+			});
+		})
+		.catch((error) => {
+			toast.add({
+				severity: "error",
+				summary: "Sign Out Failed",
+				detail: error.message,
+				life: 5000,
+			});
+		});
+}
 </script>
 
 <template>
@@ -57,9 +77,15 @@ function signIn() {
 		</div>
 
 		<div>
-			<div v-if="currentUser">
-				<div>Account icon</div>
-				<div>Settings</div>
+			<div v-if="currentUser" class="flex items-center gap-2">
+				<img
+					class="rounded-full object-cover aspect-square size-8"
+					:title="currentUser.displayName ?? ''"
+					:src="currentUser.photoURL ?? ''"
+				/>
+				<div class="flex items-center justify-center bg-zinc-700 size-8 rounded-full" @click="signOut()">
+					<i class="pi pi-sign-out text-zinc-300" style="font-size: 1rem" />
+				</div>
 			</div>
 			<Button v-else @click="signIn()">
 				<div class="flex items-center justify-center gap-2">
