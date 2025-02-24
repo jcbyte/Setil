@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Button, Skeleton } from "primevue";
-import { onMounted, ref } from "vue";
+import { inject, onMounted, ref, type Ref } from "vue";
 import { getUserGroups, type UserGroup } from "../firebase/firestore";
+
+const pageTitle = inject<Ref<string>>("pageTitle");
 
 const groups = ref<UserGroup[] | null>(null);
 
@@ -9,6 +11,10 @@ onMounted(() => {
 	getUserGroups().then((g) => {
 		groups.value = g;
 	});
+
+	if (pageTitle) {
+		pageTitle.value = "Groups";
+	}
 });
 </script>
 

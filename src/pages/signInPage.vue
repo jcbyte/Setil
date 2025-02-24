@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { Button } from "primevue";
+import { inject, onMounted, type Ref } from "vue";
 
 defineProps<{
 	signIn: () => void;
 }>();
+
+const pageTitle = inject<Ref<string>>("pageTitle");
+
+onMounted(() => {
+	if (pageTitle) {
+		pageTitle.value = "Sign In";
+	}
+});
 </script>
 
 <template>

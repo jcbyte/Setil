@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { getAuth } from "firebase/auth";
 import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
-import { onMounted, ref } from "vue";
+import { onMounted, provide, ref } from "vue";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
 
 const toast = useToast();
+
+const pageTitle = ref("Setil");
+provide("pageTitle", pageTitle);
 
 const firebaseLoaded = ref(false);
 const currentUser = ref(getAuth().currentUser);
@@ -74,10 +77,10 @@ function signOut() {
 		</div>
 
 		<div class="absolute left-1/2 transform -translate-x-1/2">
-			<span>Page Title</span>
+			<span>{{ pageTitle }}</span>
 		</div>
 
-		<div>
+		<div v-if="firebaseLoaded">
 			<div v-if="currentUser" class="flex items-center gap-2">
 				<img
 					class="rounded-full object-cover aspect-square size-8"
@@ -95,6 +98,7 @@ function signOut() {
 				</div>
 			</Button>
 		</div>
+		<Skeleton v-else class="!w-32 !h-8" />
 	</div>
 
 	<div v-if="firebaseLoaded" class="flex justify-center items-center">

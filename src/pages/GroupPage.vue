@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import { inject, onMounted, type Ref } from "vue";
+
+const pageTitle = inject<Ref<string>>("pageTitle");
+
+onMounted(() => {
+	if (pageTitle) {
+		pageTitle.value = "$GROUPNAME$";
+	}
+});
+
 const group = {
 	name: "group",
 	owner: "owner",
