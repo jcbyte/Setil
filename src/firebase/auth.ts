@@ -1,12 +1,13 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import "./firebase";
+import { initialiseUserData } from "./firestore";
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(): Promise<boolean> {
 	const provider = new GoogleAuthProvider();
 
-	return signInWithPopup(getAuth(), provider);
+	return signInWithPopup(getAuth(), provider).then(() => initialiseUserData());
 }
 
-export async function firebaseSignOut() {
+export async function firebaseSignOut(): Promise<void> {
 	return signOut(getAuth());
 }

@@ -7,10 +7,12 @@ import SignInPage from "./pages/signInPage.vue";
 
 const toast = useToast();
 
+const firebaseLoaded = ref(false);
 const currentUser = ref(getAuth().currentUser);
+
 onMounted(() => {
 	getAuth().onAuthStateChanged((user) => {
-		console.log("AAA");
+		firebaseLoaded.value = true;
 		currentUser.value = user;
 	});
 });
@@ -95,7 +97,8 @@ function signOut() {
 		</div>
 	</div>
 
-	<div class="flex justify-center items-center">
+	<!-- todo show something else whilst firebase is loading -->
+	<div v-if="firebaseLoaded" class="flex justify-center items-center">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
 		<router-view v-else />
 	</div>

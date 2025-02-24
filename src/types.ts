@@ -13,7 +13,12 @@ interface Transaction {
 
 export interface Group {
 	name: string;
-	owner: string;
 	users: GroupUser[];
 	transactions: Transaction[];
 }
+
+export interface UserData {
+	groups: string[];
+}
+
+export const DEFAULT_USER_DATA: UserData = { groups: [] };
