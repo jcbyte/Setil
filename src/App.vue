@@ -35,7 +35,7 @@ function signIn() {
 				severity: "success",
 				summary: "Signed In",
 				detail: "You are now signed in",
-				life: 3000,
+				life: 2000,
 			});
 		})
 		.catch((error) => {
@@ -56,7 +56,7 @@ function signOut() {
 				severity: "success",
 				summary: "Signed Out",
 				detail: "You have been signed out",
-				life: 3000,
+				life: 2000,
 			});
 		})
 		.catch((error) => {

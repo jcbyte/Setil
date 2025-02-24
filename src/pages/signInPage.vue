@@ -6,7 +6,7 @@ defineProps<{
 	signIn: () => void;
 }>();
 
-usePageTitle("Setil");
+usePageTitle("Sign In");
 </script>
 
 <template>
