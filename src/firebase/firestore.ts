@@ -103,3 +103,8 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 	// Filter out null values
 	return userGroups.filter((group) => group !== null);
 }
+
+export async function createGroup(groupData: GroupData): Promise<void> {
+	// todo create group
+	await new Promise((resolve) => setTimeout(resolve, 2000));
+}

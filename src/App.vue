@@ -104,7 +104,7 @@ function signOut() {
 		<Skeleton v-else class="!w-32 !h-8" />
 	</div>
 
-	<div v-if="firebaseLoaded" class="flex justify-center items-center">
+	<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
 		<router-view v-else />
 	</div>

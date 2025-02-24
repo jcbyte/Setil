@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@primeuix/styles": "^1.0.0",
     "@primeuix/themes": "^1.0.0-rc.1",
+    "@primevue/forms": "^4.3.0",
     "firebase": "^11.3.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
