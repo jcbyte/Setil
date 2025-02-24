@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getAuth } from "firebase/auth";
-import { Button, Toast, useToast, type ToastMessageOptions } from "primevue";
+import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
 import { onMounted, ref } from "vue";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
@@ -97,10 +97,12 @@ function signOut() {
 		</div>
 	</div>
 
-	<!-- todo show something else whilst firebase is loading -->
 	<div v-if="firebaseLoaded" class="flex justify-center items-center">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
 		<router-view v-else />
+	</div>
+	<div v-else class="flex justify-center w-full p-4">
+		<Skeleton class="!w-9/12 !h-80" />
 	</div>
 
 	<Toast position="top-center" />

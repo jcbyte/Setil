@@ -1,6 +1,6 @@
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
-import { DEFAULT_USER_DATA } from "../types";
+import { DEFAULT_USER_DATA, type UserData } from "../types";
 import { app } from "./firebase";
 
 const db = getFirestore(app);
@@ -25,7 +25,11 @@ export async function initialiseUserData(): Promise<boolean> {
 	return true;
 }
 
-export async function getUserGroups(): Promise<string[]> {
+export interface UserGroup {
+	id: string;
+	name: string;
+}
+export async function getUserGroups(): Promise<UserGroup[]> {
 	const userUid = getUserId();
 
 	const ref = doc(db, "users", userUid);
@@ -33,5 +37,8 @@ export async function getUserGroups(): Promise<string[]> {
 
 	if (!docSnap.exists()) return [];
 
-	return docSnap.data().groups;
+	const userData = docSnap.data() as UserData;
+
+	// todo get group name
+	return userData.groups.map((id) => ({ id, name: "name" + id }));
 }
