@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { inject, onMounted, type Ref } from "vue";
+import { usePageTitle } from "../composables/usePageTitle";
 
-const pageTitle = inject<Ref<string>>("pageTitle");
-
-onMounted(() => {
-	if (pageTitle) {
-		pageTitle.value = "$GROUPNAME$";
-	}
-});
+usePageTitle("$$$");
 
 const group = {
 	name: "group",
@@ -23,6 +17,8 @@ function joinList(l: string[]): string {
 	return l.join(", ");
 }
 </script>
+
+<!-- todo -->
 
 <template>
 	<div class="flex flex-col gap-2">

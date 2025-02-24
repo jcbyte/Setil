@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Button, Skeleton } from "primevue";
-import { inject, onMounted, ref, type Ref } from "vue";
+import { onMounted, ref } from "vue";
+import { usePageTitle } from "../composables/usePageTitle";
 import { getUserGroups, type GroupData } from "../firebase/firestore";
 
-const pageTitle = inject<Ref<string>>("pageTitle");
+usePageTitle("Setil");
 
 const groups = ref<({ id: string } & GroupData)[] | null>(null);
 
@@ -11,10 +12,6 @@ onMounted(() => {
 	getUserGroups().then((g) => {
 		groups.value = g;
 	});
-
-	if (pageTitle) {
-		pageTitle.value = "Groups";
-	}
 });
 </script>
 
@@ -27,8 +24,8 @@ onMounted(() => {
 			>
 				<router-link :to="`/group/${group.id}`" class="flex justify-between items-center">
 					<span class="text-lg">{{ group.name }}</span>
-					<i class="pi pi-chevron-right"
-				/></router-link>
+					<i class="pi pi-chevron-right" />
+				</router-link>
 			</div>
 		</div>
 		<div v-else class="flex flex-col w-80 gap-2">
@@ -37,9 +34,10 @@ onMounted(() => {
 			<Skeleton class="!w-full !h-11 !rounded-lg" />
 		</div>
 
-		<Button class="w-80">
-			<!-- todo create group -->
-			<i class="pi pi-plus" />
-		</Button>
+		<router-link to="/create" class="flex justify-between items-center">
+			<Button class="w-80">
+				<i class="pi pi-plus" />
+			</Button>
+		</router-link>
 	</div>
 </template>

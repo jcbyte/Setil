@@ -87,7 +87,10 @@ function signOut() {
 					:title="currentUser.displayName ?? ''"
 					:src="currentUser.photoURL ?? ''"
 				/>
-				<div class="flex items-center justify-center bg-zinc-700 size-8 rounded-full" @click="signOut()">
+				<div
+					class="flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer size-8 rounded-full"
+					@click="signOut()"
+				>
 					<i class="pi pi-sign-out text-zinc-300" style="font-size: 1rem" />
 				</div>
 			</div>

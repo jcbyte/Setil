@@ -1,18 +1,12 @@
 <script setup lang="ts">
 import { Button } from "primevue";
-import { inject, onMounted, type Ref } from "vue";
+import { usePageTitle } from "../composables/usePageTitle";
 
 defineProps<{
 	signIn: () => void;
 }>();
 
-const pageTitle = inject<Ref<string>>("pageTitle");
-
-onMounted(() => {
-	if (pageTitle) {
-		pageTitle.value = "Sign In";
-	}
-});
+usePageTitle("Setil");
 </script>
 
 <template>
