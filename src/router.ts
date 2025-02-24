@@ -9,7 +9,7 @@ const routes = [
 		name: "GroupListPage",
 	},
 	{
-		path: "/group",
+		path: "/group/:groupId",
 		component: GroupPage,
 		name: "GroupPage",
 	},

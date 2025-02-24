@@ -72,9 +72,9 @@ function signOut() {
 
 <template>
 	<div class="relative w-full bg-zinc-800 flex items-center justify-between py-2 px-4">
-		<div>
+		<router-link to="/">
 			<span class="text-lg font-bold">Setil</span>
-		</div>
+		</router-link>
 
 		<div class="absolute left-1/2 transform -translate-x-1/2">
 			<span>{{ pageTitle }}</span>
