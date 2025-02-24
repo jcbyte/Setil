@@ -34,7 +34,6 @@ function signIn() {
 			toast.add({
 				severity: "success",
 				summary: "Signed In",
-				detail: "You are now signed in",
 				life: 2000,
 			});
 		})
@@ -55,7 +54,6 @@ function signOut() {
 			toast.add({
 				severity: "success",
 				summary: "Signed Out",
-				detail: "You have been signed out",
 				life: 2000,
 			});
 		})
@@ -83,12 +81,12 @@ function signOut() {
 		<div v-if="firebaseLoaded">
 			<div v-if="currentUser" class="flex items-center gap-2">
 				<img
-					class="rounded-full object-cover aspect-square size-8"
+					class="rounded-lg object-cover aspect-square size-8"
 					:title="currentUser.displayName ?? ''"
 					:src="currentUser.photoURL ?? ''"
 				/>
 				<div
-					class="flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer size-8 rounded-full"
+					class="flex items-center justify-center bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer size-8 rounded-lg"
 					@click="signOut()"
 				>
 					<i class="pi pi-sign-out text-zinc-300" style="font-size: 1rem" />

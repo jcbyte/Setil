@@ -1,5 +1,15 @@
-import { getAuth } from "firebase/auth";
-import { arrayRemove, doc, getDoc, getFirestore, setDoc, updateDoc } from "firebase/firestore";
+import { getAuth, type User } from "firebase/auth";
+import {
+	addDoc,
+	arrayRemove,
+	arrayUnion,
+	collection,
+	doc,
+	getDoc,
+	getFirestore,
+	setDoc,
+	updateDoc,
+} from "firebase/firestore";
 import { app } from "./firebase";
 
 const db = getFirestore(app);
@@ -10,6 +20,7 @@ export interface UserData {
 
 export interface GroupData {
 	name: string;
+	owner: string;
 }
 
 const newUserTemplate: UserData = {
@@ -21,11 +32,11 @@ const newUserTemplate: UserData = {
  * @returns the user's uid.
  * @throws an error if the user is not signed in.
  */
-function getUserId(): string {
-	const userUid = getAuth().currentUser?.uid;
-	if (!userUid) throw new Error("User not signed in");
+function getUser(): User {
+	const user = getAuth().currentUser;
+	if (!user) throw new Error("User not signed in");
 
-	return userUid;
+	return user;
 }
 
 /**
@@ -33,9 +44,9 @@ function getUserId(): string {
  * @returns true if the data was initialised.
  */
 export async function initialiseUserData(): Promise<boolean> {
-	const userUid = getUserId();
+	const user = getUser();
 
-	const ref = doc(db, "users", userUid);
+	const ref = doc(db, "users", user.uid);
 	const docSnap = await getDoc(ref);
 
 	// Do nothing if the user already exists
@@ -69,9 +80,9 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
  * @throws an error if the user does not exist.
  */
 export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<({ id: string } & GroupData)[]> {
-	const userUid = getUserId();
+	const user = getUser();
 
-	const ref = doc(db, "users", userUid);
+	const ref = doc(db, "users", user.uid);
 	const docSnap = await getDoc(ref);
 	// Throw if the user data has not been initialised
 	if (!docSnap.exists()) throw new Error("User data does not exist");
@@ -104,7 +115,27 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 	return userGroups.filter((group) => group !== null);
 }
 
-export async function createGroup(groupData: GroupData): Promise<void> {
-	// todo create group
-	await new Promise((resolve) => setTimeout(resolve, 2000));
+/**
+ * Create a new group and add the user to it.
+ * @param groupData the data for the new group.
+ * @returns the id of the new group.
+ */
+export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<string> {
+	const user = getUser();
+
+	// Create the group
+	const colRef = collection(db, "groups");
+	const groupRef = await addDoc(colRef, { ...groupData, owner: user.uid });
+
+	// Add the user to the group
+	const groupUsersRef = doc(groupRef, "users", user.uid);
+	await setDoc(groupUsersRef, { name: user.displayName });
+
+	// Add the group to the user
+	const userRef = doc(db, "users", user.uid);
+	await updateDoc(userRef, {
+		groups: arrayUnion(groupRef.id),
+	});
+
+	return groupRef.id;
 }

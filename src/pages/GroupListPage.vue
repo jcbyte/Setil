@@ -34,8 +34,8 @@ onMounted(() => {
 			<Skeleton class="!w-full !h-11 !rounded-lg" />
 		</div>
 
-		<router-link to="/create" class="w-full flex justify-center">
-			<Button class="!w-28 flex gap-2 justify-center items-center" icon="pi pi-plus" label="New" />
+		<router-link to="/create" class="w-full">
+			<Button severity="secondary" icon="pi pi-plus" label="New" fluid />
 		</router-link>
 	</div>
 </template>
