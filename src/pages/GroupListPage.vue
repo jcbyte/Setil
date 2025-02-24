@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Button, Skeleton } from "primevue";
 import { inject, onMounted, ref, type Ref } from "vue";
-import { getUserGroups, type UserGroup } from "../firebase/firestore";
+import { getUserGroups, type GroupData } from "../firebase/firestore";
 
 const pageTitle = inject<Ref<string>>("pageTitle");
 
-const groups = ref<UserGroup[] | null>(null);
+const groups = ref<({ id: string } & GroupData)[] | null>(null);
 
 onMounted(() => {
 	getUserGroups().then((g) => {

@@ -1,9 +1,20 @@
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
-import { DEFAULT_USER_DATA, type UserData } from "../types";
 import { app } from "./firebase";
 
 const db = getFirestore(app);
+
+export interface UserData {
+	groups: string[];
+}
+
+export interface GroupData {
+	name: string;
+}
+
+const newUserTemplate: UserData = {
+	groups: [],
+};
 
 function getUserId(): string {
 	const userUid = getAuth().currentUser?.uid;
@@ -20,16 +31,21 @@ export async function initialiseUserData(): Promise<boolean> {
 
 	if (docSnap.exists()) return false;
 
-	await setDoc(ref, structuredClone(DEFAULT_USER_DATA));
+	await setDoc(ref, structuredClone(newUserTemplate));
 
 	return true;
 }
 
-export interface UserGroup {
-	id: string;
-	name: string;
+export async function getGroupData(groupId: string): Promise<GroupData> {
+	const ref = doc(db, "groups", groupId);
+	const docSnap = await getDoc(ref);
+
+	if (!docSnap.exists()) throw new Error("Group not found");
+
+	return docSnap.data() as GroupData;
 }
-export async function getUserGroups(): Promise<UserGroup[]> {
+
+export async function getUserGroups(): Promise<({ id: string } & GroupData)[]> {
 	const userUid = getUserId();
 
 	const ref = doc(db, "users", userUid);
@@ -39,6 +55,5 @@ export async function getUserGroups(): Promise<UserGroup[]> {
 
 	const userData = docSnap.data() as UserData;
 
-	// todo get group name
-	return userData.groups.map((id) => ({ id, name: "name" + id }));
+	return await Promise.all(userData.groups.map(async (id) => ({ id, name: (await getGroupData(id)).name })));
 }
