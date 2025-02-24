@@ -2,6 +2,7 @@
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
 import { Button, FloatLabel, InputText, Message, useToast } from "primevue";
 import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
 import { createGroup } from "../firebase/firestore";
 
@@ -10,6 +11,7 @@ usePageTitle("Create Group");
 const creatingGroup = ref<boolean>(false);
 
 const toast = useToast();
+const router = useRouter();
 
 const initialValues = reactive({
 	name: "",
@@ -32,15 +34,15 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		creatingGroup.value = true;
 		const newGroup = await createGroup({ name: values.name });
-		creatingGroup.value = false;
-
-		// todo redirect to new group
 
 		toast.add({
 			severity: "success",
 			summary: "Group created",
 			life: 2000,
 		});
+
+		router.push(`/group/${newGroup}`);
+		creatingGroup.value = false;
 	}
 }
 </script>
