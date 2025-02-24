@@ -5,9 +5,15 @@ import { app } from "./firebase";
 
 const db = getFirestore(app);
 
-export async function initialiseUserData(): Promise<boolean> {
+function getUserId(): string {
 	const userUid = getAuth().currentUser?.uid;
-	if (!userUid) return false;
+	if (!userUid) throw new Error("User not signed in");
+
+	return userUid;
+}
+
+export async function initialiseUserData(): Promise<boolean> {
+	const userUid = getUserId();
 
 	const ref = doc(db, "users", userUid);
 	const docSnap = await getDoc(ref);
@@ -17,4 +23,15 @@ export async function initialiseUserData(): Promise<boolean> {
 	await setDoc(ref, structuredClone(DEFAULT_USER_DATA));
 
 	return true;
+}
+
+export async function getUserGroups(): Promise<string[]> {
+	const userUid = getUserId();
+
+	const ref = doc(db, "users", userUid);
+	const docSnap = await getDoc(ref);
+
+	if (!docSnap.exists()) return [];
+
+	return docSnap.data().groups;
 }
