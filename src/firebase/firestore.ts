@@ -6,8 +6,12 @@ import {
 	collection,
 	doc,
 	getDoc,
+	getDocs,
 	getFirestore,
+	orderBy,
+	query,
 	setDoc,
+	Timestamp,
 	updateDoc,
 } from "firebase/firestore";
 import { app } from "./firebase";
@@ -21,6 +25,18 @@ export interface UserData {
 export interface GroupData {
 	name: string;
 	owner: string;
+}
+
+export interface GroupUserData {
+	name: string;
+}
+
+export interface Transaction {
+	title: string;
+	amount: number;
+	from: string[];
+	to: string[];
+	date: Timestamp;
 }
 
 const newUserTemplate: UserData = {
@@ -46,14 +62,14 @@ function getUser(): User {
 export async function initialiseUserData(): Promise<boolean> {
 	const user = getUser();
 
-	const ref = doc(db, "users", user.uid);
-	const docSnap = await getDoc(ref);
+	const userRef = doc(db, "users", user.uid);
+	const userDocSnap = await getDoc(userRef);
 
 	// Do nothing if the user already exists
-	if (docSnap.exists()) return false;
+	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	await setDoc(ref, structuredClone(newUserTemplate));
+	await setDoc(userRef, structuredClone(newUserTemplate));
 	return true;
 }
 
@@ -63,14 +79,14 @@ export async function initialiseUserData(): Promise<boolean> {
  * @returns the general data form the group or null if the group cannot be accessed/does not exist.
  */
 export async function getGroupData(groupId: string): Promise<GroupData | null> {
-	const ref = doc(db, "groups", groupId);
+	const groupRef = doc(db, "groups", groupId);
 	// If this throws, most likely the user does not have permission to access the group
-	const docSnap = await getDoc(ref).catch(() => null);
+	const groupDocSnap = await getDoc(groupRef).catch(() => null);
 
 	// If the group does not exist
-	if (!docSnap || !docSnap.exists()) return null;
+	if (!groupDocSnap || !groupDocSnap.exists()) return null;
 
-	return docSnap.data() as GroupData;
+	return groupDocSnap.data() as GroupData;
 }
 
 /**
@@ -82,12 +98,12 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
 export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<({ id: string } & GroupData)[]> {
 	const user = getUser();
 
-	const ref = doc(db, "users", user.uid);
-	const docSnap = await getDoc(ref);
+	const userRef = doc(db, "users", user.uid);
+	const userDocSnap = await getDoc(userRef);
 	// Throw if the user data has not been initialised
-	if (!docSnap.exists()) throw new Error("User data does not exist");
+	if (!userDocSnap.exists()) throw new Error("User data does not exist");
 
-	const userData = docSnap.data() as UserData;
+	const userData = userDocSnap.data() as UserData;
 	let unknownGroups: string[] = [];
 
 	// Get the data for each group
@@ -106,7 +122,7 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 
 	// Remove unknown groups from the user's data if required
 	if (removeUnknownGroups && unknownGroups.length > 0) {
-		updateDoc(ref, {
+		updateDoc(userRef, {
 			groups: arrayRemove(...unknownGroups),
 		});
 	}
@@ -124,12 +140,13 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 	const user = getUser();
 
 	// Create the group
-	const colRef = collection(db, "groups");
-	const groupRef = await addDoc(colRef, { ...groupData, owner: user.uid });
+	const groupsRef = collection(db, "groups");
+	const groupRef = await addDoc(groupsRef, { ...groupData, owner: user.uid });
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid);
-	await setDoc(groupUsersRef, { name: user.displayName });
+	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User" };
+	await setDoc(groupUsersRef, groupUserData);
 
 	// Add the group to the user
 	const userRef = doc(db, "users", user.uid);
@@ -138,4 +155,19 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 	});
 
 	return groupRef.id;
+}
+
+/**
+ * Get all transactions from a group.
+ * @param groupId id of the group.
+ * @returns the list of transactions in the group.
+ */
+export async function getTransactions(groupId: string): Promise<Transaction[]> {
+	const transactionsRef = collection(db, "groups", groupId, "transactions");
+
+	// Get all transaction docs ordered by date
+	const q = query(transactionsRef, orderBy("date"));
+	const querySnap = await getDocs(q);
+
+	return querySnap.docs.map((doc) => doc.data() as Transaction);
 }
