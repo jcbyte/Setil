@@ -2,12 +2,13 @@
 import { getAuth } from "firebase/auth";
 import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
 import { onMounted, provide, ref } from "vue";
+import type { PageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/signInPage.vue";
 
 const toast = useToast();
 
-const pageTitle = ref("Setil");
+const pageTitle = ref<PageTitle>({ loading: false, title: "Setil" });
 provide("pageTitle", pageTitle);
 
 const firebaseLoaded = ref(false);
@@ -75,7 +76,8 @@ function signOut() {
 		</router-link>
 
 		<div class="absolute left-1/2 transform -translate-x-1/2">
-			<span>{{ pageTitle }}</span>
+			<span v-if="!pageTitle.loading">{{ pageTitle.title }}</span>
+			<Skeleton v-else class="!w-32 !h-8" />
 		</div>
 
 		<div v-if="firebaseLoaded">

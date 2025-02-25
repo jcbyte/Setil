@@ -9,7 +9,7 @@ const group = ref<GroupData | null>(null);
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const setPageTitle = usePageTitle("Group");
+const setPageTitle = usePageTitle(null);
 
 onMounted(() => {
 	function returnHome() {
