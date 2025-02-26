@@ -11,6 +11,7 @@ import {
 	type GroupUserData,
 	type Transaction,
 } from "../firebase/firestore";
+import GroupTransactions from "./GroupTransactions.vue";
 import GroupUsers from "./GroupUsers.vue";
 
 const group = ref<GroupData | null>(null);
@@ -55,16 +56,10 @@ onMounted(async () => {
 	transactions.value = await getTransactions(groupId);
 	users.value = await getUsers(groupId);
 });
-
-function joinList(l: string[]): string {
-	return l.join(", ");
-}
 </script>
 
-<!-- todo -->
-
 <template>
-	<div class="flex flex-col gap-2 items-center">
+	<div class="flex flex-col gap-4 items-center">
 		<div class="w-96 flex gap-2">
 			<div
 				v-for="pageName in pageNames"
@@ -78,13 +73,6 @@ function joinList(l: string[]): string {
 		</div>
 
 		<GroupUsers v-if="page === 'Overview'" :users="users ?? []" />
-		<!--<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transition in transactions">
-			<div class="flex justify-between">
-				<div class="text-lg">{{ transition.title }}</div>
-				<div class="text-lg">{{ transition.amount }}</div>
-			</div>
-			<div class="text-sm text-zinc-300">{{ transition.date.toLocaleString() }}</div>
-			<div class="text-sm">{{ `${joinList(transition.from)}->${joinList(transition.to)}` }}</div>
-		</div>-->
+		<GroupTransactions v-else-if="page === 'Transactions'" :transactions="transactions ?? []" />
 	</div>
 </template>
