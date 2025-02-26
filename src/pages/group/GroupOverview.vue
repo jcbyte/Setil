@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { GroupUserData } from "../firebase/firestore";
+import { Button } from "primevue";
+import type { GroupUserData } from "../../firebase/firestore";
 
 defineProps<{
 	users: GroupUserData[];
@@ -16,5 +17,9 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 			<div class="text-lg">{{ user.name }}</div>
 			<div class="text-lg">{{ calculateBalance(user.balance) }}</div>
 		</div>
+	</div>
+
+	<div>
+		<Button label="Settle up" />
 	</div>
 </template>

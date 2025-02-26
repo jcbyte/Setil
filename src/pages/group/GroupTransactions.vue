@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Transaction } from "../firebase/firestore";
+import type { Transaction } from "../../firebase/firestore";
 
 defineProps<{
 	transactions: Transaction[];

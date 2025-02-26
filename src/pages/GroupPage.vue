@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useToast } from "primevue";
+import { Button, useToast } from "primevue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
@@ -11,8 +11,8 @@ import {
 	type GroupUserData,
 	type Transaction,
 } from "../firebase/firestore";
-import GroupTransactions from "./GroupTransactions.vue";
-import GroupUsers from "./GroupUsers.vue";
+import GroupUsers from "./group/GroupOverview.vue";
+import GroupTransactions from "./group/GroupTransactions.vue";
 
 const group = ref<GroupData | null>(null);
 const transactions = ref<Transaction[] | null>(null);
@@ -74,5 +74,9 @@ onMounted(async () => {
 
 		<GroupUsers v-if="page === 'Overview'" :users="users ?? []" />
 		<GroupTransactions v-else-if="page === 'Transactions'" :transactions="transactions ?? []" />
+
+		<div class="fixed right-8 bottom-8">
+			<Button icon="pi pi-plus" label="New Transaction" />
+		</div>
 	</div>
 </template>
