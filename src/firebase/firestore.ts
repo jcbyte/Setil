@@ -29,6 +29,7 @@ export interface GroupData {
 
 export interface GroupUserData {
 	name: string;
+	balance: Record<string, number>;
 }
 
 export interface Transaction {
@@ -145,7 +146,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid);
-	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User" };
+	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", balance: {} };
 	await setDoc(groupUsersRef, groupUserData);
 
 	// Add the group to the user
@@ -170,4 +171,18 @@ export async function getTransactions(groupId: string): Promise<Transaction[]> {
 	const querySnap = await getDocs(q);
 
 	return querySnap.docs.map((doc) => doc.data() as Transaction);
+}
+
+/**
+ * Get all users from a group.
+ * @param groupId id of the group.
+ * @returns the list of users and related data in the group.
+ */
+export async function getUsers(groupId: string): Promise<GroupUserData[]> {
+	const usersRef = collection(db, "groups", groupId, "users");
+
+	// Get all users in the group
+	const usersSnap = await getDocs(usersRef);
+
+	return usersSnap.docs.map((doc) => doc.data() as GroupUserData);
 }

@@ -3,10 +3,24 @@ import { useToast } from "primevue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
-import { getGroupData, getTransactions, type GroupData, type Transaction } from "../firebase/firestore";
+import {
+	getGroupData,
+	getTransactions,
+	getUsers,
+	type GroupData,
+	type GroupUserData,
+	type Transaction,
+} from "../firebase/firestore";
+import GroupUsers from "./GroupUsers.vue";
 
 const group = ref<GroupData | null>(null);
 const transactions = ref<Transaction[] | null>(null);
+const users = ref<GroupUserData[] | null>(null);
+
+const pageNames = ["Overview", "Transactions"] as const;
+type PageName = (typeof pageNames)[number];
+const page = ref<PageName>("Overview");
+
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
@@ -38,9 +52,8 @@ onMounted(async () => {
 	group.value = groupData;
 	setPageTitle(groupData.name);
 
-	const groupTransactions = await getTransactions(groupId);
-	console.log(groupTransactions);
-	transactions.value = groupTransactions;
+	transactions.value = await getTransactions(groupId);
+	users.value = await getUsers(groupId);
 });
 
 function joinList(l: string[]): string {
@@ -51,14 +64,27 @@ function joinList(l: string[]): string {
 <!-- todo -->
 
 <template>
-	<div class="flex flex-col gap-2">
-		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transition in transactions">
+	<div class="flex flex-col gap-2 items-center">
+		<div class="w-96 flex gap-2">
+			<div
+				v-for="pageName in pageNames"
+				:class="`flex-1 ${
+					page === pageName ? 'bg-zinc-500' : 'bg-zinc-700 hover:bg-zinc-600'
+				} duration-300 p-2 rounded-lg cursor-pointer text-center`"
+				@click="page = pageName"
+			>
+				{{ pageName }}
+			</div>
+		</div>
+
+		<GroupUsers v-if="page === 'Overview'" :users="users ?? []" />
+		<!--<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transition in transactions">
 			<div class="flex justify-between">
 				<div class="text-lg">{{ transition.title }}</div>
 				<div class="text-lg">{{ transition.amount }}</div>
 			</div>
 			<div class="text-sm text-zinc-300">{{ transition.date.toLocaleString() }}</div>
 			<div class="text-sm">{{ `${joinList(transition.from)}->${joinList(transition.to)}` }}</div>
-		</div>
+		</div>-->
 	</div>
 </template>
