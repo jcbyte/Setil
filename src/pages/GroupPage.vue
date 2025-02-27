@@ -8,18 +8,17 @@ import {
 	getTransactions,
 	getUsers,
 	type GroupData,
-	type GroupUserData,
 	type Transaction,
 	type WithId,
 } from "../firebase/firestore";
+import { useGroupStore } from "../stores/useGroupStore";
 import GroupUsers from "./group/GroupOverview.vue";
 import GroupTransactions from "./group/GroupTransactions.vue";
 
 const group = ref<GroupData | null>(null);
 const transactions = ref<WithId<Transaction>[] | null>(null);
-const users = ref<WithId<GroupUserData>[] | null>(null);
 
-// todo use a global store for these ^
+const groupStore = useGroupStore();
 
 const pageNames = ["Overview", "Transactions"] as const;
 type PageName = (typeof pageNames)[number];
@@ -56,8 +55,9 @@ onMounted(async () => {
 	group.value = groupData;
 	setPageTitle(groupData.name);
 
+	groupStore.groupId = groupId;
 	transactions.value = await getTransactions(groupId);
-	users.value = await getUsers(groupId);
+	groupStore.users = await getUsers(groupId);
 });
 </script>
 
@@ -75,7 +75,7 @@ onMounted(async () => {
 			</div>
 		</div>
 
-		<GroupUsers v-if="page === 'Overview'" :users="users ?? []" />
+		<GroupUsers v-if="page === 'Overview'" />
 		<GroupTransactions v-else-if="page === 'Transactions'" :transactions="transactions ?? []" />
 
 		<div class="fixed right-8 bottom-8">
