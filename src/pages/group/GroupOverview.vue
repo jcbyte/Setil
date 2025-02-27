@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from "primevue";
-import type { GroupUserData } from "../../firebase/firestore";
+import { type GroupUserData } from "../../firebase/firestore";
 import { useGroupStore } from "../../stores/useGroupStore";
 
 const groupStore = useGroupStore();

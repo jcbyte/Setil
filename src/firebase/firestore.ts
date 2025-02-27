@@ -14,6 +14,7 @@ import {
 	setDoc,
 	Timestamp,
 	updateDoc,
+	writeBatch,
 } from "firebase/firestore";
 import { app } from "./firebase";
 
@@ -226,18 +227,17 @@ export async function createTransaction(groupId: string, transaction: Transactio
 	}
 
 	// Update balances in firestore
-	await Promise.all(
-		Object.entries(balancesDelta).map(async ([userId, balanceDelta]) => {
-			const userRef = doc(db, "groups", groupId, "users", userId);
-			await updateDoc(userRef, {
-				balance: Object.fromEntries(
-					Object.entries(balanceDelta).map(([userId2, amount]) => [userId2, increment(amount)])
-				),
-			});
-		})
-	);
-
-	// todo calculate nets and subtract them
+	const batch = writeBatch(db);
+	Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
+		const userRef = doc(db, "groups", groupId, "users", userId);
+		batch.update(
+			userRef,
+			Object.fromEntries(
+				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
+			)
+		);
+	});
+	await batch.commit();
 
 	return transactionRef.id;
 }
