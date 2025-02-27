@@ -20,8 +20,6 @@ import { app } from "./firebase";
 
 const db = getFirestore(app);
 
-export type WithId<T> = T & { id: string };
-
 export interface UserData {
 	groups: string[];
 }
@@ -99,7 +97,7 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
  * @returns a list of the user's groups, including there data.
  * @throws an error if the user does not exist.
  */
-export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<WithId<GroupData>[]> {
+export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<Record<string, GroupData>> {
 	const user = getUser();
 
 	const userRef = doc(db, "users", user.uid);
@@ -111,17 +109,23 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 	let unknownGroups: string[] = [];
 
 	// Get the data for each group
-	const userGroups = await Promise.all(
-		userData.groups.map(async (id) => {
-			const data = await getGroupData(id);
-			// If the group cannot be found, add it to the unknown groups list to be removed later
-			if (!data) {
-				unknownGroups.push(id);
-				return null;
-			}
+	const userGroups = Object.fromEntries(
+		(
+			await Promise.all(
+				userData.groups.map(async (id) => {
+					const data = await getGroupData(id);
+					// If the group cannot be found, add it to the unknown groups list to be removed later
+					if (!data) {
+						unknownGroups.push(id);
+						return null;
+					}
 
-			return { id, ...data };
-		})
+					return [id, data];
+				})
+			)
+		)
+			// Filter out null values
+			.filter((group) => group !== null)
 	);
 
 	// Remove unknown groups from the user's data if required
@@ -131,8 +135,7 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 		});
 	}
 
-	// Filter out null values
-	return userGroups.filter((group) => group !== null);
+	return userGroups;
 }
 
 /**
@@ -166,14 +169,14 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
  * @param groupId id of the group.
  * @returns the list of transactions in the group.
  */
-export async function getTransactions(groupId: string): Promise<WithId<Transaction>[]> {
+export async function getTransactions(groupId: string): Promise<Record<string, Transaction>> {
 	const transactionsRef = collection(db, "groups", groupId, "transactions");
 
 	// Get all transaction docs ordered by date
 	const q = query(transactionsRef, orderBy("date"));
 	const querySnap = await getDocs(q);
 
-	return querySnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Transaction) }));
+	return Object.fromEntries(querySnap.docs.map((doc) => [doc.id, doc.data() as Transaction]));
 }
 
 /**
@@ -181,13 +184,13 @@ export async function getTransactions(groupId: string): Promise<WithId<Transacti
  * @param groupId id of the group.
  * @returns the list of users and related data in the group.
  */
-export async function getUsers(groupId: string): Promise<WithId<GroupUserData>[]> {
+export async function getUsers(groupId: string): Promise<Record<string, GroupUserData>> {
 	const usersRef = collection(db, "groups", groupId, "users");
 
 	// Get all users in the group
 	const usersSnap = await getDocs(usersRef);
 
-	return usersSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as GroupUserData) }));
+	return Object.fromEntries(usersSnap.docs.map((doc) => [doc.id, doc.data() as GroupUserData]));
 }
 
 /**

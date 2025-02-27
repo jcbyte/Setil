@@ -2,15 +2,16 @@
 import { Button, Skeleton } from "primevue";
 import { onMounted, ref } from "vue";
 import { usePageTitle } from "../composables/usePageTitle";
-import { getUserGroups, type GroupData, type WithId } from "../firebase/firestore";
+import { getUserGroups, type GroupData } from "../firebase/firestore";
 
 usePageTitle("Setil");
 
-const groups = ref<WithId<GroupData>[] | null>(null);
+const groups = ref<Record<string, GroupData> | null>(null);
 
 onMounted(() => {
 	getUserGroups().then((g) => {
 		groups.value = g;
+		console.log(g);
 	});
 });
 </script>
@@ -20,9 +21,9 @@ onMounted(() => {
 		<div v-if="groups" class="flex flex-col w-80 gap-2">
 			<div
 				class="bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer w-full rounded-lg p-2"
-				v-for="group in groups"
+				v-for="(group, groupId) in groups"
 			>
-				<router-link :to="`/group/${group.id}`" class="flex justify-between items-center">
+				<router-link :to="`/group/${groupId}`" class="flex justify-between items-center">
 					<span class="text-lg">{{ group.name }}</span>
 					<i class="pi pi-chevron-right" />
 				</router-link>

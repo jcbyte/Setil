@@ -2,9 +2,9 @@
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
 import { Timestamp } from "firebase/firestore";
 import { Button, DatePicker, FloatLabel, InputNumber, InputText, Message, MultiSelect, useToast } from "primevue";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { createTransaction, type GroupUserData, type WithId } from "../firebase/firestore";
+import { createTransaction } from "../firebase/firestore";
 import { useGroupStore } from "../stores/useGroupStore";
 import { splitAmount } from "../util/util";
 
@@ -24,6 +24,19 @@ onMounted(() => {
 
 		router.push("/");
 	}
+});
+
+interface UserOption {
+	id: string;
+	name: string;
+}
+const userOptions = computed<UserOption[]>(() => {
+	if (!groupStore.users) return [];
+
+	return Object.entries(groupStore.users).map(([userId, user]) => ({
+		id: userId,
+		name: user.name,
+	}));
 });
 
 const initialValues = reactive({
@@ -67,11 +80,11 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 			title: values.title,
 			to: splitAmount(
 				values.amount * 100,
-				values.to.map((user: WithId<GroupUserData>) => user.id)
+				values.to.map((user: UserOption) => user.id)
 			),
 			from: splitAmount(
 				values.amount * 100,
-				values.from.map((user: WithId<GroupUserData>) => user.id)
+				values.from.map((user: UserOption) => user.id)
 			),
 			date: Timestamp.fromDate(values.date),
 		});
@@ -122,7 +135,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 					id="from_select"
 					name="from"
 					v-model="initialValues.from"
-					:options="groupStore.users!"
+					:options="userOptions"
 					optionLabel="name"
 					class="w-full"
 				/>
@@ -139,7 +152,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 					id="to_select"
 					name="to"
 					v-model="initialValues.to"
-					:options="groupStore.users!"
+					:options="userOptions"
 					optionLabel="name"
 					class="w-full"
 				/>

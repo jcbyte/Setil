@@ -6,6 +6,15 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 // todo
 
+## TODO
+
+- Edit/Delete Transactions
+- Settle Up
+- Group settings
+- Add Users
+- Restyle
+- Animations
+
 ## Run Locally
 
 Install dependencies:

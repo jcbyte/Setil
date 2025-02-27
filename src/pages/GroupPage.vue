@@ -3,20 +3,12 @@ import { Button, useToast } from "primevue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
-import {
-	getGroupData,
-	getTransactions,
-	getUsers,
-	type GroupData,
-	type Transaction,
-	type WithId,
-} from "../firebase/firestore";
+import { getGroupData, getUsers, type GroupData } from "../firebase/firestore";
 import { useGroupStore } from "../stores/useGroupStore";
 import GroupUsers from "./group/GroupOverview.vue";
 import GroupTransactions from "./group/GroupTransactions.vue";
 
 const group = ref<GroupData | null>(null);
-const transactions = ref<WithId<Transaction>[] | null>(null);
 
 const groupStore = useGroupStore();
 
@@ -56,7 +48,6 @@ onMounted(async () => {
 	setPageTitle(groupData.name);
 
 	groupStore.groupId = groupId;
-	transactions.value = await getTransactions(groupId);
 	groupStore.users = await getUsers(groupId);
 });
 </script>
@@ -76,7 +67,7 @@ onMounted(async () => {
 		</div>
 
 		<GroupUsers v-if="page === 'Overview'" />
-		<GroupTransactions v-else-if="page === 'Transactions'" :transactions="transactions ?? []" />
+		<GroupTransactions v-else-if="page === 'Transactions'" />
 
 		<div class="fixed right-8 bottom-8">
 			<router-link to="/newTransaction"> <Button icon="pi pi-plus" label="New Transaction" /></router-link>

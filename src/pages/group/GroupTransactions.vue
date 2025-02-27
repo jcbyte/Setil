@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import type { Transaction, WithId } from "../../firebase/firestore";
+import { onMounted, ref } from "vue";
+import { getTransactions, type Transaction } from "../../firebase/firestore";
+import { useGroupStore } from "../../stores/useGroupStore";
 
-defineProps<{
-	transactions: WithId<Transaction>[];
-}>();
+const transactions = ref<Record<string, Transaction> | null>(null);
+const groupStore = useGroupStore();
+
+onMounted(async () => {
+	transactions.value = await getTransactions(groupStore.groupId!);
+});
 
 function calculateTotalAmount(transactionAmounts: Record<string, number>): number {
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
@@ -17,9 +22,9 @@ function calculateTotalAmount(transactionAmounts: Record<string, number>): numbe
 				<div class="text-lg">{{ transaction.title }}</div>
 				<div class="text-lg">{{ calculateTotalAmount(transaction.from) / 100 }}</div>
 			</div>
-			<div class="text-sm text-zinc-300">{{ transaction.date.toLocaleString() }}</div>
+			<div class="text-sm text-zinc-300">{{ transaction.date.toDate().toLocaleDateString() }}</div>
 			<div class="text-sm">
-				{{ `${Object.keys(transaction.from).join(", ")}->${Object.keys(transaction.to).join(", ")}` }}
+				{{ `${Object.keys(transaction.from).join(", ")} -> ${Object.keys(transaction.to).join(", ")}` }}
 			</div>
 		</div>
 	</div>
