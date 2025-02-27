@@ -8,6 +8,7 @@ import {
 	getDoc,
 	getDocs,
 	getFirestore,
+	increment,
 	orderBy,
 	query,
 	setDoc,
@@ -199,7 +200,38 @@ export async function createTransaction(groupId: string, transaction: Transactio
 	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
-	// todo Update users balances
+	// fix todo below
+
+	const balancesDelta: Record<string, Record<string, number>> = {};
+
+	const totalPaid = Object.values(transaction.to).reduce((a, b) => a + b, 0);
+
+	for (const payerId in transaction.from) {
+		const amountPaid = transaction.from[payerId];
+
+		for (const receiverId in transaction.to) {
+			const amountReceived = transaction.to[receiverId];
+
+			const amountOwed = (amountPaid * amountReceived) / totalPaid;
+
+			if (!balancesDelta[payerId]) balancesDelta[payerId] = {};
+			if (!balancesDelta[payerId][receiverId]) balancesDelta[payerId][receiverId] = 0;
+			if (!balancesDelta[receiverId]) balancesDelta[receiverId] = {};
+			if (!balancesDelta[receiverId][payerId]) balancesDelta[receiverId][payerId] = 0;
+
+			balancesDelta[payerId][receiverId] += amountOwed;
+			balancesDelta[receiverId][payerId] -= amountOwed;
+		}
+	}
+
+	await Object.entries(balancesDelta).forEach(async ([userId, balanceDelta]) => {
+		const userRef = doc(db, "groups", groupId, "users", userId);
+		await updateDoc(userRef, {
+			balance: Object.fromEntries(
+				Object.entries(balanceDelta).map(([userId2, amount]) => [userId2, increment(amount)])
+			),
+		});
+	});
 
 	return transactionRef.id;
 }
