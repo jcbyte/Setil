@@ -2,11 +2,11 @@
 import { Button, Skeleton } from "primevue";
 import { onMounted, ref } from "vue";
 import { usePageTitle } from "../composables/usePageTitle";
-import { getUserGroups, type GroupData } from "../firebase/firestore";
+import { getUserGroups, type GroupData, type WithId } from "../firebase/firestore";
 
 usePageTitle("Setil");
 
-const groups = ref<({ id: string } & GroupData)[] | null>(null);
+const groups = ref<WithId<GroupData>[] | null>(null);
 
 onMounted(() => {
 	getUserGroups().then((g) => {

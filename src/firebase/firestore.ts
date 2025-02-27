@@ -18,6 +18,8 @@ import { app } from "./firebase";
 
 const db = getFirestore(app);
 
+export type WithId<T> = T & { id: string };
+
 export interface UserData {
 	groups: string[];
 }
@@ -96,7 +98,7 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
  * @returns a list of the user's groups, including there data.
  * @throws an error if the user does not exist.
  */
-export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<({ id: string } & GroupData)[]> {
+export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<WithId<GroupData>[]> {
 	const user = getUser();
 
 	const userRef = doc(db, "users", user.uid);
@@ -163,14 +165,14 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
  * @param groupId id of the group.
  * @returns the list of transactions in the group.
  */
-export async function getTransactions(groupId: string): Promise<Transaction[]> {
+export async function getTransactions(groupId: string): Promise<WithId<Transaction>[]> {
 	const transactionsRef = collection(db, "groups", groupId, "transactions");
 
 	// Get all transaction docs ordered by date
 	const q = query(transactionsRef, orderBy("date"));
 	const querySnap = await getDocs(q);
 
-	return querySnap.docs.map((doc) => doc.data() as Transaction);
+	return querySnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Transaction) }));
 }
 
 /**
@@ -178,11 +180,16 @@ export async function getTransactions(groupId: string): Promise<Transaction[]> {
  * @param groupId id of the group.
  * @returns the list of users and related data in the group.
  */
-export async function getUsers(groupId: string): Promise<GroupUserData[]> {
+export async function getUsers(groupId: string): Promise<WithId<GroupUserData>[]> {
 	const usersRef = collection(db, "groups", groupId, "users");
 
 	// Get all users in the group
 	const usersSnap = await getDocs(usersRef);
 
-	return usersSnap.docs.map((doc) => doc.data() as GroupUserData);
+	return usersSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as GroupUserData) }));
+}
+
+export async function createTransaction(transaction: Transaction): Promise<void> {
+	// todo Add to transaction
+	// todo Update users balances
 }

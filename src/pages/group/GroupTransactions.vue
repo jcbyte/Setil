@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Transaction } from "../../firebase/firestore";
+import type { Transaction, WithId } from "../../firebase/firestore";
 
 defineProps<{
-	transactions: Transaction[];
+	transactions: WithId<Transaction>[];
 }>();
 
 function joinList(l: string[]): string {

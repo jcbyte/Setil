@@ -10,13 +10,16 @@ import {
 	type GroupData,
 	type GroupUserData,
 	type Transaction,
+	type WithId,
 } from "../firebase/firestore";
 import GroupUsers from "./group/GroupOverview.vue";
 import GroupTransactions from "./group/GroupTransactions.vue";
 
 const group = ref<GroupData | null>(null);
-const transactions = ref<Transaction[] | null>(null);
-const users = ref<GroupUserData[] | null>(null);
+const transactions = ref<WithId<Transaction>[] | null>(null);
+const users = ref<WithId<GroupUserData>[] | null>(null);
+
+// todo use a global store for these ^
 
 const pageNames = ["Overview", "Transactions"] as const;
 type PageName = (typeof pageNames)[number];

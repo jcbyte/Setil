@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from "primevue";
-import type { GroupUserData } from "../../firebase/firestore";
+import type { GroupUserData, WithId } from "../../firebase/firestore";
 
 defineProps<{
-	users: GroupUserData[];
+	users: WithId<GroupUserData>[];
 }>();
 
 function calculateBalance(balance: GroupUserData["balance"]): number {
