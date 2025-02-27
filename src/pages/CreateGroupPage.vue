@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
-import { Button, FloatLabel, InputText, Message, useToast } from "primevue";
-import { reactive, ref } from "vue";
+import { Button, FloatLabel, InputText, Message, Select, useToast } from "primevue";
+import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
 import { createGroup } from "../firebase/firestore";
+import { CurrencySettings, type Currency } from "../util/groupSettings";
 
 usePageTitle("Create Group");
 
@@ -14,7 +15,8 @@ const toast = useToast();
 const router = useRouter();
 
 const initialValues = reactive({
-	name: "",
+	name: null,
+	currency: null,
 });
 
 const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
@@ -22,6 +24,10 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 
 	if (!values.name) {
 		errors.name = ["Name is required."];
+	}
+
+	if (!values.currency) {
+		errors.currency = ["Currency is required."];
 	}
 
 	return {
@@ -33,7 +39,7 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		creatingGroup.value = true;
-		const newGroup = await createGroup({ name: values.name });
+		const newGroup = await createGroup({ name: values.name, currency: values.currency.id });
 
 		toast.add({
 			severity: "success",
@@ -45,6 +51,13 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 		creatingGroup.value = false;
 	}
 }
+
+const currencyOptions = computed<{ id: Currency; name: string }[]>(() =>
+	Object.entries(CurrencySettings).map(([currency, currencySetting]) => ({
+		id: currency as Currency,
+		name: currencySetting.name,
+	}))
+);
 </script>
 
 <template>
@@ -62,6 +75,16 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 			</FloatLabel>
 			<Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
 				{{ $form.name.error }}
+			</Message>
+		</div>
+
+		<div class="flex flex-col gap-1 w-full">
+			<FloatLabel variant="on">
+				<Select id="currency_select" name="currency" :options="currencyOptions" optionLabel="name" fluid />
+				<label for="currency_select">Currency</label>
+			</FloatLabel>
+			<Message v-if="$form.currency?.invalid" severity="error" size="small" variant="simple">
+				{{ $form.currency.error }}
 			</Message>
 		</div>
 
