@@ -3,6 +3,7 @@ import CreateGroupPage from "./pages/CreateGroupPage.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
 import NewTransactionPage from "./pages/newTransactionPage.vue";
+import SettleUpPage from "./pages/SettleUpPage.vue";
 
 const routes = [
 	{
@@ -24,6 +25,11 @@ const routes = [
 		path: "/newTransaction",
 		component: NewTransactionPage,
 		name: "NewTransactionPage",
+	},
+	{
+		path: "/settleUp",
+		component: SettleUpPage,
+		name: "SettleUpPage",
 	},
 ];
 

@@ -14,6 +14,8 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 - Add Users
 - Restyle
 - Animations
+- Automatic Refresh
+- Resolve debts over multiple people
 
 ## Run Locally
 

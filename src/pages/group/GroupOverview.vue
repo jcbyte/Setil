@@ -22,6 +22,8 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 	</div>
 
 	<div>
-		<Button label="Settle up" />
+		<router-link to="/settleUp">
+			<Button label="Settle Up" />
+		</router-link>
 	</div>
 </template>
