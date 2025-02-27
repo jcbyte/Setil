@@ -13,6 +13,12 @@ onMounted(async () => {
 function calculateTotalAmount(transactionAmounts: Record<string, number>): number {
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
 }
+
+function getTransactionUsers(transactionPart: Record<string, number>): string {
+	return Object.keys(transactionPart)
+		.map((userId) => groupStore.users![userId].name)
+		.join(", ");
+}
 </script>
 
 <template>
@@ -24,7 +30,7 @@ function calculateTotalAmount(transactionAmounts: Record<string, number>): numbe
 			</div>
 			<div class="text-sm text-zinc-300">{{ transaction.date.toDate().toLocaleDateString() }}</div>
 			<div class="text-sm">
-				{{ `${Object.keys(transaction.from).join(", ")} -> ${Object.keys(transaction.to).join(", ")}` }}
+				{{ `${getTransactionUsers(transaction.from)} -> ${getTransactionUsers(transaction.to)}` }}
 			</div>
 		</div>
 	</div>
