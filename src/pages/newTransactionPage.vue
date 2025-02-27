@@ -66,11 +66,11 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 		await createTransaction(groupStore.groupId!, {
 			title: values.title,
 			to: splitAmount(
-				values.amount,
+				values.amount * 100,
 				values.to.map((user: WithId<GroupUserData>) => user.id)
 			),
 			from: splitAmount(
-				values.amount,
+				values.amount * 100,
 				values.from.map((user: WithId<GroupUserData>) => user.id)
 			),
 			date: Timestamp.fromDate(values.date),

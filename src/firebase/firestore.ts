@@ -200,10 +200,8 @@ export async function createTransaction(groupId: string, transaction: Transactio
 	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
-	// fix todo below
-
+	// Work out the changes in balances for each user based on the transaction
 	const balancesDelta: Record<string, Record<string, number>> = {};
-
 	const totalPaid = Object.values(transaction.to).reduce((a, b) => a + b, 0);
 
 	for (const payerId in transaction.from) {
@@ -212,26 +210,34 @@ export async function createTransaction(groupId: string, transaction: Transactio
 		for (const receiverId in transaction.to) {
 			const amountReceived = transaction.to[receiverId];
 
-			const amountOwed = (amountPaid * amountReceived) / totalPaid;
+			// Rounding to fix fix floating point errors
+			const amountOwed = Math.round((amountPaid * amountReceived) / totalPaid);
 
+			// Ensure keys exist
 			if (!balancesDelta[payerId]) balancesDelta[payerId] = {};
 			if (!balancesDelta[payerId][receiverId]) balancesDelta[payerId][receiverId] = 0;
 			if (!balancesDelta[receiverId]) balancesDelta[receiverId] = {};
 			if (!balancesDelta[receiverId][payerId]) balancesDelta[receiverId][payerId] = 0;
 
+			// Update deltas
 			balancesDelta[payerId][receiverId] += amountOwed;
 			balancesDelta[receiverId][payerId] -= amountOwed;
 		}
 	}
 
-	await Object.entries(balancesDelta).forEach(async ([userId, balanceDelta]) => {
-		const userRef = doc(db, "groups", groupId, "users", userId);
-		await updateDoc(userRef, {
-			balance: Object.fromEntries(
-				Object.entries(balanceDelta).map(([userId2, amount]) => [userId2, increment(amount)])
-			),
-		});
-	});
+	// Update balances in firestore
+	await Promise.all(
+		Object.entries(balancesDelta).map(async ([userId, balanceDelta]) => {
+			const userRef = doc(db, "groups", groupId, "users", userId);
+			await updateDoc(userRef, {
+				balance: Object.fromEntries(
+					Object.entries(balanceDelta).map(([userId2, amount]) => [userId2, increment(amount)])
+				),
+			});
+		})
+	);
+
+	// todo calculate nets and subtract them
 
 	return transactionRef.id;
 }

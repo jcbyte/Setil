@@ -15,7 +15,7 @@ function calculateTotalAmount(transactionAmounts: Record<string, number>): numbe
 		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transaction in transactions">
 			<div class="flex justify-between">
 				<div class="text-lg">{{ transaction.title }}</div>
-				<div class="text-lg">{{ calculateTotalAmount(transaction.from) }}</div>
+				<div class="text-lg">{{ calculateTotalAmount(transaction.from) / 100 }}</div>
 			</div>
 			<div class="text-sm text-zinc-300">{{ transaction.date.toLocaleString() }}</div>
 			<div class="text-sm">

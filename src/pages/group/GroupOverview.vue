@@ -14,7 +14,7 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 	<div class="flex flex-col gap-2">
 		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex justify-between" v-for="user in groupStore.users">
 			<div class="text-lg">{{ user.name }}</div>
-			<div class="text-lg">{{ calculateBalance(user.balance) }}</div>
+			<div class="text-lg">{{ calculateBalance(user.balance) / 100 }}</div>
 		</div>
 	</div>
 
