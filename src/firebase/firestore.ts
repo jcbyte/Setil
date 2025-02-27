@@ -36,9 +36,8 @@ export interface GroupUserData {
 
 export interface Transaction {
 	title: string;
-	amount: number;
-	from: string[];
-	to: string[];
+	from: Record<string, number>;
+	to: Record<string, number>;
 	date: Timestamp;
 }
 
@@ -190,6 +189,7 @@ export async function getUsers(groupId: string): Promise<WithId<GroupUserData>[]
 }
 
 export async function createTransaction(transaction: Transaction): Promise<void> {
+	console.log(transaction);
 	// todo Add to transaction
 	// todo Update users balances
 }

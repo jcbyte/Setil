@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
+import { Timestamp } from "firebase/firestore";
 import { Button, DatePicker, FloatLabel, InputNumber, InputText, Message, MultiSelect, useToast } from "primevue";
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { createTransaction, type GroupUserData, type WithId } from "../firebase/firestore";
 import { useGroupStore } from "../stores/useGroupStore";
+import { splitAmount } from "../util/util";
 
 const router = useRouter();
 const toast = useToast();
@@ -59,7 +62,20 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		addingTransaction.value = true;
-		// todo
+
+		await createTransaction({
+			title: values.title,
+			to: splitAmount(
+				values.amount,
+				values.to.map((user: WithId<GroupUserData>) => user.id)
+			),
+			from: splitAmount(
+				values.amount,
+				values.from.map((user: WithId<GroupUserData>) => user.id)
+			),
+			date: Timestamp.fromDate(values.date),
+		});
+
 		addingTransaction.value = false;
 	}
 }
