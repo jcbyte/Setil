@@ -188,8 +188,18 @@ export async function getUsers(groupId: string): Promise<WithId<GroupUserData>[]
 	return usersSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as GroupUserData) }));
 }
 
-export async function createTransaction(transaction: Transaction): Promise<void> {
-	console.log(transaction);
-	// todo Add to transaction
+/**
+ * Create a transaction in a group and update relevant users balances.
+ * @param groupId id of the group.
+ * @param transaction transaction data.
+ * @returns the id of the new transaction.
+ */
+export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
+	// Add the transaction to the group
+	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
+	const transactionRef = await addDoc(groupTransactionsRef, transaction);
+
 	// todo Update users balances
+
+	return transactionRef.id;
 }

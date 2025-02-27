@@ -46,11 +46,11 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 	}
 
 	if (values.from.length === 0) {
-		errors.from = ["At least 1 person must send the money."];
+		errors.from = ["At least 1 person must send."];
 	}
 
 	if (values.to.length === 0) {
-		errors.to = ["At least 1 person must receive the money."];
+		errors.to = ["At least 1 person must receive."];
 	}
 
 	return {
@@ -63,7 +63,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		addingTransaction.value = true;
 
-		await createTransaction({
+		await createTransaction(groupStore.groupId!, {
 			title: values.title,
 			to: splitAmount(
 				values.amount,
@@ -76,6 +76,13 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 			date: Timestamp.fromDate(values.date),
 		});
 
+		toast.add({
+			severity: "success",
+			summary: "Transaction created",
+			life: 2000,
+		});
+
+		router.push(`/group/${groupStore.groupId!}`);
 		addingTransaction.value = false;
 	}
 }
@@ -101,7 +108,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 
 		<div class="flex flex-col gap-1 w-full">
 			<FloatLabel variant="on">
-				<InputNumber id="amount_number" name="amount" inputId="minmaxfraction" :maxFractionDigits="2" fluid />
+				<InputNumber id="amount_number" name="amount" inputId="minmaxfraction" :min="0" :maxFractionDigits="2" fluid />
 				<label for="amount_number">Amount</label>
 			</FloatLabel>
 			<Message v-if="$form.amount?.invalid" severity="error" size="small" variant="simple">

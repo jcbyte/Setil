@@ -5,20 +5,22 @@ defineProps<{
 	transactions: WithId<Transaction>[];
 }>();
 
-function joinList(l: string[]): string {
-	return l.join(", ");
+function calculateTotalAmount(transactionAmounts: Record<string, number>): number {
+	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
 }
 </script>
 
 <template>
 	<div class="flex flex-col gap-2">
-		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transition in transactions">
+		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transaction in transactions">
 			<div class="flex justify-between">
-				<div class="text-lg">{{ transition.title }}</div>
-				<div class="text-lg">{{ transition.amount }}</div>
+				<div class="text-lg">{{ transaction.title }}</div>
+				<div class="text-lg">{{ calculateTotalAmount(transaction.from) }}</div>
 			</div>
-			<div class="text-sm text-zinc-300">{{ transition.date.toLocaleString() }}</div>
-			<div class="text-sm">{{ `${joinList(transition.from)}->${joinList(transition.to)}` }}</div>
+			<div class="text-sm text-zinc-300">{{ transaction.date.toLocaleString() }}</div>
+			<div class="text-sm">
+				{{ `${Object.keys(transaction.from).join(", ")}->${Object.keys(transaction.to).join(", ")}` }}
+			</div>
 		</div>
 	</div>
 </template>
