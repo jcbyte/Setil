@@ -3,12 +3,10 @@ import { Button, useToast } from "primevue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePageTitle } from "../composables/usePageTitle";
-import { getGroupData, getUsers, type GroupData } from "../firebase/firestore";
+import { getGroupData, getUsers } from "../firebase/firestore";
 import { useGroupStore } from "../stores/useGroupStore";
 import GroupUsers from "./group/GroupOverview.vue";
 import GroupTransactions from "./group/GroupTransactions.vue";
-
-const group = ref<GroupData | null>(null);
 
 const groupStore = useGroupStore();
 
@@ -44,10 +42,10 @@ onMounted(async () => {
 		return;
 	}
 
-	group.value = groupData;
 	setPageTitle(groupData.name);
 
 	groupStore.groupId = groupId;
+	groupStore.groupData = groupData;
 	groupStore.users = await getUsers(groupId);
 });
 </script>

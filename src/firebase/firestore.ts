@@ -12,38 +12,13 @@ import {
 	orderBy,
 	query,
 	setDoc,
-	Timestamp,
 	updateDoc,
 	writeBatch,
 } from "firebase/firestore";
 import { app } from "./firebase";
+import type { GroupData, GroupUserData, Transaction, UserData } from "./types";
 
 const db = getFirestore(app);
-
-export interface UserData {
-	groups: string[];
-}
-
-export interface GroupData {
-	name: string;
-	owner: string;
-}
-
-export interface GroupUserData {
-	name: string;
-	balance: Record<string, number>;
-}
-
-export interface Transaction {
-	title: string;
-	from: Record<string, number>;
-	to: Record<string, number>;
-	date: Timestamp;
-}
-
-const newUserTemplate: UserData = {
-	groups: [],
-};
 
 /**
  * Get the user's uid.
@@ -71,6 +46,9 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
+	const newUserTemplate: UserData = {
+		groups: [],
+	};
 	await setDoc(userRef, structuredClone(newUserTemplate));
 	return true;
 }

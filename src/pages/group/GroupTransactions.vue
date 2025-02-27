@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { getTransactions, type Transaction } from "../../firebase/firestore";
+import { getTransactions } from "../../firebase/firestore";
+import { type Transaction } from "../../firebase/types";
 import { useGroupStore } from "../../stores/useGroupStore";
+import { formatCurrency } from "../../util/util";
 
 const transactions = ref<Record<string, Transaction> | null>(null);
 const groupStore = useGroupStore();
@@ -26,7 +28,9 @@ function getTransactionUsers(transactionPart: Record<string, number>): string {
 		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex flex-col" v-for="transaction in transactions">
 			<div class="flex justify-between">
 				<div class="text-lg">{{ transaction.title }}</div>
-				<div class="text-lg">{{ calculateTotalAmount(transaction.from) / 100 }}</div>
+				<div class="text-lg">
+					{{ formatCurrency(calculateTotalAmount(transaction.from) / 100, groupStore.groupData!.currency) }}
+				</div>
 			</div>
 			<div class="text-sm text-zinc-300">{{ transaction.date.toDate().toLocaleDateString() }}</div>
 			<div class="text-sm">

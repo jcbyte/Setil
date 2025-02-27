@@ -1,10 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { GroupUserData } from "../firebase/firestore";
+import type { GroupData, GroupUserData } from "../firebase/types";
 
 export const useGroupStore = defineStore("group", () => {
 	const groupId = ref<string | null>(null);
+	const groupData = ref<GroupData | null>(null);
 	const users = ref<Record<string, GroupUserData> | null>(null);
 
-	return { groupId, users };
+	return { groupId, groupData, users };
 });

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Button } from "primevue";
-import { type GroupUserData } from "../../firebase/firestore";
+import { type GroupUserData } from "../../firebase/types";
 import { useGroupStore } from "../../stores/useGroupStore";
+import { formatCurrency } from "../../util/util";
 
 const groupStore = useGroupStore();
 
@@ -14,7 +15,9 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 	<div class="flex flex-col gap-2">
 		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex justify-between" v-for="user in groupStore.users">
 			<div class="text-lg">{{ user.name }}</div>
-			<div class="text-lg">{{ calculateBalance(user.balance) / 100 }}</div>
+			<div class="text-lg">
+				{{ formatCurrency(calculateBalance(user.balance) / 100, groupStore.groupData!.currency) }}
+			</div>
 		</div>
 	</div>
 
