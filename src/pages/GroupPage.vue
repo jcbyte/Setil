@@ -79,7 +79,7 @@ onMounted(async () => {
 		<GroupTransactions v-else-if="page === 'Transactions'" :transactions="transactions ?? []" />
 
 		<div class="fixed right-8 bottom-8">
-			<Button icon="pi pi-plus" label="New Transaction" />
+			<router-link to="/newTransaction"> <Button icon="pi pi-plus" label="New Transaction" /></router-link>
 		</div>
 	</div>
 </template>

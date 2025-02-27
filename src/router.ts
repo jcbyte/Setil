@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import CreateGroupPage from "./pages/CreateGroupPage.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
+import NewTransactionPage from "./pages/newTransactionPage.vue";
 
 const routes = [
 	{
@@ -18,6 +19,11 @@ const routes = [
 		path: "/group/:groupId",
 		component: GroupPage,
 		name: "GroupPage",
+	},
+	{
+		path: "/newTransaction",
+		component: NewTransactionPage,
+		name: "NewTransactionPage",
 	},
 ];
 
