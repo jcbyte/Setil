@@ -26,7 +26,7 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 	</div>
 
 	<div>
-		<router-link to="/settleUp">
+		<router-link :to="`/group/${groupId}/settle`">
 			<Button label="Settle Up" />
 		</router-link>
 	</div>

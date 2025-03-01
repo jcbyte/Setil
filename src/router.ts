@@ -27,7 +27,7 @@ const routes = [
 		name: "NewTransactionPage",
 	},
 	{
-		path: "/group/:groupId/settleUp",
+		path: "/group/:groupId/settle",
 		component: SettleUpPage,
 		name: "SettleUpPage",
 	},

@@ -38,7 +38,7 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 		<GroupTransactions v-else-if="page === 'Transactions'" />
 
 		<div class="fixed right-8 bottom-8">
-			<router-link to="/newTransaction">
+			<router-link :to="`/group/${groupId}/transaction`">
 				<Button icon="pi pi-plus" label="New Transaction" />
 			</router-link>
 		</div>
