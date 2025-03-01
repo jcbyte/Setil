@@ -12,7 +12,7 @@ const router = useRouter();
 const toast = useToast();
 const route = useRoute();
 
-const addingTransaction = ref<boolean>(false);
+const updatingTransaction = ref<boolean>(false);
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const routeTransactionId = Array.isArray(route.params.transactionId)
@@ -89,7 +89,7 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 
 async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
-		addingTransaction.value = true;
+		updatingTransaction.value = true;
 
 		if (routeTransactionId) {
 			// todo update transaction
@@ -121,8 +121,16 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 		}
 
 		router.push(`/group/${groupId.value!}/transactions`);
-		addingTransaction.value = false;
+		updatingTransaction.value = false;
 	}
+}
+
+async function deleteTransaction(): Promise<void> {
+	updatingTransaction.value = true;
+
+	// todo delete transaction
+
+	updatingTransaction.value = false;
 }
 </script>
 
@@ -198,6 +206,24 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 			</Message>
 		</div>
 
-		<Button type="submit" icon="pi pi-plus" label="Create" :loading="addingTransaction" severity="secondary" fluid />
+		<Button
+			type="submit"
+			:icon="routeTransactionId ? 'pi pi-pencil' : 'pi pi-plus'"
+			:label="routeTransactionId ? 'Update' : 'Create'"
+			:loading="updatingTransaction"
+			severity="secondary"
+			fluid
+		/>
+
+		<Button
+			v-if="routeTransactionId"
+			type="button"
+			icon="pi pi-trash"
+			label="Delete"
+			:loading="updatingTransaction"
+			severity="danger"
+			fluid
+			@click="deleteTransaction"
+		/>
 	</Form>
 </template>
