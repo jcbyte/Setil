@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { useGroup } from "../../composables/useGroup";
+import { getTransactions } from "../../firebase/firestore";
 import { type Transaction } from "../../firebase/types";
 import { formatCurrency } from "../../util/util";
 
@@ -10,11 +11,9 @@ const transactions = ref<Record<string, Transaction> | null>(null);
 const route = useRoute();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId);
-
-// onMounted(async () => {
-// 	transactions.value = await getTransactions(groupStore.groupId!);
-// });
+const { groupId, groupData, users } = useGroup(routeGroupId, async () => {
+	transactions.value = await getTransactions(groupId.value!);
+});
 
 function calculateTotalAmount(transactionAmounts: Record<string, number>): number {
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);

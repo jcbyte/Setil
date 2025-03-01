@@ -43,10 +43,14 @@ export function useGroup(
 	// Initially get the group data if it has not already been loaded
 	onMounted(async () => {
 		// If we already have the current groupId, then don't update
-		if (groupId === currentGroupId.value) return;
+		if (groupId === currentGroupId.value) {
+			afterLoad();
+			return;
+		}
 
 		if (!groupId) {
 			currentGroupId.value = null;
+			afterLoad();
 			return;
 		}
 
