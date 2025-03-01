@@ -8,7 +8,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Edit/Delete Transactions
 - Group settings
 - Automatic Refresh
 - Settle Up

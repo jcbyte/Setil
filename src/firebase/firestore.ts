@@ -235,6 +235,54 @@ export async function createTransaction(groupId: string, transaction: Transactio
 }
 
 /**
+ * Update a transaction in a group and update relevant users balances.
+ * @param groupId id of the group.
+ * @param transactionId id of the transaction.
+ * @param transaction new transaction data.
+ */
+export async function updateTransaction(
+	groupId: string,
+	transactionId: string,
+	transaction: Transaction
+): Promise<void> {
+	// Get the existing transaction data
+	const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
+	const transactionSnap = await getDoc(transactionRef);
+	const oldTransaction = transactionSnap.data() as Transaction;
+
+	// Update the transaction to the group
+	await setDoc(transactionRef, transaction);
+
+	// Work out the original and new changes in balances for each user based on the transaction
+	const oldBalancesDelta = calculateDeltas(oldTransaction.from, oldTransaction.to);
+	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
+
+	// Calculate balancesDelta delta
+	for (const userId in oldBalancesDelta) {
+		if (!balancesDelta[userId]) balancesDelta[userId] = {};
+
+		for (const receiverId in oldBalancesDelta[userId]) {
+			if (!balancesDelta[userId][receiverId]) balancesDelta[userId][receiverId] = 0;
+
+			balancesDelta[userId][receiverId] -= oldBalancesDelta[userId][receiverId];
+		}
+	}
+
+	// Update balances in firestore
+	const batch = writeBatch(db);
+	Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
+		const userRef = doc(db, "groups", groupId, "users", userId);
+		batch.update(
+			userRef,
+			Object.fromEntries(
+				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
+			)
+		);
+	});
+	await batch.commit();
+}
+
+/**
  * Delete a transaction in a group and update relevant users balances.
  * @param groupId id of the group.
  * @param transactionId id of the transaction.

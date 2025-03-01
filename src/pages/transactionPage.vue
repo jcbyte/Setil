@@ -5,7 +5,12 @@ import { Button, DatePicker, FloatLabel, InputNumber, InputText, Message, MultiS
 import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
-import { createTransaction, deleteTransaction as firestoreDeleteTransaction } from "../firebase/firestore";
+import {
+	createTransaction,
+	deleteTransaction as firestoreDeleteTransaction,
+	updateTransaction,
+} from "../firebase/firestore";
+import type { Transaction } from "../firebase/types";
 import { splitAmount } from "../util/util";
 
 const router = useRouter();
@@ -91,8 +96,21 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		updatingTransaction.value = true;
 
+		const transaction: Transaction = {
+			title: values.title,
+			to: splitAmount(
+				values.amount * 100,
+				values.to.map((user: UserOption) => user.id)
+			),
+			from: splitAmount(
+				values.amount * 100,
+				values.from.map((user: UserOption) => user.id)
+			),
+			date: Timestamp.fromDate(values.date),
+		};
+
 		if (routeTransactionId) {
-			// todo update transaction
+			await updateTransaction(groupId.value!, routeTransactionId!, transaction);
 
 			toast.add({
 				severity: "success",
@@ -100,18 +118,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 				life: 2000,
 			});
 		} else {
-			await createTransaction(groupId.value!, {
-				title: values.title,
-				to: splitAmount(
-					values.amount * 100,
-					values.to.map((user: UserOption) => user.id)
-				),
-				from: splitAmount(
-					values.amount * 100,
-					values.from.map((user: UserOption) => user.id)
-				),
-				date: Timestamp.fromDate(values.date),
-			});
+			await createTransaction(groupId.value!, transaction);
 
 			toast.add({
 				severity: "success",
