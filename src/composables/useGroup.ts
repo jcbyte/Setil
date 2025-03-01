@@ -21,10 +21,6 @@ export function useGroup(
 	groupData: Ref<GroupData | null>;
 	users: Ref<Record<string, GroupUserData> | null>;
 } {
-	// const currentGroupId = ref<string | null>(null);
-	// const groupData = ref<GroupData | null>(null);
-	// const users = ref<Record<string, GroupUserData> | null>(null);
-
 	const { groupId: currentGroupId, groupData, users } = storeToRefs(useGroupStore());
 
 	const router = useRouter();
@@ -48,16 +44,17 @@ export function useGroup(
 			return;
 		}
 
+		// Used to reset group data
 		if (!groupId) {
 			currentGroupId.value = null;
 			afterLoad();
 			return;
 		}
 
-		console.log("loaded data");
-
+		// Load all data
 		const remoteGroupData = await getGroupData(groupId);
 		if (!remoteGroupData) {
+			// If the group cannot be found then return to the home page
 			errorHome();
 			return;
 		}
