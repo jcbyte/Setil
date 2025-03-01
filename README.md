@@ -8,6 +8,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
+- Rework layout so all pages have /:group and use the global state to update/check
 - Edit/Delete Transactions
 - Settle Up
 - Group settings

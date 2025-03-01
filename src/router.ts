@@ -22,12 +22,12 @@ const routes = [
 		name: "GroupPage",
 	},
 	{
-		path: "/newTransaction",
+		path: "/group/:groupId/transaction",
 		component: NewTransactionPage,
 		name: "NewTransactionPage",
 	},
 	{
-		path: "/settleUp",
+		path: "/group/:groupId/settleUp",
 		component: SettleUpPage,
 		name: "SettleUpPage",
 	},

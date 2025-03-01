@@ -2,38 +2,42 @@
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
 import { Timestamp } from "firebase/firestore";
 import { Button, DatePicker, FloatLabel, InputNumber, InputText, Message, MultiSelect, useToast } from "primevue";
-import { computed, onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useGroup } from "../composables/useGroup";
 import { createTransaction } from "../firebase/firestore";
-import { useGroupStore } from "../stores/useGroupStore";
 import { splitAmount } from "../util/util";
 
 const router = useRouter();
 const toast = useToast();
-const groupStore = useGroupStore();
 
 const addingTransaction = ref<boolean>(false);
 
-onMounted(() => {
-	if (!groupStore.groupId) {
-		toast.add({
-			severity: "error",
-			summary: "No Group Selected",
-			life: 2000,
-		});
+const route = useRoute();
 
-		router.push("/");
-	}
-});
+const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const { groupId, groupData, users } = useGroup(routeGroupId);
+
+// onMounted(() => {
+// 	if (!groupStore.groupId) {
+// 		toast.add({
+// 			severity: "error",
+// 			summary: "No Group Selected",
+// 			life: 2000,
+// 		});
+
+// 		router.push("/");
+// 	}
+// });
 
 interface UserOption {
 	id: string;
 	name: string;
 }
 const userOptions = computed<UserOption[]>(() => {
-	if (!groupStore.users) return [];
+	if (!users.value) return [];
 
-	return Object.entries(groupStore.users).map(([userId, user]) => ({
+	return Object.entries(users.value).map(([userId, user]) => ({
 		id: userId,
 		name: user.name,
 	}));
@@ -76,7 +80,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		addingTransaction.value = true;
 
-		await createTransaction(groupStore.groupId!, {
+		await createTransaction(groupId.value!, {
 			title: values.title,
 			to: splitAmount(
 				values.amount * 100,
@@ -95,7 +99,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 			life: 2000,
 		});
 
-		router.push(`/group/${groupStore.groupId!}`);
+		router.push(`/group/${groupId.value!}`);
 		addingTransaction.value = false;
 	}
 }

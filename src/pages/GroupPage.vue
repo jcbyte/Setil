@@ -1,52 +1,22 @@
 <script setup lang="ts">
-import { Button, useToast } from "primevue";
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { Button } from "primevue";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
+import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
-import { getGroupData, getUsers } from "../firebase/firestore";
-import { useGroupStore } from "../stores/useGroupStore";
 import GroupUsers from "./group/GroupOverview.vue";
 import GroupTransactions from "./group/GroupTransactions.vue";
-
-const groupStore = useGroupStore();
 
 const pageNames = ["Overview", "Transactions"] as const;
 type PageName = (typeof pageNames)[number];
 const page = ref<PageName>("Overview");
 
 const route = useRoute();
-const router = useRouter();
-const toast = useToast();
-const setPageTitle = usePageTitle(null);
+const setPageTitle = usePageTitle();
 
-onMounted(async () => {
-	function errorHome() {
-		toast.add({
-			severity: "error",
-			summary: "Invalid Group",
-			life: 2000,
-		});
-
-		router.push("/");
-	}
-
-	const groupId = !Array.isArray(route.params.groupId) ? route.params.groupId : null;
-	if (!groupId) {
-		errorHome();
-		return;
-	}
-
-	const groupData = await getGroupData(groupId);
-	if (!groupData) {
-		errorHome();
-		return;
-	}
-
-	setPageTitle(groupData.name);
-
-	groupStore.groupId = groupId;
-	groupStore.groupData = groupData;
-	groupStore.users = await getUsers(groupId);
+const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const { groupId, groupData, users } = useGroup(routeGroupId, () => {
+	setPageTitle(groupData.value?.name ?? "Unknown Group");
 });
 </script>
 

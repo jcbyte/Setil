@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { getTransactions } from "../../firebase/firestore";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
+import { useGroup } from "../../composables/useGroup";
 import { type Transaction } from "../../firebase/types";
-import { useGroupStore } from "../../stores/useGroupStore";
 import { formatCurrency } from "../../util/util";
 
 const transactions = ref<Record<string, Transaction> | null>(null);
-const groupStore = useGroupStore();
 
-onMounted(async () => {
-	transactions.value = await getTransactions(groupStore.groupId!);
-});
+const route = useRoute();
+
+const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const { groupId, groupData, users } = useGroup(routeGroupId);
+
+// onMounted(async () => {
+// 	transactions.value = await getTransactions(groupStore.groupId!);
+// });
 
 function calculateTotalAmount(transactionAmounts: Record<string, number>): number {
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
@@ -18,7 +22,7 @@ function calculateTotalAmount(transactionAmounts: Record<string, number>): numbe
 
 function getTransactionUsers(transactionPart: Record<string, number>): string {
 	return Object.keys(transactionPart)
-		.map((userId) => groupStore.users![userId].name)
+		.map((userId) => users.value![userId].name)
 		.join(", ");
 }
 </script>
@@ -29,7 +33,7 @@ function getTransactionUsers(transactionPart: Record<string, number>): string {
 			<div class="flex justify-between">
 				<div class="text-lg">{{ transaction.title }}</div>
 				<div class="text-lg">
-					{{ formatCurrency(calculateTotalAmount(transaction.from) / 100, groupStore.groupData!.currency) }}
+					{{ formatCurrency(calculateTotalAmount(transaction.from) / 100, groupData!.currency) }}
 				</div>
 			</div>
 			<div class="text-sm text-zinc-300">{{ transaction.date.toDate().toLocaleDateString() }}</div>
