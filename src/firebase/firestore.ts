@@ -172,26 +172,19 @@ export async function getUsers(groupId: string): Promise<Record<string, GroupUse
 	return Object.fromEntries(usersSnap.docs.map((doc) => [doc.id, doc.data() as GroupUserData]));
 }
 
-/**
- * Create a transaction in a group and update relevant users balances.
- * @param groupId id of the group.
- * @param transaction transaction data.
- * @returns the id of the new transaction.
- */
-export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
-	// Add the transaction to the group
-	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
-	const transactionRef = await addDoc(groupTransactionsRef, transaction);
-
+function calculateDeltas(
+	from: Record<string, number>,
+	to: Record<string, number>
+): Record<string, Record<string, number>> {
 	// Work out the changes in balances for each user based on the transaction
 	const balancesDelta: Record<string, Record<string, number>> = {};
-	const totalPaid = Object.values(transaction.to).reduce((a, b) => a + b, 0);
+	const totalPaid = Object.values(to).reduce((a, b) => a + b, 0);
 
-	for (const payerId in transaction.from) {
-		const amountPaid = transaction.from[payerId];
+	for (const payerId in from) {
+		const amountPaid = from[payerId];
 
-		for (const receiverId in transaction.to) {
-			const amountReceived = transaction.to[receiverId];
+		for (const receiverId in to) {
+			const amountReceived = to[receiverId];
 
 			// Rounding to fix fix floating point errors
 			const amountOwed = Math.round((amountPaid * amountReceived) / totalPaid);
@@ -207,6 +200,23 @@ export async function createTransaction(groupId: string, transaction: Transactio
 			balancesDelta[receiverId][payerId] -= amountOwed;
 		}
 	}
+
+	return balancesDelta;
+}
+
+/**
+ * Create a transaction in a group and update relevant users balances.
+ * @param groupId id of the group.
+ * @param transaction transaction data.
+ * @returns the id of the new transaction.
+ */
+export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
+	// Add the transaction to the group
+	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
+	const transactionRef = await addDoc(groupTransactionsRef, transaction);
+
+	// Work out the changes in balances for each user based on the transaction
+	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
 
 	// Update balances in firestore
 	const batch = writeBatch(db);
@@ -239,29 +249,7 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 	await deleteDoc(transactionRef);
 
 	// Work out the changes in balances for each user based on the transaction
-	const balancesDelta: Record<string, Record<string, number>> = {};
-	const totalPaid = Object.values(transaction.to).reduce((a, b) => a + b, 0);
-
-	for (const payerId in transaction.from) {
-		const amountPaid = transaction.from[payerId];
-
-		for (const receiverId in transaction.to) {
-			const amountReceived = transaction.to[receiverId];
-
-			// Rounding to fix fix floating point errors
-			const amountOwed = Math.round((amountPaid * amountReceived) / totalPaid);
-
-			// Ensure keys exist
-			if (!balancesDelta[payerId]) balancesDelta[payerId] = {};
-			if (!balancesDelta[payerId][receiverId]) balancesDelta[payerId][receiverId] = 0;
-			if (!balancesDelta[receiverId]) balancesDelta[receiverId] = {};
-			if (!balancesDelta[receiverId][payerId]) balancesDelta[receiverId][payerId] = 0;
-
-			// Update deltas - Opposite direction
-			balancesDelta[payerId][receiverId] -= amountOwed;
-			balancesDelta[receiverId][payerId] += amountOwed;
-		}
-	}
+	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
 
 	// Update balances in firestore
 	const batch = writeBatch(db);
@@ -270,11 +258,10 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 		batch.update(
 			userRef,
 			Object.fromEntries(
-				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
+				// Invert the amount as we removing the transaction
+				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(-amount)])
 			)
 		);
 	});
 	await batch.commit();
-
-	// todo extract duplicate logic from create and delete transactions
 }
