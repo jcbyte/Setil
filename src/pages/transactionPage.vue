@@ -5,7 +5,7 @@ import { Button, DatePicker, FloatLabel, InputNumber, InputText, Message, MultiS
 import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
-import { createTransaction } from "../firebase/firestore";
+import { createTransaction, deleteTransaction as firestoreDeleteTransaction } from "../firebase/firestore";
 import { splitAmount } from "../util/util";
 
 const router = useRouter();
@@ -128,7 +128,15 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 async function deleteTransaction(): Promise<void> {
 	updatingTransaction.value = true;
 
-	// todo delete transaction
+	await firestoreDeleteTransaction(groupId.value!, routeTransactionId!);
+
+	toast.add({
+		severity: "success",
+		summary: "Transaction deleted",
+		life: 2000,
+	});
+
+	router.push(`/group/${groupId.value!}/transactions`);
 
 	updatingTransaction.value = false;
 }
