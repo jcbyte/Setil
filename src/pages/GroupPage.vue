@@ -19,7 +19,7 @@ const router = useRouter();
 const setPageTitle = usePageTitle();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId, () => {
+const { groupId, groupData } = useGroup(routeGroupId, () => {
 	setPageTitle(groupData.value?.name ?? "Unknown Group");
 });
 

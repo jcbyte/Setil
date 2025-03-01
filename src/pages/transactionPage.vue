@@ -10,25 +10,26 @@ import { splitAmount } from "../util/util";
 
 const router = useRouter();
 const toast = useToast();
+const route = useRoute();
 
 const addingTransaction = ref<boolean>(false);
 
-const route = useRoute();
-
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId);
+const routeTransactionId = Array.isArray(route.params.transactionId)
+	? route.params.transactionId[0]
+	: route.params.transactionId || null;
 
-// onMounted(() => {
-// 	if (!groupStore.groupId) {
-// 		toast.add({
-// 			severity: "error",
-// 			summary: "No Group Selected",
-// 			life: 2000,
-// 		});
+const { groupId, users, transactions } = useGroup(routeGroupId, () => {
+	if (routeTransactionId) {
+		const transaction = transactions.value![routeTransactionId];
 
-// 		router.push("/");
-// 	}
-// });
+		initialValues.title = transaction.title;
+		initialValues.amount = Object.values(transaction.to).reduce((acc, value) => acc + value, 0) / 100;
+		initialValues.from = userOptions.value.filter((userOption) => userOption.id in transaction.from);
+		initialValues.to = userOptions.value.filter((userOption) => userOption.id in transaction.to);
+		initialValues.date = transaction.date.toDate();
+	}
+});
 
 interface UserOption {
 	id: string;
@@ -43,7 +44,13 @@ const userOptions = computed<UserOption[]>(() => {
 	}));
 });
 
-const initialValues = reactive({
+const initialValues = reactive<{
+	title: string | null;
+	amount: number | null;
+	from: UserOption[];
+	to: UserOption[];
+	date: Date;
+}>({
 	title: null,
 	amount: null,
 	from: [],
@@ -70,6 +77,10 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 		errors.to = ["At least 1 person must receive."];
 	}
 
+	if (!values.date) {
+		errors.date = ["Date is required."];
+	}
+
 	return {
 		values,
 		errors,
@@ -80,26 +91,36 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		addingTransaction.value = true;
 
-		await createTransaction(groupId.value!, {
-			title: values.title,
-			to: splitAmount(
-				values.amount * 100,
-				values.to.map((user: UserOption) => user.id)
-			),
-			from: splitAmount(
-				values.amount * 100,
-				values.from.map((user: UserOption) => user.id)
-			),
-			date: Timestamp.fromDate(values.date),
-		});
+		if (routeTransactionId) {
+			// todo update transaction
 
-		toast.add({
-			severity: "success",
-			summary: "Transaction created",
-			life: 2000,
-		});
+			toast.add({
+				severity: "success",
+				summary: "Transaction updated",
+				life: 2000,
+			});
+		} else {
+			await createTransaction(groupId.value!, {
+				title: values.title,
+				to: splitAmount(
+					values.amount * 100,
+					values.to.map((user: UserOption) => user.id)
+				),
+				from: splitAmount(
+					values.amount * 100,
+					values.from.map((user: UserOption) => user.id)
+				),
+				date: Timestamp.fromDate(values.date),
+			});
 
-		router.push(`/group/${groupId.value!}`);
+			toast.add({
+				severity: "success",
+				summary: "Transaction created",
+				life: 2000,
+			});
+		}
+
+		router.push(`/group/${groupId.value!}/transactions`);
 		addingTransaction.value = false;
 	}
 }

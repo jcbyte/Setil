@@ -4,8 +4,8 @@ import GroupOverview from "./pages/group/GroupOverview.vue";
 import GroupTransactions from "./pages/group/GroupTransactions.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
-import NewTransactionPage from "./pages/newTransactionPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
+import transactionPage from "./pages/transactionPage.vue";
 
 const routes = [
 	{
@@ -37,8 +37,13 @@ const routes = [
 	},
 	{
 		path: "/group/:groupId/transaction",
-		component: NewTransactionPage,
+		component: transactionPage,
 		name: "NewTransactionPage",
+	},
+	{
+		path: "/group/:groupId/transaction/:transactionId",
+		component: transactionPage,
+		name: "EditTransactionPage",
 	},
 	{
 		path: "/group/:groupId/settle",

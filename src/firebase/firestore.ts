@@ -151,7 +151,7 @@ export async function getTransactions(groupId: string): Promise<Record<string, T
 	const transactionsRef = collection(db, "groups", groupId, "transactions");
 
 	// Get all transaction docs ordered by date
-	const q = query(transactionsRef, orderBy("date"));
+	const q = query(transactionsRef, orderBy("date", "desc"));
 	const querySnap = await getDocs(q);
 
 	return Object.fromEntries(querySnap.docs.map((doc) => [doc.id, doc.data() as Transaction]));

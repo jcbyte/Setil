@@ -8,7 +8,7 @@ import { formatCurrency } from "../util/util";
 const route = useRoute();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId);
+const { groupData, users } = useGroup(routeGroupId);
 
 const usersWithTransactions = computed<Record<string, GroupUserData>>(() => {
 	return Object.fromEntries(

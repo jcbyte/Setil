@@ -2,15 +2,16 @@ import { defineStore, storeToRefs } from "pinia";
 import { useToast } from "primevue";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import { getGroupData, getUsers } from "../firebase/firestore";
-import type { GroupData, GroupUserData } from "../firebase/types";
+import { getGroupData, getTransactions, getUsers } from "../firebase/firestore";
+import type { GroupData, GroupUserData, Transaction } from "../firebase/types";
 
 const useGroupStore = defineStore("group", () => {
 	const groupId = ref<string | null>(null);
 	const groupData = ref<GroupData | null>(null);
 	const users = ref<Record<string, GroupUserData> | null>(null);
+	const transactions = ref<Record<string, Transaction> | null>(null);
 
-	return { groupId, groupData, users };
+	return { groupId, groupData, users, transactions };
 });
 
 export function useGroup(
@@ -20,8 +21,9 @@ export function useGroup(
 	groupId: Ref<string | null>;
 	groupData: Ref<GroupData | null>;
 	users: Ref<Record<string, GroupUserData> | null>;
+	transactions: Ref<Record<string, Transaction> | null>;
 } {
-	const { groupId: currentGroupId, groupData, users } = storeToRefs(useGroupStore());
+	const { groupId: currentGroupId, groupData, users, transactions } = storeToRefs(useGroupStore());
 
 	const router = useRouter();
 	const toast = useToast();
@@ -59,13 +61,15 @@ export function useGroup(
 			return;
 		}
 		const remoteUsers = await getUsers(groupId);
+		const remoteTransactions = await getTransactions(groupId);
 
 		currentGroupId.value = groupId;
 		groupData.value = remoteGroupData;
 		users.value = remoteUsers;
+		transactions.value = remoteTransactions;
 
 		afterLoad();
 	});
 
-	return { groupId: currentGroupId, groupData, users };
+	return { groupId: currentGroupId, groupData, users, transactions };
 }
