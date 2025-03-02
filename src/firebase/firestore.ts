@@ -144,6 +144,17 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 }
 
 /**
+ * Update a group with new data.
+ * @param groupId id of the group.
+ * @param groupData the parts of the group to update.
+ */
+export async function updateGroup(groupId: string, groupData: Partial<Omit<GroupData, "owner">>): Promise<void> {
+	// Update the group
+	const groupRef = doc(db, "groups", groupId);
+	await updateDoc(groupRef, groupData);
+}
+
+/**
  * Get all transactions from a group.
  * @param groupId id of the group.
  * @returns the list of transactions in the group.

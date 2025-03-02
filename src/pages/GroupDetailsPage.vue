@@ -5,7 +5,8 @@ import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
-import { createGroup } from "../firebase/firestore";
+import { createGroup, updateGroup } from "../firebase/firestore";
+import type { GroupData } from "../firebase/types";
 import { CurrencySettings, type Currency } from "../util/groupSettings";
 
 const toast = useToast();
@@ -63,9 +64,14 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		creatingGroup.value = true;
 
+		const groupData: Omit<GroupData, "owner"> = {
+			name: values.name,
+			currency: values.currency.id,
+		};
+
 		let updatedGroupId = routeGroupId;
 		if (routeGroupId) {
-			// todo update group
+			await updateGroup(routeGroupId, groupData);
 
 			toast.add({
 				severity: "success",
@@ -73,7 +79,7 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 				life: 2000,
 			});
 		} else {
-			updatedGroupId = await createGroup({ name: values.name, currency: values.currency.id });
+			updatedGroupId = await createGroup(groupData);
 
 			toast.add({
 				severity: "success",
