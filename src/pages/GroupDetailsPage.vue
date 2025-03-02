@@ -2,21 +2,44 @@
 import { Form, type FormResolverOptions, type FormSubmitEvent } from "@primevue/forms";
 import { Button, FloatLabel, InputText, Message, Select, useToast } from "primevue";
 import { computed, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
 import { createGroup } from "../firebase/firestore";
 import { CurrencySettings, type Currency } from "../util/groupSettings";
 
-usePageTitle("Create Group");
-
-const creatingGroup = ref<boolean>(false);
-
 const toast = useToast();
 const router = useRouter();
 
-const initialValues = reactive({
+const route = useRoute();
+const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+
+usePageTitle(routeGroupId ? "Edit Group" : "Create Group");
+
+const creatingGroup = ref<boolean>(false);
+
+interface CurrencyOption {
+	id: Currency;
+	name: string;
+}
+const currencyOptions = computed<CurrencyOption[]>(() =>
+	Object.entries(CurrencySettings).map(([currency, currencySetting]) => ({
+		id: currency as Currency,
+		name: currencySetting.name,
+	}))
+);
+
+const initialValues = reactive<{ name: string | null; currency: CurrencyOption | null }>({
 	name: null,
 	currency: null,
+});
+
+const { groupData } = useGroup(routeGroupId, () => {
+	if (routeGroupId) {
+		initialValues.name = groupData.value!.name;
+		initialValues.currency =
+			currencyOptions.value.find((currencyOption) => currencyOption.id === groupData.value!.currency) ?? null;
+	}
 });
 
 const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
@@ -39,25 +62,30 @@ const formResolver = ({ values }: FormResolverOptions): Record<string, any> => {
 async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	if (valid) {
 		creatingGroup.value = true;
-		const newGroup = await createGroup({ name: values.name, currency: values.currency.id });
 
-		toast.add({
-			severity: "success",
-			summary: "Group created",
-			life: 2000,
-		});
+		let updatedGroupId = routeGroupId;
+		if (routeGroupId) {
+			// todo update group
 
-		router.push(`/group/${newGroup}`);
+			toast.add({
+				severity: "success",
+				summary: "Group updated",
+				life: 2000,
+			});
+		} else {
+			updatedGroupId = await createGroup({ name: values.name, currency: values.currency.id });
+
+			toast.add({
+				severity: "success",
+				summary: "Group created",
+				life: 2000,
+			});
+		}
+
+		router.push(`/group/${updatedGroupId}`);
 		creatingGroup.value = false;
 	}
 }
-
-const currencyOptions = computed<{ id: Currency; name: string }[]>(() =>
-	Object.entries(CurrencySettings).map(([currency, currencySetting]) => ({
-		id: currency as Currency,
-		name: currencySetting.name,
-	}))
-);
 </script>
 
 <template>
@@ -88,6 +116,13 @@ const currencyOptions = computed<{ id: Currency; name: string }[]>(() =>
 			</Message>
 		</div>
 
-		<Button type="submit" icon="pi pi-plus" label="Create" :loading="creatingGroup" severity="secondary" fluid />
+		<Button
+			type="submit"
+			:icon="routeGroupId ? 'pi pi-pencil' : 'pi pi-plus'"
+			:label="routeGroupId ? 'Update' : 'Create'"
+			:loading="creatingGroup"
+			severity="secondary"
+			fluid
+		/>
 	</Form>
 </template>

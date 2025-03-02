@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-import CreateGroupPage from "./pages/CreateGroupPage.vue";
 import GroupOverview from "./pages/group/GroupOverview.vue";
 import GroupTransactions from "./pages/group/GroupTransactions.vue";
+import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
-import transactionPage from "./pages/transactionPage.vue";
+import TransactionPage from "./pages/TransactionPage.vue";
 
 const routes = [
 	{
@@ -15,8 +15,13 @@ const routes = [
 	},
 	{
 		path: "/create",
-		component: CreateGroupPage,
+		component: GroupDetailsPage,
 		name: "CreateGroupPage",
+	},
+	{
+		path: "/group/:groupId/edit",
+		component: GroupDetailsPage,
+		name: "EditGroupPage",
 	},
 	{
 		path: "/group/:groupId",
@@ -37,12 +42,12 @@ const routes = [
 	},
 	{
 		path: "/group/:groupId/transaction",
-		component: transactionPage,
+		component: TransactionPage,
 		name: "NewTransactionPage",
 	},
 	{
 		path: "/group/:groupId/transaction/:transactionId",
-		component: transactionPage,
+		component: TransactionPage,
 		name: "EditTransactionPage",
 	},
 	{

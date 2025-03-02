@@ -49,5 +49,11 @@ function navigateTo(link: SubPage["link"]) {
 				<Button icon="pi pi-plus" label="New Transaction" />
 			</router-link>
 		</div>
+
+		<div class="fixed left-8 bottom-8">
+			<router-link :to="`/group/${groupId}/edit`">
+				<Button icon="pi pi-cog" />
+			</router-link>
+		</div>
 	</div>
 </template>

@@ -8,9 +8,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Group settings
 - Automatic Refresh
-- Settle Up
 - Add Users
 - Restyle
 - Animations

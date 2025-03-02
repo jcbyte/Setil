@@ -4,7 +4,7 @@ import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "pri
 import { onMounted, provide, ref } from "vue";
 import type { PageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
-import SignInPage from "./pages/signInPage.vue";
+import SignInPage from "./pages/SignInPage.vue";
 
 const toast = useToast();
 
