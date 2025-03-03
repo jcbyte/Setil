@@ -76,7 +76,7 @@ export function useGroup(
 		// Load group data
 		try {
 			groupDataUnsubscribe.value = await getLiveGroupData(groupId, groupData);
-		} catch (error) {
+		} catch {
 			// If the group cannot be found then return to the home page
 			errorHome();
 			return;

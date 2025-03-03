@@ -82,15 +82,23 @@ export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupD
 
 	return await new Promise<() => void>((resolve, reject) => {
 		// Setup listener to update ref
-		const unsubscribe = onSnapshot(groupRef, (doc) => {
-			if (doc.exists()) {
-				groupDataRef.value = doc.data() as GroupData;
-				// Only continue once data has been first loaded
-				resolve(unsubscribe);
-			} else {
-				reject(new Error(`Group ${groupId} does not exist.`));
+		const unsubscribe = onSnapshot(
+			groupRef,
+			(doc) => {
+				if (doc.exists()) {
+					groupDataRef.value = doc.data() as GroupData;
+					// Only continue once data has been first loaded
+					resolve(unsubscribe);
+				} else {
+					console.log("5b");
+
+					reject(new Error(`Group ${groupId} does not exist.`));
+				}
+			},
+			(e) => {
+				reject(new Error(`Error ${e.message}.`));
 			}
-		});
+		);
 	});
 }
 
@@ -439,10 +447,12 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
 
 	// Return true if user is already part of the group
-	const userSnap = await getDoc(groupUserRef);
-	if (userSnap.exists()) {
-		return true;
-	}
+	try {
+		const userSnap = await getDoc(groupUserRef);
+		if (userSnap.exists()) {
+			return true;
+		}
+	} catch {}
 
 	// Join the group
 	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", balance: {} };
