@@ -7,16 +7,18 @@ import {
 	deleteDoc,
 	doc,
 	getDoc,
+	getDocs,
 	getFirestore,
 	increment,
 	onSnapshot,
 	setDoc,
+	Timestamp,
 	updateDoc,
 	writeBatch,
 } from "firebase/firestore";
 import type { Ref } from "vue";
 import { app } from "./firebase";
-import type { GroupData, GroupUserData, Transaction, UserData } from "./types";
+import type { GroupData, GroupUserData, Invite, Transaction, UserData } from "./types";
 
 const db = getFirestore(app);
 
@@ -382,4 +384,40 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 		);
 	});
 	await batch.commit();
+}
+
+/**
+ * Create an invite to the group which will automatically expire.
+ * @param groupId id of the group.
+ * @param expiry amount of time in ms when the invite will expire.
+ * @returns the invite code.
+ */
+export async function invite(groupId: string, expiry: number): Promise<string> {
+	const groupInvitesRef = collection(db, "groups", groupId, "invites");
+
+	// Calculate the expiry date
+	const inviteData: Invite = {
+		expiry: Timestamp.fromMillis(Date.now() + expiry),
+	};
+
+	const inviteRef = await addDoc(groupInvitesRef, inviteData);
+
+	return inviteRef.id;
+}
+
+export async function cleanupInvites(groupId: string): Promise<void> {
+	const groupInvitesRef = collection(db, "groups", groupId, "invites");
+
+	const invitesSnap = await getDocs(groupInvitesRef);
+
+	// Find all expired invites
+	const now = Date.now();
+	const expiredInvites = invitesSnap.docs
+		.filter((inviteSnap) => (inviteSnap.data() as Invite).expiry.toMillis() < now)
+		.map((expiredInvite) => expiredInvite.ref);
+
+	// Delete each of these
+	for (const expiredInvite of expiredInvites) {
+		deleteDoc(expiredInvite);
+	}
 }

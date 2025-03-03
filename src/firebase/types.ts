@@ -22,3 +22,7 @@ export interface Transaction {
 	to: Record<string, number>;
 	date: Timestamp;
 }
+
+export interface Invite {
+	expiry: Timestamp;
+}
