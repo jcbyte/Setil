@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../../composables/useGroup";
+import type { Transaction } from "../../firebase/types";
 import { formatCurrency } from "../../util/util";
 
 const route = useRoute();
@@ -18,13 +20,23 @@ function getTransactionUsers(transactionPart: Record<string, number>): string {
 		.map((userId) => users.value![userId].name)
 		.join(", ");
 }
+
+const sortedTransactions = computed((): any | null => {
+	if (!transactions.value) return null;
+
+	return Object.entries(transactions.value).sort(
+		([, transactionA]: [string, Transaction], [, transactionB]: [string, Transaction]) => {
+			return transactionB.date.seconds - transactionA.date.seconds;
+		}
+	);
+});
 </script>
 
 <template>
 	<div class="flex flex-col gap-2">
 		<div
 			class="bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer w-80 rounded-lg p-2 flex flex-col"
-			v-for="(transaction, transactionId) in transactions"
+			v-for="[transactionId, transaction] in sortedTransactions"
 			@click="router.push(`/group/${groupId}/transaction/${transactionId}`)"
 		>
 			<div class="flex justify-between">

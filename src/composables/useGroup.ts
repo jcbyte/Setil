@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useToast } from "primevue";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import { getLiveGroupData, getLiveUsers, getTransactions } from "../firebase/firestore";
+import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "../firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "../firebase/types";
 
 const useGroupStore = defineStore("group", () => {
@@ -13,8 +13,9 @@ const useGroupStore = defineStore("group", () => {
 
 	let groupDataUnsubscribe = ref<(() => void) | null>(null);
 	let usersUnsubscribe = ref<(() => void) | null>(null);
+	let transactionsUnsubscribe = ref<(() => void) | null>(null);
 
-	return { groupId, groupData, users, transactions, groupDataUnsubscribe, usersUnsubscribe };
+	return { groupId, groupData, users, transactions, groupDataUnsubscribe, usersUnsubscribe, transactionsUnsubscribe };
 });
 
 export function useGroup(
@@ -33,6 +34,7 @@ export function useGroup(
 		transactions,
 		groupDataUnsubscribe,
 		usersUnsubscribe,
+		transactionsUnsubscribe,
 	} = storeToRefs(useGroupStore());
 
 	const router = useRouter();
@@ -59,6 +61,7 @@ export function useGroup(
 		// Unsubscribe from existing listeners
 		if (groupDataUnsubscribe.value) groupDataUnsubscribe.value();
 		if (usersUnsubscribe.value) usersUnsubscribe.value();
+		if (transactionsUnsubscribe.value) transactionsUnsubscribe.value();
 
 		// Used to reset group data
 		if (!groupId) {
@@ -83,8 +86,7 @@ export function useGroup(
 		usersUnsubscribe.value = await getLiveUsers(groupId, users);
 
 		// Load transactions data
-		const remoteTransactions = await getTransactions(groupId);
-		transactions.value = remoteTransactions;
+		transactionsUnsubscribe.value = await getLiveTransactions(groupId, transactions);
 
 		// Set this last once, everything else has been set so that anything checking groupId !== null does not happen preemptively
 		currentGroupId.value = groupId;

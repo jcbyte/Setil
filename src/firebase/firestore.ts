@@ -7,12 +7,9 @@ import {
 	deleteDoc,
 	doc,
 	getDoc,
-	getDocs,
 	getFirestore,
 	increment,
 	onSnapshot,
-	orderBy,
-	query,
 	setDoc,
 	updateDoc,
 	writeBatch,
@@ -180,18 +177,36 @@ export async function updateGroup(groupId: string, groupData: Partial<Omit<Group
 }
 
 /**
- * Get all transactions from a group.
+ * Get a live copy of a group's transactions synced to a vue ref.
  * @param groupId id of the group.
- * @returns the list of transactions in the group.
+ * @param transactionsRef the ref to sync the transactions data to.
+ * @returns the unsubscribe function.
  */
-export async function getTransactions(groupId: string): Promise<Record<string, Transaction>> {
-	const transactionsRef = collection(db, "groups", groupId, "transactions");
+export async function getLiveTransactions(
+	groupId: string,
+	transactionsRef: Ref<Record<string, Transaction> | null>
+): Promise<() => void> {
+	const firestoreTransactionsRef = collection(db, "groups", groupId, "transactions");
 
-	// Get all transaction docs ordered by date
-	const q = query(transactionsRef, orderBy("date", "desc"));
-	const querySnap = await getDocs(q);
+	// Initialise transactions if they have not been yet
+	if (!transactionsRef.value) transactionsRef.value = {};
 
-	return Object.fromEntries(querySnap.docs.map((doc) => [doc.id, doc.data() as Transaction]));
+	return await new Promise<() => void>((resolve) => {
+		// Setup listener to update ref
+
+		const unsubscribe = onSnapshot(firestoreTransactionsRef, (snap) => {
+			snap.docChanges().forEach((change) => {
+				if (change.type === "added" || change.type === "modified") {
+					transactionsRef.value![change.doc.id] = change.doc.data() as Transaction;
+				} else if (change.type === "removed") {
+					delete transactionsRef.value![change.doc.id];
+				}
+			});
+
+			// Only continue once data has been first loaded
+			resolve(unsubscribe);
+		});
+	});
 }
 
 /**
@@ -222,7 +237,6 @@ export async function getLiveUsers(
 			});
 
 			// Only continue once data has been first loaded
-
 			resolve(unsubscribe);
 		});
 	});
