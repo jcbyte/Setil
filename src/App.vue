@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { getAuth } from "firebase/auth";
 import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
-import { onMounted, provide, ref } from "vue";
-import type { PageTitle } from "./composables/usePageTitle";
+import { onMounted, ref } from "vue";
+import { usePageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/SignInPage.vue";
 
 const toast = useToast();
 
-const pageTitle = ref<PageTitle>({ loading: false, title: "Setil" });
-provide("pageTitle", pageTitle);
+const { pageTitle } = usePageTitle();
 
 const firebaseLoaded = ref(false);
 const currentUser = ref(getAuth().currentUser);

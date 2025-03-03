@@ -16,7 +16,7 @@ const subpages: SubPage[] = [
 
 const route = useRoute();
 const router = useRouter();
-const setPageTitle = usePageTitle();
+const { setPageTitle } = usePageTitle({ title: "", loading: true });
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData } = useGroup(routeGroupId, () => {

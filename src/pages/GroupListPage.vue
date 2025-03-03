@@ -5,7 +5,7 @@ import { usePageTitle } from "../composables/usePageTitle";
 import { getUserGroups } from "../firebase/firestore";
 import { type GroupData } from "../firebase/types";
 
-usePageTitle("Setil");
+usePageTitle({ title: "Setil" });
 
 const groups = ref<Record<string, GroupData> | null>(null);
 

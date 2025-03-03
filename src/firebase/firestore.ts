@@ -82,11 +82,7 @@ export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupD
 
 	return await new Promise<() => void>((resolve, reject) => {
 		const unsubscribe = onSnapshot(groupRef, (doc) => {
-			console.log("aaa");
-
 			if (doc.exists()) {
-				console.log(doc.data() as GroupData);
-
 				groupDataRef.value = doc.data() as GroupData;
 				resolve(unsubscribe);
 			} else {

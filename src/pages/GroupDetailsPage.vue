@@ -15,7 +15,7 @@ const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 
-usePageTitle(routeGroupId ? "Edit Group" : "Create Group");
+usePageTitle({ title: routeGroupId ? "Edit Group" : "Create Group" });
 
 const creatingGroup = ref<boolean>(false);
 

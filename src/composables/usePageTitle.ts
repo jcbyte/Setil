@@ -1,21 +1,36 @@
-import { inject, onMounted, type Ref } from "vue";
+import { defineStore, storeToRefs } from "pinia";
+import { onMounted, ref, type Ref } from "vue";
 
-export function usePageTitle(title: null | string = null): (title: string) => void {
-	const pageTitle = inject<Ref<{ title: string; loading: boolean }>>("pageTitle");
+export interface PageTitle {
+	title: string | null;
+	loading: boolean;
+}
 
-	// Initially set the title
-	onMounted(() => {
-		if (pageTitle) {
-			pageTitle.value = { title: title ?? "", loading: title === null };
-		}
-	});
+const usePageTitleStore = defineStore("pageTitle", () => {
+	const title = ref<PageTitle>({ title: "Setil", loading: false });
+
+	return { title };
+});
+
+export function usePageTitle(initialTitle: { title: string; loading?: boolean } | null = null): {
+	pageTitle: Ref<PageTitle>;
+	setPageTitle: (title: string) => void;
+} {
+	const { title: pageTitle } = storeToRefs(usePageTitleStore());
 
 	// Function to update the title dynamically
-	const setTitle = (title: string, loading: boolean = false) => {
+	function setTitle(title: string, loading: boolean = false): void {
 		if (pageTitle) {
 			pageTitle.value = { title, loading };
 		}
-	};
+	}
 
-	return setTitle;
+	// Initially set the title
+	onMounted(() => {
+		if (initialTitle) {
+			setTitle(initialTitle.title, initialTitle.loading);
+		}
+	});
+
+	return { pageTitle, setPageTitle: setTitle };
 }
