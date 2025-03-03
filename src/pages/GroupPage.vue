@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from "primevue";
+import { watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
@@ -20,7 +21,13 @@ const { setPageTitle } = usePageTitle({ title: null });
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData } = useGroup(routeGroupId, () => {
-	setPageTitle({ title: groupData.value?.name ?? "Unknown Group" });
+	watch(
+		groupData,
+		(newGroupData) => {
+			setPageTitle({ title: newGroupData?.name ?? null });
+		},
+		{ immediate: true }
+	);
 });
 
 function navigateTo(link: SubPage["link"]) {
