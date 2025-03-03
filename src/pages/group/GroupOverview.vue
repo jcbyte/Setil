@@ -2,7 +2,7 @@
 import { Button, useToast } from "primevue";
 import { useRoute } from "vue-router";
 import { useGroup } from "../../composables/useGroup";
-import { invite } from "../../firebase/firestore";
+import { cleanupInvites, invite } from "../../firebase/firestore";
 import { type GroupUserData } from "../../firebase/types";
 import { formatCurrency } from "../../util/util";
 
@@ -17,6 +17,10 @@ function calculateBalance(balance: GroupUserData["balance"]): number {
 }
 
 async function inviteUser() {
+	// Cleanup old invites
+	await cleanupInvites(groupId.value!);
+
+	// Create invite
 	const inviteCode = await invite(groupId.value!, 24 * 60 * 60 * 1000);
 	const inviteLink = `${window.location.origin}/invite/${groupId.value}/${inviteCode}`;
 	const sharedData = {

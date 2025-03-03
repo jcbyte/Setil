@@ -8,6 +8,8 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
+- Delete group
+- Leave group
 - Restyle
 - Animations
 - Resolve debts over multiple people
