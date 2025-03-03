@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useToast } from "primevue";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import { getLiveGroupData, getTransactions, getUsers } from "../firebase/firestore";
+import { getLiveGroupData, getLiveUsers, getTransactions } from "../firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "../firebase/types";
 
 const useGroupStore = defineStore("group", () => {
@@ -12,8 +12,9 @@ const useGroupStore = defineStore("group", () => {
 	const transactions = ref<Record<string, Transaction> | null>(null);
 
 	let groupDataUnsubscribe = ref<(() => void) | null>(null);
+	let usersUnsubscribe = ref<(() => void) | null>(null);
 
-	return { groupId, groupData, users, transactions, groupDataUnsubscribe };
+	return { groupId, groupData, users, transactions, groupDataUnsubscribe, usersUnsubscribe };
 });
 
 export function useGroup(
@@ -31,6 +32,7 @@ export function useGroup(
 		users,
 		transactions,
 		groupDataUnsubscribe,
+		usersUnsubscribe,
 	} = storeToRefs(useGroupStore());
 
 	const router = useRouter();
@@ -54,6 +56,10 @@ export function useGroup(
 			return;
 		}
 
+		// Unsubscribe from existing listeners
+		if (groupDataUnsubscribe.value) groupDataUnsubscribe.value();
+		if (usersUnsubscribe.value) usersUnsubscribe.value();
+
 		// Used to reset group data
 		if (!groupId) {
 			currentGroupId.value = null;
@@ -64,7 +70,7 @@ export function useGroup(
 			return;
 		}
 
-		// Load all data
+		// Load group data
 		try {
 			groupDataUnsubscribe.value = await getLiveGroupData(groupId, groupData);
 		} catch (error) {
@@ -72,12 +78,16 @@ export function useGroup(
 			errorHome();
 			return;
 		}
-		const remoteUsers = await getUsers(groupId);
-		const remoteTransactions = await getTransactions(groupId);
 
-		currentGroupId.value = groupId;
-		users.value = remoteUsers;
+		// Load users data
+		usersUnsubscribe.value = await getLiveUsers(groupId, users);
+
+		// Load transactions data
+		const remoteTransactions = await getTransactions(groupId);
 		transactions.value = remoteTransactions;
+
+		// Set this last once, everything else has been set so that anything checking groupId !== null does not happen preemptively
+		currentGroupId.value = groupId;
 
 		afterLoad();
 	});

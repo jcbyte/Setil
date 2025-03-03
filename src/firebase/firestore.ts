@@ -73,17 +73,20 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
 }
 
 /**
- * Get a group's general data.
+ * Get a live copy of a group's general data synced to a vue ref.
  * @param groupId id of the group.
- * @returns the general data form the group or null if the group cannot be accessed/does not exist.
+ * @param groupDataRef the ref to sync the group data to.
+ * @returns the unsubscribe function.
  */
 export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupData | null>): Promise<() => void> {
 	const groupRef = doc(db, "groups", groupId);
 
 	return await new Promise<() => void>((resolve, reject) => {
+		// Setup listener to update ref
 		const unsubscribe = onSnapshot(groupRef, (doc) => {
 			if (doc.exists()) {
 				groupDataRef.value = doc.data() as GroupData;
+				// Only continue once data has been first loaded
 				resolve(unsubscribe);
 			} else {
 				reject(new Error(`Group ${groupId} does not exist.`));
@@ -192,17 +195,37 @@ export async function getTransactions(groupId: string): Promise<Record<string, T
 }
 
 /**
- * Get all users from a group.
+ * Get a live copy of a group's users synced to a vue ref.
  * @param groupId id of the group.
- * @returns the list of users and related data in the group.
+ * @param usersRef the ref to sync the user data to.
+ * @returns the unsubscribe function.
  */
-export async function getUsers(groupId: string): Promise<Record<string, GroupUserData>> {
-	const usersRef = collection(db, "groups", groupId, "users");
+export async function getLiveUsers(
+	groupId: string,
+	usersRef: Ref<Record<string, GroupUserData> | null>
+): Promise<() => void> {
+	const firestoreUsersRef = collection(db, "groups", groupId, "users");
 
-	// Get all users in the group
-	const usersSnap = await getDocs(usersRef);
+	// Initialise users if they have not been yet
+	if (!usersRef.value) usersRef.value = {};
 
-	return Object.fromEntries(usersSnap.docs.map((doc) => [doc.id, doc.data() as GroupUserData]));
+	return await new Promise<() => void>((resolve) => {
+		// Setup listener to update ref
+
+		const unsubscribe = onSnapshot(firestoreUsersRef, (snap) => {
+			snap.docChanges().forEach((change) => {
+				if (change.type === "added" || change.type === "modified") {
+					usersRef.value![change.doc.id] = change.doc.data() as GroupUserData;
+				} else if (change.type === "removed") {
+					delete usersRef.value![change.doc.id];
+				}
+			});
+
+			// Only continue once data has been first loaded
+
+			resolve(unsubscribe);
+		});
+	});
 }
 
 function calculateDeltas(
