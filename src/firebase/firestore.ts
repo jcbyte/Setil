@@ -10,12 +10,14 @@ import {
 	getDocs,
 	getFirestore,
 	increment,
+	onSnapshot,
 	orderBy,
 	query,
 	setDoc,
 	updateDoc,
 	writeBatch,
 } from "firebase/firestore";
+import type { Ref } from "vue";
 import { app } from "./firebase";
 import type { GroupData, GroupUserData, Transaction, UserData } from "./types";
 
@@ -68,6 +70,30 @@ export async function getGroupData(groupId: string): Promise<GroupData | null> {
 	if (!groupDocSnap || !groupDocSnap.exists()) return null;
 
 	return groupDocSnap.data() as GroupData;
+}
+
+/**
+ * Get a group's general data.
+ * @param groupId id of the group.
+ * @returns the general data form the group or null if the group cannot be accessed/does not exist.
+ */
+export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupData | null>): Promise<() => void> {
+	const groupRef = doc(db, "groups", groupId);
+
+	return await new Promise<() => void>((resolve, reject) => {
+		const unsubscribe = onSnapshot(groupRef, (doc) => {
+			console.log("aaa");
+
+			if (doc.exists()) {
+				console.log(doc.data() as GroupData);
+
+				groupDataRef.value = doc.data() as GroupData;
+				resolve(unsubscribe);
+			} else {
+				reject(new Error(`Group ${groupId} does not exist.`));
+			}
+		});
+	});
 }
 
 /**

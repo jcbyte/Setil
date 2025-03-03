@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useToast } from "primevue";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import { getGroupData, getTransactions, getUsers } from "../firebase/firestore";
+import { getLiveGroupData, getTransactions, getUsers } from "../firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "../firebase/types";
 
 const useGroupStore = defineStore("group", () => {
@@ -11,7 +11,9 @@ const useGroupStore = defineStore("group", () => {
 	const users = ref<Record<string, GroupUserData> | null>(null);
 	const transactions = ref<Record<string, Transaction> | null>(null);
 
-	return { groupId, groupData, users, transactions };
+	let groupDataUnsubscribe = ref<(() => void) | null>(null);
+
+	return { groupId, groupData, users, transactions, groupDataUnsubscribe };
 });
 
 export function useGroup(
@@ -23,7 +25,13 @@ export function useGroup(
 	users: Ref<Record<string, GroupUserData> | null>;
 	transactions: Ref<Record<string, Transaction> | null>;
 } {
-	const { groupId: currentGroupId, groupData, users, transactions } = storeToRefs(useGroupStore());
+	const {
+		groupId: currentGroupId,
+		groupData,
+		users,
+		transactions,
+		groupDataUnsubscribe,
+	} = storeToRefs(useGroupStore());
 
 	const router = useRouter();
 	const toast = useToast();
@@ -49,13 +57,17 @@ export function useGroup(
 		// Used to reset group data
 		if (!groupId) {
 			currentGroupId.value = null;
+			groupData.value = null;
+			users.value = null;
+			transactions.value = null;
 			afterLoad();
 			return;
 		}
 
 		// Load all data
-		const remoteGroupData = await getGroupData(groupId);
-		if (!remoteGroupData) {
+		try {
+			groupDataUnsubscribe.value = await getLiveGroupData(groupId, groupData);
+		} catch (error) {
 			// If the group cannot be found then return to the home page
 			errorHome();
 			return;
@@ -64,7 +76,6 @@ export function useGroup(
 		const remoteTransactions = await getTransactions(groupId);
 
 		currentGroupId.value = groupId;
-		groupData.value = remoteGroupData;
 		users.value = remoteUsers;
 		transactions.value = remoteTransactions;
 
