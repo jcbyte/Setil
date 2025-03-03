@@ -4,6 +4,7 @@ import GroupTransactions from "./pages/group/GroupTransactions.vue";
 import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
+import InvitePage from "./pages/InvitePage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
 import TransactionPage from "./pages/TransactionPage.vue";
 
@@ -54,6 +55,11 @@ const routes = [
 		path: "/group/:groupId/settle",
 		component: SettleUpPage,
 		name: "SettleUpPage",
+	},
+	{
+		path: "/invite/:groupId/:inviteCode",
+		component: InvitePage,
+		name: "InvitePage",
 	},
 ];
 

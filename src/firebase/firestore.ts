@@ -405,6 +405,10 @@ export async function invite(groupId: string, expiry: number): Promise<string> {
 	return inviteRef.id;
 }
 
+/**
+ * Cleans up expired invites in a group.
+ * @param groupId id of the group.
+ */
 export async function cleanupInvites(groupId: string): Promise<void> {
 	const groupInvitesRef = collection(db, "groups", groupId, "invites");
 
@@ -420,4 +424,39 @@ export async function cleanupInvites(groupId: string): Promise<void> {
 	for (const expiredInvite of expiredInvites) {
 		deleteDoc(expiredInvite);
 	}
+}
+
+/**
+ * Try and join a group with an invite code.
+ * @param groupId id of the group.
+ * @param inviteCode invite code to join the group.
+ * @returns true if the user joins (or is already in) the group.
+ */
+export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
+	const user = getUser();
+
+	// Add ourselves to the group
+	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+
+	// Return true if user is already part of the group
+	const userSnap = await getDoc(groupUserRef);
+	if (userSnap.exists()) {
+		return true;
+	}
+
+	// Join the group
+	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", balance: {} };
+	try {
+		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });
+	} catch {
+		return false;
+	}
+
+	// Add the group to the user
+	const userRef = doc(db, "users", user.uid);
+	await updateDoc(userRef, {
+		groups: arrayUnion(groupId),
+	});
+
+	return true;
 }
