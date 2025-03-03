@@ -16,11 +16,11 @@ const subpages: SubPage[] = [
 
 const route = useRoute();
 const router = useRouter();
-const { setPageTitle } = usePageTitle({ title: "", loading: true });
+const { setPageTitle } = usePageTitle({ title: null });
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData } = useGroup(routeGroupId, () => {
-	setPageTitle(groupData.value?.name ?? "Unknown Group");
+	setPageTitle({ title: groupData.value?.name ?? "Unknown Group" });
 });
 
 function navigateTo(link: SubPage["link"]) {

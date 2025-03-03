@@ -75,7 +75,7 @@ function signOut() {
 		</router-link>
 
 		<div class="absolute left-1/2 transform -translate-x-1/2">
-			<span v-if="!pageTitle.loading">{{ pageTitle.title }}</span>
+			<span v-if="pageTitle.title">{{ pageTitle.title }}</span>
 			<Skeleton v-else class="!w-32 !h-8" />
 		</div>
 
