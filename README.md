@@ -8,7 +8,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: Title shows as loading when creating group
 - Check if user rejoins group then it is okay
 - Restyle
 - Animations

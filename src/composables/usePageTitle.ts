@@ -19,6 +19,8 @@ export function usePageTitle(initialTitle: PageTitle | null = null): {
 
 	// Function to update the title dynamically
 	function setTitle(title: PageTitle): void {
+		console.log(title);
+
 		if (pageTitle) {
 			pageTitle.value = title;
 		}

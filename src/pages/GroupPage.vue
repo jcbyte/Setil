@@ -17,18 +17,18 @@ const subpages: SubPage[] = [
 
 const route = useRoute();
 const router = useRouter();
-const { setPageTitle } = usePageTitle({ title: null });
+const { setPageTitle } = usePageTitle();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData } = useGroup(routeGroupId, () => {
-	watch(
-		groupData,
-		(newGroupData) => {
-			setPageTitle({ title: newGroupData?.name ?? null });
-		},
-		{ immediate: true }
-	);
-});
+const { groupId, groupData } = useGroup(routeGroupId);
+
+watch(
+	groupData,
+	(newGroupData) => {
+		setPageTitle({ title: newGroupData?.name ?? null });
+	},
+	{ immediate: true }
+);
 
 function navigateTo(link: SubPage["link"]) {
 	router.push(link(groupId.value!));
