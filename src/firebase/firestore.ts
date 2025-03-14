@@ -5,6 +5,7 @@ import {
 	arrayUnion,
 	collection,
 	deleteDoc,
+	deleteField,
 	doc,
 	getDoc,
 	getDocs,
@@ -504,6 +505,9 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", active: true, balance: {} };
 	try {
 		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });
+
+		// If this passes then the user is added to the group so now we remove there custom data
+		await updateDoc(groupUserRef, { customData: deleteField() });
 	} catch {
 		return false;
 	}

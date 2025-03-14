@@ -8,7 +8,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: Custom data on invite is included in the database
 - FIX: Title shows as loading when creating group
 - Check if user rejoins group then it is okay
 - Restyle
