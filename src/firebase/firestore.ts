@@ -91,8 +91,6 @@ export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupD
 					// Only continue once data has been first loaded
 					resolve(unsubscribe);
 				} else {
-					console.log("5b");
-
 					reject(new Error(`Group ${groupId} does not exist.`));
 				}
 			},
@@ -490,6 +488,17 @@ export async function cleanupInvites(groupId: string): Promise<void> {
 export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
 	const user = getUser();
 
+	// Add the group to the user if it is not already there
+	const userRef = doc(db, "users", user.uid);
+	const userSnap = await getDoc(userRef);
+	const userData = userSnap.data() as UserData;
+
+	if (!userData.groups.includes(groupId)) {
+		await updateDoc(userRef, {
+			groups: arrayUnion(groupId),
+		});
+	}
+
 	// Add ourselves to the group
 	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
 
@@ -511,12 +520,6 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	} catch {
 		return false;
 	}
-
-	// Add the group to the user
-	const userRef = doc(db, "users", user.uid);
-	await updateDoc(userRef, {
-		groups: arrayUnion(groupId),
-	});
 
 	return true;
 }
