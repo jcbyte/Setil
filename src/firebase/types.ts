@@ -13,6 +13,7 @@ export interface GroupData {
 
 export interface GroupUserData {
 	name: string;
+	active: boolean;
 	balance: Record<string, number>;
 }
 

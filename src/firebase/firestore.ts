@@ -163,7 +163,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid);
-	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", balance: {} };
+	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", active: true, balance: {} };
 	await setDoc(groupUsersRef, groupUserData);
 
 	// Add the group to the user
@@ -205,10 +205,31 @@ export async function deleteGroup(groupId: string) {
 export async function leaveGroup(groupId: string) {
 	const user = getUser();
 
+	// Set the users active state to false to show they have left
+	const firestoreGroupUsersRef = doc(db, "groups", groupId, "users", user.uid);
+	await updateDoc(firestoreGroupUsersRef, { active: false });
+
+	// Remove group from users list so it will not show up
 	const userRef = doc(db, "users", user.uid);
 	await updateDoc(userRef, { groups: arrayRemove(groupId) });
 
-	// todo if owner then pass it to another user, if they are last users then delete group instead
+	// If user is owner then pass this to a different user
+	const groupRef = doc(db, "groups", groupId);
+	const groupDocSnap = await getDoc(groupRef);
+	const groupData = groupDocSnap.data() as GroupData;
+
+	if (groupData.owner === user.uid) {
+		const firestoreUsersRef = collection(db, "groups", groupId, "users");
+		const userSnaps = await getDocs(firestoreUsersRef);
+
+		const newOwner = userSnaps.docs.find((userSnap) => (userSnap.data() as GroupUserData).active);
+		if (newOwner) {
+			await updateDoc(groupRef, { owner: newOwner.id });
+		} else {
+			// Delete the group if the are no active users left
+			await deleteGroup(groupId);
+		}
+	}
 }
 
 /**
@@ -480,7 +501,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	} catch {}
 
 	// Join the group
-	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", balance: {} };
+	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", active: true, balance: {} };
 	try {
 		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });
 	} catch {
