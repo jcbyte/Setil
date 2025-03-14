@@ -8,7 +8,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Delete group
+- Only owner should be able to delete group
 - Leave group
 - Restyle
 - Animations

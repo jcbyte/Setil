@@ -187,6 +187,17 @@ export async function updateGroup(groupId: string, groupData: Partial<Omit<Group
 }
 
 /**
+ * Deletes the group
+ * @param groupId id of the group
+ */
+export async function deleteGroup(groupId: string) {
+	// Delete the group
+	// The group will be removed from other users groups when they call `getUserGroups`
+	const groupRef = doc(db, "groups", groupId);
+	await deleteDoc(groupRef);
+}
+
+/**
  * Get a live copy of a group's transactions synced to a vue ref.
  * @param groupId id of the group.
  * @param transactionsRef the ref to sync the transactions data to.
