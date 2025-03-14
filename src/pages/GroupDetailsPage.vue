@@ -5,7 +5,13 @@ import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
-import { createGroup, deleteGroup as firestoreDeleteGroup, getUser, updateGroup } from "../firebase/firestore";
+import {
+	createGroup,
+	deleteGroup as firestoreDeleteGroup,
+	leaveGroup as firestoreLeaveGroup,
+	getUser,
+	updateGroup,
+} from "../firebase/firestore";
 import type { GroupData } from "../firebase/types";
 import { CurrencySettings, type Currency } from "../util/groupSettings";
 
@@ -93,6 +99,22 @@ async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 	}
 }
 
+async function leaveGroup(): Promise<void> {
+	creatingGroup.value = true;
+
+	await firestoreLeaveGroup(routeGroupId!);
+
+	toast.add({
+		severity: "success",
+		summary: "Left group",
+		life: 2000,
+	});
+
+	router.push(`/`);
+
+	creatingGroup.value = false;
+}
+
 async function deleteGroup(): Promise<void> {
 	creatingGroup.value = true;
 
@@ -145,6 +167,17 @@ async function deleteGroup(): Promise<void> {
 			:loading="creatingGroup"
 			severity="secondary"
 			fluid
+		/>
+
+		<Button
+			v-if="routeGroupId"
+			type="button"
+			icon="pi pi-sign-out"
+			label="Leave"
+			:loading="creatingGroup"
+			severity="danger"
+			fluid
+			@click="leaveGroup"
 		/>
 
 		<Button

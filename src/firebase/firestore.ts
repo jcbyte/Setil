@@ -187,14 +187,28 @@ export async function updateGroup(groupId: string, groupData: Partial<Omit<Group
 }
 
 /**
- * Deletes the group
- * @param groupId id of the group
+ * Deletes the group.
+ * @param groupId id of the group.
  */
 export async function deleteGroup(groupId: string) {
 	// Delete the group
 	// The group will be removed from other users groups when they call `getUserGroups`
 	const groupRef = doc(db, "groups", groupId);
 	await deleteDoc(groupRef);
+}
+
+/**
+ * User leaves the group.
+ * The users data will not be deleted from the group but they will no longer see it in there menu.
+ * @param groupId id of the group.
+ */
+export async function leaveGroup(groupId: string) {
+	const user = getUser();
+
+	const userRef = doc(db, "users", user.uid);
+	await updateDoc(userRef, { groups: arrayRemove(groupId) });
+
+	// todo if owner then pass it to another user, if they are last users then delete group instead
 }
 
 /**
