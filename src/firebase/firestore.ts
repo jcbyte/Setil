@@ -27,7 +27,7 @@ const db = getFirestore(app);
  * @returns the user's uid.
  * @throws an error if the user is not signed in.
  */
-function getUser(): User {
+export function getUser(): User {
 	const user = getAuth().currentUser;
 	if (!user) throw new Error("User not signed in");
 

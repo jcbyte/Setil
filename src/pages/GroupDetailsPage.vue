@@ -5,7 +5,7 @@ import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
 import { usePageTitle } from "../composables/usePageTitle";
-import { createGroup, deleteGroup as firestoreDeleteGroup, updateGroup } from "../firebase/firestore";
+import { createGroup, deleteGroup as firestoreDeleteGroup, getUser, updateGroup } from "../firebase/firestore";
 import type { GroupData } from "../firebase/types";
 import { CurrencySettings, type Currency } from "../util/groupSettings";
 
@@ -148,7 +148,7 @@ async function deleteGroup(): Promise<void> {
 		/>
 
 		<Button
-			v-if="routeGroupId"
+			v-if="routeGroupId && getUser().uid === groupData?.owner"
 			type="button"
 			icon="pi pi-trash"
 			label="Delete"

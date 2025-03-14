@@ -8,8 +8,9 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Only owner should be able to delete group
 - Leave group
+- FIX: Custom data on invite is included in the database
+- FIX: Title shows as loading when creating group
 - Restyle
 - Animations
 - Resolve debts over multiple people
