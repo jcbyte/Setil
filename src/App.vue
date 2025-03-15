@@ -5,6 +5,10 @@ import { onMounted, ref } from "vue";
 import { usePageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/SignInPage.vue";
+import { Button as Shadebtn } from "@/components/ui/button";
+import { Input as Shadeinput } from "@/components/ui/input";
+
+import { useColorMode } from "@vueuse/core";
 
 const toast = useToast();
 
@@ -66,6 +70,8 @@ function signOut() {
 			});
 		});
 }
+
+useColorMode().value = "dark";
 </script>
 
 <template>
@@ -102,6 +108,9 @@ function signOut() {
 		</div>
 		<Skeleton v-else class="!w-32 !h-8" />
 	</div>
+
+	<Shadebtn>Click Me</Shadebtn>
+	<Shadeinput type="email" placeholder="Email" />
 
 	<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
