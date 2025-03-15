@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { type GroupData } from "../../firebase/types";
+import { type GroupData } from "../firebase/types";
 
 defineProps<{
 	group: GroupData;
 }>();
+
+// todo implement rest of this once data is available
 </script>
 
 <template>
@@ -12,7 +14,7 @@ defineProps<{
 		<div class="flex justify-between items-center">
 			<div class="flex flex-col">
 				<span class="text-lg font-semibold">{{ group.name }}</span>
-				<span class="text-sm text-zinc-400">(todo) group description</span>
+				<span v-if="group.description" class="text-sm text-zinc-400">{{ group.description }}</span>
 			</div>
 			<i class="pi pi-chevron-right" />
 		</div>

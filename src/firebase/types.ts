@@ -7,6 +7,7 @@ export interface UserData {
 
 export interface GroupData {
 	name: string;
+	description: string | null;
 	currency: Currency;
 	owner: string;
 }

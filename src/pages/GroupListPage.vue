@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GroupListItem from "@/components/GroupListItem.vue";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,12 +9,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { firebaseSignOut } from "@/firebase/auth";
+import { getUser, getUserGroups } from "@/firebase/firestore";
+import type { GroupData } from "@/firebase/types";
 import { useToast } from "primevue";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getUser, getUserGroups } from "../firebase/firestore";
-import { type GroupData } from "../firebase/types";
-import GroupListItem from "./groupList/GroupListItem.vue";
 
 const router = useRouter();
 
@@ -50,28 +50,6 @@ function signOut() {
 </script>
 
 <template>
-	<!-- <div class="flex flex-col items-center gap-4">
-		<div v-if="groups" class="flex flex-col w-80 gap-2">
-			<div
-				class="bg-zinc-700 hover:bg-zinc-600 duration-300 cursor-pointer w-full rounded-lg p-2"
-				v-for="(group, groupId) in groups"
-			>
-				<router-link :to="`/group/${groupId}`" class="flex justify-between items-center">
-					<span class="text-lg">{{ group.name }}</span>
-					<i class="pi pi-chevron-right" />
-				</router-link>
-			</div>
-		</div>
-		<div v-else class="flex flex-col w-80 gap-2">
-			<Skeleton class="!w-full !h-11 !rounded-lg" />
-			<Skeleton class="!w-full !h-11 !rounded-lg" />
-			<Skeleton class="!w-full !h-11 !rounded-lg" />
-		</div>
-
-		<router-link to="/create" class="w-full">
-			<Button severity="secondary" icon="pi pi-plus" label="New" fluid />
-		</router-link>
-	</div> -->
 	<div class="w-full flex flex-col gap-4">
 		<div class="flex justify-between">
 			<span class="text-lg font-semibold">My Groups</span>
