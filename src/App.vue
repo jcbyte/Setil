@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getAuth } from "firebase/auth";
-import { Button, Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
+import { Skeleton, Toast, useToast, type ToastMessageOptions } from "primevue";
 import { onMounted, ref } from "vue";
 import { usePageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
