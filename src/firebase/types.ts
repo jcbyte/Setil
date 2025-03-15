@@ -13,6 +13,7 @@ export interface GroupData {
 
 export interface GroupUserData {
 	name: string;
+	photoURL: string | null;
 	active: boolean;
 	balance: Record<string, number>;
 }

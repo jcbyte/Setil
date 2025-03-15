@@ -162,7 +162,12 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid);
-	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", active: true, balance: {} };
+	const groupUserData: GroupUserData = {
+		name: user.displayName ?? "Unknown User",
+		photoURL: user.photoURL,
+		active: true,
+		balance: {},
+	};
 	await setDoc(groupUsersRef, groupUserData);
 
 	// Add the group to the user
@@ -511,7 +516,12 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	} catch {}
 
 	// Join the group
-	const groupUserData: GroupUserData = { name: user.displayName ?? "Unknown User", active: true, balance: {} };
+	const groupUserData: GroupUserData = {
+		name: user.displayName ?? "Unknown User",
+		photoURL: user.photoURL,
+		active: true,
+		balance: {},
+	};
 	try {
 		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });
 
