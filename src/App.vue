@@ -5,8 +5,6 @@ import { onMounted, ref } from "vue";
 import { usePageTitle } from "./composables/usePageTitle";
 import { firebaseSignOut, signInWithGoogle } from "./firebase/auth";
 import SignInPage from "./pages/SignInPage.vue";
-import { Button as Shadebtn } from "@/components/ui/button";
-import { Input as Shadeinput } from "@/components/ui/input";
 
 import { useColorMode } from "@vueuse/core";
 
@@ -75,7 +73,7 @@ useColorMode().value = "dark";
 </script>
 
 <template>
-	<div class="relative w-full bg-zinc-800 flex items-center justify-between py-2 px-4">
+	<!-- <div class="relative w-full bg-zinc-800 flex items-center justify-between py-2 px-4">
 		<router-link to="/">
 			<span class="text-lg font-bold">Setil</span>
 		</router-link>
@@ -107,10 +105,7 @@ useColorMode().value = "dark";
 			</Button>
 		</div>
 		<Skeleton v-else class="!w-32 !h-8" />
-	</div>
-
-	<Shadebtn>Click Me</Shadebtn>
-	<Shadeinput type="email" placeholder="Email" />
+	</div> -->
 
 	<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 		<SignInPage v-if="!currentUser" :signIn="signIn" />
