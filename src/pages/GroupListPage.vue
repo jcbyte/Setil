@@ -7,6 +7,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { firebaseSignOut } from "@/firebase/auth";
+import { useToast } from "primevue";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { getUser, getUserGroups } from "../firebase/firestore";
@@ -19,11 +21,32 @@ const groups = ref<Record<string, GroupData> | null>(null);
 
 const user = computed(() => getUser());
 
+const toast = useToast();
+
 onMounted(() => {
 	getUserGroups().then((groupsList) => {
 		groups.value = groupsList;
 	});
 });
+
+function signOut() {
+	firebaseSignOut()
+		.then(() => {
+			toast.add({
+				severity: "success",
+				summary: "Signed Out",
+				life: 2000,
+			});
+		})
+		.catch((error) => {
+			toast.add({
+				severity: "error",
+				summary: "Sign Out Failed",
+				detail: error.message,
+				life: 5000,
+			});
+		});
+}
 </script>
 
 <template>
@@ -61,7 +84,7 @@ onMounted(() => {
 						</Avatar>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<DropdownMenuItem @click="console.log(2)">
+						<DropdownMenuItem @click="signOut">
 							<div class="w-full flex justify-between">
 								<span class="text-red-400">Sign Out</span>
 								<i class="pi pi-sign-out text-red-400" />

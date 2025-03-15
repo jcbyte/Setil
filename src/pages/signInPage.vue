@@ -1,10 +1,38 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { signInWithGoogle } from "@/firebase/auth";
+import { useToast, type ToastMessageOptions } from "primevue";
 
-defineProps<{
-	signIn: () => void;
-}>();
+const toast = useToast();
+
+function signIn() {
+	const persistentMessage: ToastMessageOptions = {
+		summary: "Signing In",
+		detail: "Continue in the popup window",
+		closable: false,
+	};
+
+	toast.add(persistentMessage);
+	signInWithGoogle()
+		.then(() => {
+			toast.remove(persistentMessage);
+			toast.add({
+				severity: "success",
+				summary: "Signed In",
+				life: 2000,
+			});
+		})
+		.catch((error) => {
+			toast.remove(persistentMessage);
+			toast.add({
+				severity: "error",
+				summary: "Sign In Failed",
+				detail: error.message,
+				life: 5000,
+			});
+		});
+}
 </script>
 
 <template>
