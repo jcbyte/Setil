@@ -47,6 +47,8 @@ function signOut() {
 			});
 		});
 }
+
+// todo implement skeleton whilst loading
 </script>
 
 <template>
@@ -56,7 +58,7 @@ function signOut() {
 			<div class="flex gap-2 justify-center items-center">
 				<DropdownMenu>
 					<DropdownMenuTrigger as-child>
-						<Avatar>
+						<Avatar class="size-9">
 							<AvatarImage :src="user.photoURL ?? ''" :alt="user.displayName" />
 							<AvatarFallback>{{ user.displayName?.substring(0, 2) }}</AvatarFallback>
 						</Avatar>
