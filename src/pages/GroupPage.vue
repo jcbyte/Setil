@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
@@ -12,7 +13,7 @@ const route = useRoute();
 const router = useRouter();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData } = useGroup(routeGroupId);
+const { groupId, groupData, users } = useGroup(routeGroupId);
 </script>
 
 <template>
@@ -32,7 +33,7 @@ const { groupId, groupData } = useGroup(routeGroupId);
 			</div>
 		</div>
 
-		<div class="flex justify-between">
+		<div class="flex gap-4 justify-between">
 			<div>
 				<Tabs default-value="summary" class="w-[400px]">
 					<TabsList class="grid w-full grid-cols-2">
@@ -47,7 +48,23 @@ const { groupId, groupData } = useGroup(routeGroupId);
 					</TabsContent>
 				</Tabs>
 			</div>
-			<div>todo group info here</div>
+
+			<div class="border border-zinc-800 rounded-lg p-4 flex flex-col gap-2 h-fit max-w-64">
+				<div class="flex flex-col">
+					<span class="text-lg font-semibold">Group Info</span>
+					<span class="text-sm text-zinc-400">Description</span>
+					<span class="text-md">{{ groupData?.description }}</span>
+				</div>
+				<div class="flex flex-col gap-1">
+					<span class="text-sm text-zinc-400 font-semibold">Members ({{ Object.keys(users!).length }})</span>
+					<div class="flex gap-2 flex-wrap">
+						<div v-for="user in users" class="flex gap-1 justify-center items-center">
+							<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
+							<span class="text-sm">{{ user.name }}</span>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!-- <div class="fixed right-8 bottom-8">
