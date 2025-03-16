@@ -342,7 +342,8 @@ function calculateDeltas(
  */
 export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
 	// Add the transaction to the group
-	const groupTransactionsRef = collection(db, "groups", groupId, "transactions");
+	const groupRef = doc(db, "groups", groupId);
+	const groupTransactionsRef = collection(groupRef, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
 	// Work out the changes in balances for each user based on the transaction
@@ -360,6 +361,9 @@ export async function createTransaction(groupId: string, transaction: Transactio
 		);
 	});
 	await batch.commit();
+
+	// Update the last update field for the group
+	updateDoc(groupRef, { lastUpdate: Timestamp.now() });
 
 	return transactionRef.id;
 }

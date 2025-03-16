@@ -10,6 +10,7 @@ export interface GroupData {
 	description: string | null;
 	currency: Currency;
 	owner: string;
+	lastUpdate: Timestamp;
 }
 
 export interface GroupUserData {
