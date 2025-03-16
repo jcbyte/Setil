@@ -44,7 +44,7 @@ const { groupId, groupData, users } = useGroup(routeGroupId);
 					</TabsList>
 
 					<TabsContent value="summary">
-						<GroupSummary v-if="groupId" />
+						<GroupSummary v-if="groupId" :group-data="groupData!" :users="users!" />
 						<Skeleton v-else class="w-full h-96" />
 					</TabsContent>
 
