@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-defineProps<{
+export interface AvatarProp {
 	src: string | null;
 	name: string;
-}>();
+}
+
+defineProps<AvatarProp>();
 </script>
 
 <template>

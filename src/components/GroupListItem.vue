@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ExtendedGroupData } from "@/firebase/firestore";
 import { Timestamp } from "firebase/firestore";
-import Avatar from "./Avatar.vue";
+import AvatarStack from "./AvatarStack.vue";
 
 defineProps<{
 	group: ExtendedGroupData;
@@ -38,13 +38,17 @@ function calculateLengthAgo(timestamp: Timestamp) {
 				<span class="text-lg font-semibold">{{ group.name }}</span>
 				<span v-if="group.description" class="text-sm text-zinc-400">{{ group.description }}</span>
 			</div>
-			<Avatar v-for="topUser in group.topUsers" :src="topUser.photoURL" :name="topUser.name" />
+			<AvatarStack
+				avatar-class="border border-zinc-950"
+				:avatars="group.topUsers.map((topUser) => ({ src: topUser.photoURL, name: topUser.name }))"
+				:total-count="group.userCount + 6"
+			/>
 			<span class="text-sm text-zinc-400">{{ calculateLengthAgo(group.lastUpdate) }}</span>
 		</div>
 
 		<div class="flex flex-col justify-between items-end">
 			<i class="pi pi-chevron-right text-zinc-200" />
-			<span class="text-sm bg-green-400/20 rounded-full px-1.5 py-0.5">{{ group.myself.balance }}</span>
+			<span class="text-sm bg-green-400/20 rounded-full px-1.5 py-0.5">todo {{ group.myself.balance }}</span>
 		</div>
 	</div>
 </template>
