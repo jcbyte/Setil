@@ -11,6 +11,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 - Restyle settings page
 - Restyle transactions page
 - Restyle settle up page
+- Remove primevue toast
 
 - FIX: Make owing colours look better
 

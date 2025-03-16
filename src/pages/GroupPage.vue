@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
+import { inviteUser } from "@/util/util";
+import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -14,6 +16,15 @@ const router = useRouter();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
+
+const isAddingMember = ref<boolean>(false);
+async function addMember() {
+	if (!groupId.value) return;
+
+	isAddingMember.value = true;
+	await inviteUser(groupId.value);
+	isAddingMember.value = false;
+}
 </script>
 
 <template>
@@ -95,7 +106,6 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 					<span class="text-sm text-zinc-400">Description</span>
 					<span class="text-md">{{ groupData?.description }}</span>
 				</div>
-				<!-- todo add invite option into members list -->
 				<div class="flex flex-col gap-1">
 					<span class="text-sm text-zinc-400 font-semibold">Members ({{ Object.keys(users!).length }})</span>
 					<div class="flex gap-2 flex-wrap">
@@ -105,6 +115,10 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 						</div>
 					</div>
 				</div>
+				<Button variant="outline" :disabled="isAddingMember" @click="addMember">
+					<i :class="`pi ${isAddingMember ? 'pi pi-spin pi-spinner' : 'pi-user-plus'}`" />
+					<span>Add Member</span>
+				</Button>
 			</div>
 			<Skeleton v-else class="w-64 h-64" />
 		</div>

@@ -9,34 +9,6 @@ const props = defineProps<{
 	users: Record<string, GroupUserData>;
 }>();
 
-// async function inviteUser() {
-// 	// Cleanup old invites
-// 	await cleanupInvites(groupId.value!);
-
-// 	// Create invite
-// 	const inviteCode = await invite(groupId.value!, 24 * 60 * 60 * 1000);
-// 	const inviteLink = `${window.location.origin}/invite/${groupId.value}/${inviteCode}`;
-// 	const sharedData = {
-// 		title: "Setil",
-// 		text: "Join my Setil Group!",
-// 		url: inviteLink,
-// 	};
-
-// 	// If this can be shared then share it
-// 	if (navigator.canShare(sharedData)) {
-// 		navigator.share(sharedData);
-// 	} else {
-// 		// Else copy to clipboard and display a confirmation
-// 		navigator.clipboard.writeText(inviteLink).then(() => {
-// 			toast.add({
-// 				severity: "info",
-// 				summary: "Copied invite link to Clipboard",
-// 				life: 5000,
-// 			});
-// 		});
-// 	}
-// }
-
 const usersBalanceStr = computed<Record<string, { str: string; status: "positive" | "negative" | "neutral" }>>(() => {
 	return Object.fromEntries(
 		Object.entries(props.users).map(([userId, user]) => [
