@@ -37,7 +37,7 @@ const user = getUser();
 <template>
 	<DropdownMenu>
 		<DropdownMenuTrigger as-child>
-			<Avatar class="size-9" :src="user.photoURL" :name="user.displayName ?? 'Myself'" />
+			<Avatar v-bind="$attrs" class="size-9" :src="user.photoURL" :name="user.displayName ?? 'Myself'" />
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
 			<DropdownMenuItem @click="signOut">

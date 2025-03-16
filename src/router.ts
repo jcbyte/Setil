@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import GroupOverview from "./pages/group/GroupOverview.vue";
-import GroupTransactions from "./pages/group/GroupTransactions.vue";
 import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
 import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
@@ -28,18 +26,6 @@ const routes = [
 		path: "/group/:groupId",
 		component: GroupPage,
 		name: "GroupPage",
-		children: [
-			{
-				path: "",
-				component: GroupOverview,
-				name: "GroupOverview",
-			},
-			{
-				path: "transactions",
-				component: GroupTransactions,
-				name: "GroupTransactions",
-			},
-		],
 	},
 	{
 		path: "/group/:groupId/transaction",
