@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ExtendedGroupData } from "@/firebase/firestore";
 import { Timestamp } from "firebase/firestore";
+import Avatar from "./Avatar.vue";
 
 defineProps<{
 	group: ExtendedGroupData;
@@ -38,10 +38,7 @@ function calculateLengthAgo(timestamp: Timestamp) {
 				<span class="text-lg font-semibold">{{ group.name }}</span>
 				<span v-if="group.description" class="text-sm text-zinc-400">{{ group.description }}</span>
 			</div>
-			<Avatar v-for="topUser in group.topUsers">
-				<AvatarImage :src="topUser.photoURL ?? ''" :alt="topUser.name" />
-				<AvatarFallback>{{ topUser.name.substring(0, 2) }}</AvatarFallback>
-			</Avatar>
+			<Avatar v-for="topUser in group.topUsers" :src="topUser.photoURL" :name="topUser.name" />
 			<span class="text-sm text-zinc-400">{{ calculateLengthAgo(group.lastUpdate) }}</span>
 		</div>
 

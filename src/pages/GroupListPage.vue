@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
 import GroupListItem from "@/components/GroupListItem.vue";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -57,10 +57,7 @@ function signOut() {
 			<div class="flex gap-2 justify-center items-center">
 				<DropdownMenu>
 					<DropdownMenuTrigger as-child>
-						<Avatar class="size-9">
-							<AvatarImage :src="user.photoURL ?? ''" :alt="user.displayName" />
-							<AvatarFallback>{{ user.displayName?.substring(0, 2) }}</AvatarFallback>
-						</Avatar>
+						<Avatar class="size-9" :src="user.photoURL" :name="user.displayName ?? 'Myself'" />
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
 						<DropdownMenuItem @click="signOut">
