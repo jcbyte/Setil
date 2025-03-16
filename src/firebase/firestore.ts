@@ -19,7 +19,6 @@ import {
 	setDoc,
 	Timestamp,
 	updateDoc,
-	writeBatch,
 } from "firebase/firestore";
 import type { Ref } from "vue";
 import { app } from "./firebase";
@@ -130,10 +129,9 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 					const baseGroupData = groupDocSnap.data() as GroupData;
 
 					// Get the extended group data
-					// todo convert order by to use most recently updated
 					const groupUsersRef = collection(groupRef, "users");
 					const usersCount = await getCountFromServer(groupUsersRef);
-					const topUsersQuery = query(groupUsersRef, orderBy("name"), limit(3));
+					const topUsersQuery = query(groupUsersRef, orderBy("lastUpdate"), limit(3));
 					const topUsersSnap = await getDocs(topUsersQuery);
 
 					const myselfSnap = await getDoc(doc(groupUsersRef, user.uid));
@@ -182,6 +180,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 		photoURL: user.photoURL,
 		active: true,
 		balance: {},
+		lastUpdate: Timestamp.now(),
 	};
 	await setDoc(groupUsersRef, groupUserData);
 
@@ -317,37 +316,37 @@ export async function getLiveUsers(
 	});
 }
 
-function calculateDeltas(
-	from: Record<string, number>,
-	to: Record<string, number>
-): Record<string, Record<string, number>> {
-	// Work out the changes in balances for each user based on the transaction
-	const balancesDelta: Record<string, Record<string, number>> = {};
-	const totalPaid = Object.values(to).reduce((a, b) => a + b, 0);
+// function calculateDeltas(
+// 	from: Record<string, number>,
+// 	to: Record<string, number>
+// ): Record<string, Record<string, number>> {
+// 	// Work out the changes in balances for each user based on the transaction
+// 	const balancesDelta: Record<string, Record<string, number>> = {};
+// 	const totalPaid = Object.values(to).reduce((a, b) => a + b, 0);
 
-	for (const payerId in from) {
-		const amountPaid = from[payerId];
+// 	for (const payerId in from) {
+// 		const amountPaid = from[payerId];
 
-		for (const receiverId in to) {
-			const amountReceived = to[receiverId];
+// 		for (const receiverId in to) {
+// 			const amountReceived = to[receiverId];
 
-			// Rounding to fix fix floating point errors
-			const amountOwed = Math.round((amountPaid * amountReceived) / totalPaid);
+// 			// Rounding to fix fix floating point errors
+// 			const amountOwed = Math.round((amountPaid * amountReceived) / totalPaid);
 
-			// Ensure keys exist
-			if (!balancesDelta[payerId]) balancesDelta[payerId] = {};
-			if (!balancesDelta[payerId][receiverId]) balancesDelta[payerId][receiverId] = 0;
-			if (!balancesDelta[receiverId]) balancesDelta[receiverId] = {};
-			if (!balancesDelta[receiverId][payerId]) balancesDelta[receiverId][payerId] = 0;
+// 			// Ensure keys exist
+// 			if (!balancesDelta[payerId]) balancesDelta[payerId] = {};
+// 			if (!balancesDelta[payerId][receiverId]) balancesDelta[payerId][receiverId] = 0;
+// 			if (!balancesDelta[receiverId]) balancesDelta[receiverId] = {};
+// 			if (!balancesDelta[receiverId][payerId]) balancesDelta[receiverId][payerId] = 0;
 
-			// Update deltas
-			balancesDelta[payerId][receiverId] += amountOwed;
-			balancesDelta[receiverId][payerId] -= amountOwed;
-		}
-	}
+// 			// Update deltas
+// 			balancesDelta[payerId][receiverId] += amountOwed;
+// 			balancesDelta[receiverId][payerId] -= amountOwed;
+// 		}
+// 	}
 
-	return balancesDelta;
-}
+// 	return balancesDelta;
+// }
 
 /**
  * Create a transaction in a group and update relevant users balances.
@@ -356,30 +355,34 @@ function calculateDeltas(
  * @returns the id of the new transaction.
  */
 export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
+	// todo convert this to use a batch
 	// Add the transaction to the group
 	const groupRef = doc(db, "groups", groupId);
 	const groupTransactionsRef = collection(groupRef, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
-	// Work out the changes in balances for each user based on the transaction
-	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
+	const fromUserRef = doc(groupRef, "users", transaction.from);
 
-	// Update balances in firestore
-	const batch = writeBatch(db);
-	Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
-		const userRef = doc(db, "groups", groupId, "users", userId);
-		batch.update(
-			userRef,
-			Object.fromEntries(
-				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
-			)
-		);
+	// Update each receiver with their new balances
+	Object.entries(transaction.to).forEach(([toUser, toAmount]) => {
+		// If the receiver is the sender this will make no changes, so ignore
+		if (toUser === transaction.from) return;
+
+		const userRef = doc(groupRef, "users", toUser);
+
+		updateDoc(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
+		updateDoc(userRef, { [`balance.${transaction.from}`]: increment(-toAmount) });
 	});
-	await batch.commit();
+
+	// Update the time when the current user has last added a transaction
+	const user = getUser();
+	const thisUserRef = doc(groupRef, "users", user.uid);
+	updateDoc(thisUserRef, { lastUpdate: Timestamp.now() });
 
 	// Update the last update field for the group
 	updateDoc(groupRef, { lastUpdate: Timestamp.now() });
 
+	// Return id of newly created transition
 	return transactionRef.id;
 }
 
@@ -394,41 +397,36 @@ export async function updateTransaction(
 	transactionId: string,
 	transaction: Transaction
 ): Promise<void> {
-	// Get the existing transaction data
-	const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
-	const transactionSnap = await getDoc(transactionRef);
-	const oldTransaction = transactionSnap.data() as Transaction;
-
-	// Update the transaction to the group
-	await setDoc(transactionRef, transaction);
-
-	// Work out the original and new changes in balances for each user based on the transaction
-	const oldBalancesDelta = calculateDeltas(oldTransaction.from, oldTransaction.to);
-	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
-
-	// Calculate balancesDelta delta
-	for (const userId in oldBalancesDelta) {
-		if (!balancesDelta[userId]) balancesDelta[userId] = {};
-
-		for (const receiverId in oldBalancesDelta[userId]) {
-			if (!balancesDelta[userId][receiverId]) balancesDelta[userId][receiverId] = 0;
-
-			balancesDelta[userId][receiverId] -= oldBalancesDelta[userId][receiverId];
-		}
-	}
-
-	// Update balances in firestore
-	const batch = writeBatch(db);
-	Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
-		const userRef = doc(db, "groups", groupId, "users", userId);
-		batch.update(
-			userRef,
-			Object.fromEntries(
-				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
-			)
-		);
-	});
-	await batch.commit();
+	// todo implement
+	// // Get the existing transaction data
+	// const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
+	// const transactionSnap = await getDoc(transactionRef);
+	// const oldTransaction = transactionSnap.data() as Transaction;
+	// // Update the transaction to the group
+	// await setDoc(transactionRef, transaction);
+	// // Work out the original and new changes in balances for each user based on the transaction
+	// const oldBalancesDelta = calculateDeltas(oldTransaction.from, oldTransaction.to);
+	// const balancesDelta = calculateDeltas(transaction.from, transaction.to);
+	// // Calculate balancesDelta delta
+	// for (const userId in oldBalancesDelta) {
+	// 	if (!balancesDelta[userId]) balancesDelta[userId] = {};
+	// 	for (const receiverId in oldBalancesDelta[userId]) {
+	// 		if (!balancesDelta[userId][receiverId]) balancesDelta[userId][receiverId] = 0;
+	// 		balancesDelta[userId][receiverId] -= oldBalancesDelta[userId][receiverId];
+	// 	}
+	// }
+	// // Update balances in firestore
+	// const batch = writeBatch(db);
+	// Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
+	// 	const userRef = doc(db, "groups", groupId, "users", userId);
+	// 	batch.update(
+	// 		userRef,
+	// 		Object.fromEntries(
+	// 			Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
+	// 		)
+	// 	);
+	// });
+	// await batch.commit();
 }
 
 /**
@@ -437,30 +435,28 @@ export async function updateTransaction(
  * @param transactionId id of the transaction.
  */
 export async function deleteTransaction(groupId: string, transactionId: string): Promise<void> {
-	// Get the existing transaction data
-	const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
-	const transactionSnap = await getDoc(transactionRef);
-	const transaction = transactionSnap.data() as Transaction;
-
-	// Delete the transaction from the group
-	await deleteDoc(transactionRef);
-
-	// Work out the changes in balances for each user based on the transaction
-	const balancesDelta = calculateDeltas(transaction.from, transaction.to);
-
-	// Update balances in firestore
-	const batch = writeBatch(db);
-	Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
-		const userRef = doc(db, "groups", groupId, "users", userId);
-		batch.update(
-			userRef,
-			Object.fromEntries(
-				// Invert the amount as we removing the transaction
-				Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(-amount)])
-			)
-		);
-	});
-	await batch.commit();
+	// todo implement
+	// // Get the existing transaction data
+	// const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
+	// const transactionSnap = await getDoc(transactionRef);
+	// const transaction = transactionSnap.data() as Transaction;
+	// // Delete the transaction from the group
+	// await deleteDoc(transactionRef);
+	// // Work out the changes in balances for each user based on the transaction
+	// const balancesDelta = calculateDeltas(transaction.from, transaction.to);
+	// // Update balances in firestore
+	// const batch = writeBatch(db);
+	// Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
+	// 	const userRef = doc(db, "groups", groupId, "users", userId);
+	// 	batch.update(
+	// 		userRef,
+	// 		Object.fromEntries(
+	// 			// Invert the amount as we removing the transaction
+	// 			Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(-amount)])
+	// 		)
+	// 	);
+	// });
+	// await batch.commit();
 }
 
 /**
@@ -540,6 +536,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		photoURL: user.photoURL,
 		active: true,
 		balance: {},
+		lastUpdate: Timestamp.now(),
 	};
 	try {
 		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });

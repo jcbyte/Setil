@@ -18,6 +18,7 @@ export interface GroupUserData {
 	photoURL: string | null;
 	active: boolean;
 	balance: Record<string, number>;
+	lastUpdate: Timestamp;
 }
 
 export interface Transaction {
