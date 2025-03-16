@@ -1,5 +1,4 @@
 import type { GroupUserData } from "@/firebase/types";
-import type { RouteLocationRaw, Router } from "vue-router";
 import { CurrencySettings, type Currency } from "./groupSettings";
 
 export function splitAmount(amount: number, people: string[]): Record<string, number> {
@@ -17,12 +16,4 @@ export function formatCurrency(amount: number, currency: Currency): string {
 
 export function resolveBalance(balance: GroupUserData["balance"]): number {
 	return Object.values(balance).reduce((acc, value) => acc + value, 0);
-}
-
-export function routerBackWithFallback(router: Router, fallback: RouteLocationRaw) {
-	if (window.history.length > 1) {
-		router.back();
-	} else {
-		router.push(fallback);
-	}
 }

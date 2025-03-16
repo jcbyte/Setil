@@ -8,10 +8,11 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Restyle group transactions
 - Restyle settings page
 - Restyle transactions page
 - Restyle settle up page
+
+- FIX: Make owing colours look better
 
 - Animations
 - Remove inactive users from transactions after debt is cleared

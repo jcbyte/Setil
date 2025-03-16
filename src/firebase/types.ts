@@ -22,7 +22,7 @@ export interface GroupUserData {
 
 export interface Transaction {
 	title: string;
-	from: Record<string, number>;
+	from: string;
 	to: Record<string, number>;
 	date: Timestamp;
 }

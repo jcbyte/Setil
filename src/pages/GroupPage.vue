@@ -7,21 +7,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
-import { routerBackWithFallback } from "@/util/util";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId);
+const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 </script>
 
 <template>
 	<div class="w-full flex flex-col gap-4 items-center">
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="routerBackWithFallback(router, '/')">
+				<Button variant="ghost" class="size-9" @click="router.push('/')">
 					<i class="pi pi-arrow-left" />
 				</Button>
 				<span v-if="groupId" class="text-lg font-semibold">{{ groupData!.name }}</span>
@@ -49,7 +48,13 @@ const { groupId, groupData, users } = useGroup(routeGroupId);
 					</TabsContent>
 
 					<TabsContent value="activity">
-						<GroupActivity v-if="groupId" />
+						<GroupActivity
+							v-if="groupId"
+							:group-id="groupId"
+							:group-data="groupData!"
+							:users="users!"
+							:transactions="transactions!"
+						/>
 						<Skeleton v-else class="w-full h-96" />
 					</TabsContent>
 				</Tabs>
@@ -58,7 +63,7 @@ const { groupId, groupData, users } = useGroup(routeGroupId);
 					<div
 						v-for="groupButton in [
 							{
-								icon: 'pi-money-bill',
+								icon: 'pi-receipt',
 								title: 'Add Expense',
 								description: 'Record a new expense',
 								onClick: () => router.push(`/group/${groupId}/transaction`),
@@ -70,10 +75,10 @@ const { groupId, groupData, users } = useGroup(routeGroupId);
 								onClick: () => router.push(`/group/${groupId}/settle`),
 							},
 						]"
-						class="border border-zinc-800 rounded-lg flex-1 flex flex-col p-4 justify-center items-center gap-1"
+						class="border border-zinc-800 rounded-lg flex-1 flex flex-col p-4 justify-center items-center gap-2"
 						@click="groupButton.onClick"
 					>
-						<div class="bg-zinc-500/20 p-3 rounded-full aspect-square flex justify-center items-center">
+						<div class="bg-zinc-500/20 p-3 rounded-lg aspect-square flex justify-center items-center">
 							<i :class="`pi ${groupButton.icon} !text-[26px]`" />
 						</div>
 						<div class="flex flex-col justify-center items-center">
