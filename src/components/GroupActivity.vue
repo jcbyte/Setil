@@ -31,7 +31,7 @@ const props = defineProps<{
 
 const router = useRouter();
 
-const deleteConfirmationDialog = ref<{ open: boolean; transactionId: string; processing: boolean }>({
+const deleteDialogData = ref<{ open: boolean; transactionId: string; processing: boolean }>({
 	open: false,
 	transactionId: "",
 	processing: false,
@@ -50,17 +50,17 @@ function calculateTotalTransactionValue(transactionAmounts: Record<string, numbe
 }
 
 function openDeleteConfirmDialog(transactionId: string) {
-	deleteConfirmationDialog.value = { open: true, transactionId: transactionId, processing: false };
+	deleteDialogData.value = { open: true, transactionId: transactionId, processing: false };
 }
 
 function closeDeleteConfirmDialog() {
-	deleteConfirmationDialog.value.open = false;
+	deleteDialogData.value.open = false;
 }
 
 async function handleDeleteTransaction() {
-	deleteConfirmationDialog.value.processing = true;
+	deleteDialogData.value.processing = true;
 
-	await deleteTransaction(props.groupId, deleteConfirmationDialog.value.transactionId);
+	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId);
 
 	closeDeleteConfirmDialog();
 }
@@ -128,7 +128,7 @@ async function handleDeleteTransaction() {
 		</div>
 	</div>
 
-	<AlertDialog v-model:open="deleteConfirmationDialog.open">
+	<AlertDialog v-model:open="deleteDialogData.open">
 		<AlertDialogContent>
 			<AlertDialogHeader>
 				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -137,11 +137,11 @@ async function handleDeleteTransaction() {
 				</AlertDialogDescription>
 			</AlertDialogHeader>
 			<AlertDialogFooter>
-				<Button variant="outline" :disabled="deleteConfirmationDialog.processing" @click="closeDeleteConfirmDialog">
+				<Button variant="outline" :disabled="deleteDialogData.processing" @click="closeDeleteConfirmDialog">
 					Cancel
 				</Button>
-				<Button variant="destructive" :disabled="deleteConfirmationDialog.processing" @click="handleDeleteTransaction">
-					<i :class="`pi ${deleteConfirmationDialog.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="handleDeleteTransaction">
+					<i :class="`pi ${deleteDialogData.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
