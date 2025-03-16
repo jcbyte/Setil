@@ -17,3 +17,30 @@ export function formatCurrency(amount: number, currency: Currency): string {
 export function resolveBalance(balance: GroupUserData["balance"]): number {
 	return Object.values(balance).reduce((acc, value) => acc + value, 0);
 }
+
+export function getBalanceStr(
+	balance: GroupUserData["balance"],
+	currency: Currency,
+	positiveGenerator: (formattedBal: string) => string,
+	negativeGenerator: (formattedBal: string) => string,
+	neutralGenerator: () => string
+): { str: string; status: "positive" | "negative" | "neutral" } {
+	const bal = resolveBalance(balance);
+	const formattedBal = formatCurrency(Math.abs(bal), currency);
+
+	let status: "positive" | "negative" | "neutral";
+	let str: string;
+
+	if (bal === 0) {
+		status = "neutral";
+		str = neutralGenerator();
+	} else if (bal > 0) {
+		status = "positive";
+		str = positiveGenerator(formattedBal);
+	} else {
+		status = "negative";
+		str = negativeGenerator(formattedBal);
+	}
+
+	return { str, status };
+}

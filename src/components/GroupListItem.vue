@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ExtendedGroupData } from "@/firebase/firestore";
-import { formatCurrency, resolveBalance } from "@/util/util";
+import { getBalanceStr } from "@/util/util";
 import { Timestamp } from "firebase/firestore";
 import { computed } from "vue";
 import AvatarStack from "./AvatarStack.vue";
@@ -31,26 +31,15 @@ const lastUpdatedStr = computed<string>(() => {
 	return "Updated just now";
 });
 
-const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" | "neutral" }>(() => {
-	const bal = resolveBalance(props.group.myself.balance);
-	const formattedBal = formatCurrency(Math.abs(bal), props.group.currency);
-
-	let status: "positive" | "negative" | "neutral";
-	let str: string;
-
-	if (bal === 0) {
-		status = "neutral";
-		str = "Your all in balance";
-	} else if (bal > 0) {
-		status = "positive";
-		str = `You're owed ${formattedBal}`;
-	} else {
-		status = "negative";
-		str = `You owe ${formattedBal}`;
-	}
-
-	return { str, status };
-});
+const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" | "neutral" }>(() =>
+	getBalanceStr(
+		props.group.myself.balance,
+		props.group.currency,
+		(b) => `You're owed ${b}`,
+		(b) => `You owe ${b}`,
+		() => "Your all in balance"
+	)
+);
 </script>
 
 <template>

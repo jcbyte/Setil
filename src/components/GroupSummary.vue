@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GroupData, GroupUserData } from "@/firebase/types";
-import { formatCurrency, resolveBalance } from "@/util/util";
+import { getBalanceStr } from "@/util/util";
 import { computed } from "vue";
 import Avatar from "./Avatar.vue";
 
@@ -37,29 +37,18 @@ const props = defineProps<{
 // 	}
 // }
 
-// todo can I make this a util function as its almost duplicated from GroupPage
 const usersBalanceStr = computed<Record<string, { str: string; status: "positive" | "negative" | "neutral" }>>(() => {
 	return Object.fromEntries(
-		Object.entries(props.users).map(([userId, user]) => {
-			const bal = resolveBalance(user.balance);
-			const formattedBal = formatCurrency(Math.abs(bal), props.groupData.currency);
-
-			let status: "positive" | "negative" | "neutral";
-			let str: string;
-
-			if (bal === 0) {
-				status = "neutral";
-				str = "is in balance";
-			} else if (bal > 0) {
-				status = "positive";
-				str = `is owed ${formattedBal}`;
-			} else {
-				status = "negative";
-				str = `owes ${formattedBal}`;
-			}
-
-			return [userId, { str, status }];
-		})
+		Object.entries(props.users).map(([userId, user]) => [
+			userId,
+			getBalanceStr(
+				user.balance,
+				props.groupData.currency,
+				(b) => `is owed ${b}`,
+				(b) => `owes ${b}`,
+				() => "is in balance"
+			),
+		])
 	);
 });
 </script>
