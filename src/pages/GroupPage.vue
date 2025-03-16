@@ -71,7 +71,7 @@ async function addMember() {
 				</Tabs>
 
 				<div class="flex w-full gap-2">
-					<div
+					<Button
 						v-for="groupButton in [
 							{
 								icon: 'pi-receipt',
@@ -86,17 +86,20 @@ async function addMember() {
 								onClick: () => router.push(`/group/${groupId}/settle`),
 							},
 						]"
-						class="border border-zinc-800 rounded-lg flex-1 flex flex-col p-4 justify-center items-center gap-2"
+						variant="outline"
+						class="h-full flex-1 p-4"
 						@click="groupButton.onClick"
 					>
-						<div class="bg-zinc-500/20 p-3 rounded-lg aspect-square flex justify-center items-center">
-							<i :class="`pi ${groupButton.icon} !text-[26px]`" />
+						<div class="flex flex-col justify-center items-center gap-2">
+							<div class="bg-zinc-500/20 p-3 rounded-lg aspect-square flex justify-center items-center">
+								<i :class="`pi ${groupButton.icon} !text-[26px]`" />
+							</div>
+							<div class="flex flex-col justify-center items-center">
+								<span class="text-md font-semibold">{{ groupButton.title }}</span>
+								<span class="text-sm text-zinc-400">{{ groupButton.description }}</span>
+							</div>
 						</div>
-						<div class="flex flex-col justify-center items-center">
-							<span class="text-md font-semibold">{{ groupButton.title }}</span>
-							<span class="text-sm text-zinc-400">{{ groupButton.description }}</span>
-						</div>
-					</div>
+					</Button>
 				</div>
 			</div>
 
