@@ -106,8 +106,8 @@ async function addMember() {
 			<div v-if="groupId" class="border border-zinc-800 rounded-lg p-4 flex flex-col gap-2 h-fit w-64">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
-					<span class="text-sm text-zinc-400">Description</span>
-					<span class="text-md">{{ groupData?.description }}</span>
+					<span v-if="groupData!.description" class="text-sm text-zinc-400">Description</span>
+					<span v-if="groupData!.description" class="text-md">{{ groupData!.description }}</span>
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-sm text-zinc-400 font-semibold">Members ({{ Object.keys(users!).length }})</span>

@@ -5,36 +5,55 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { CurrencySettings } from "@/util/groupSettings";
+import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { useRoute, useRouter } from "vue-router";
 import { useGroup } from "../composables/useGroup";
 
+import { updateGroup } from "@/firebase/firestore";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
+import { ref } from "vue";
 import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 
-const { groupId, groupData } = useGroup(routeGroupId, () => {
-	// load init values
-});
+const groupDetailsUpdating = ref<boolean>(false);
 
 const formSchema = toTypedSchema(
 	z.object({
 		name: z.string().min(1, "Group name is required").max(50, "Group name cannot exceed 50 characters"),
 		description: z.string().optional(),
-		currency: z.string().min(1, "Must select a currency"),
+		currency: z.string().refine((val) => Object.keys(CurrencySettings).includes(val), "Must select a valid currency"),
 	})
 );
 
-const { isFieldDirty, handleSubmit } = useForm({
+const { isFieldDirty, handleSubmit, setValues } = useForm({
 	validationSchema: formSchema,
 });
 
-const onSubmit = handleSubmit((values) => {
-	console.log(values);
+const { groupId, groupData } = useGroup(routeGroupId, () => {
+	if (!groupId) return;
+
+	setValues({
+		name: groupData.value!.name,
+		description: groupData.value!.description ?? undefined,
+		currency: groupData.value!.currency,
+	});
+});
+const onSubmit = handleSubmit(async (values) => {
+	if (!groupId.value) return;
+
+	groupDetailsUpdating.value = true;
+
+	await updateGroup(groupId.value, {
+		name: values.name,
+		description: values.description ?? null,
+		currency: values.currency as Currency,
+	});
+
+	groupDetailsUpdating.value = false;
 });
 </script>
 
@@ -64,7 +83,12 @@ const onSubmit = handleSubmit((values) => {
 							<FormItem v-auto-animate>
 								<FormLabel>Group Name</FormLabel>
 								<FormControl>
-									<Input type="text" placeholder="Germany Trip" v-bind="componentField" />
+									<Input
+										type="text"
+										placeholder="Germany Trip"
+										:disabled="groupDetailsUpdating"
+										v-bind="componentField"
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -74,7 +98,11 @@ const onSubmit = handleSubmit((values) => {
 							<FormItem v-auto-animate>
 								<FormLabel>Description</FormLabel>
 								<FormControl>
-									<Textarea placeholder="Expenses for Munich Trip." v-bind="componentField" />
+									<Textarea
+										placeholder="Expenses for Munich Trip."
+										:disabled="groupDetailsUpdating"
+										v-bind="componentField"
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -84,7 +112,7 @@ const onSubmit = handleSubmit((values) => {
 							<FormItem v-auto-animate>
 								<FormLabel>Currency</FormLabel>
 								<FormControl>
-									<Select v-bind="componentField">
+									<Select v-bind="componentField" :disabled="groupDetailsUpdating">
 										<SelectTrigger>
 											<SelectValue placeholder="Euro (€)" />
 										</SelectTrigger>
@@ -100,8 +128,8 @@ const onSubmit = handleSubmit((values) => {
 						</FormField>
 					</div>
 
-					<Button type="submit" class="w-fit">
-						<i class="pi pi-save" />
+					<Button type="submit" :disabled="groupDetailsUpdating" class="w-fit">
+						<i :class="`pi ${groupDetailsUpdating ? 'pi-spin pi-spinner' : 'pi-save'}`" />
 						<span>Save Changes</span>
 					</Button>
 				</form>
