@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import {
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -7,9 +15,10 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
+import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { formatCurrency } from "@/util/util";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "./ui/button/Button.vue";
 
@@ -22,9 +31,11 @@ const props = defineProps<{
 
 const router = useRouter();
 
-function calculateTotalTransactionValue(transactionAmounts: Record<string, number>): number {
-	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
-}
+const deleteConfirmationDialog = ref<{ open: boolean; transactionId: string; processing: boolean }>({
+	open: false,
+	transactionId: "",
+	processing: false,
+});
 
 const sortedTransactions = computed(() => {
 	return Object.entries(props.transactions).sort(
@@ -33,6 +44,26 @@ const sortedTransactions = computed(() => {
 		}
 	);
 });
+
+function calculateTotalTransactionValue(transactionAmounts: Record<string, number>): number {
+	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
+}
+
+function openDeleteConfirmDialog(transactionId: string) {
+	deleteConfirmationDialog.value = { open: true, transactionId: transactionId, processing: false };
+}
+
+function closeDeleteConfirmDialog() {
+	deleteConfirmationDialog.value.open = false;
+}
+
+async function handleDeleteTransaction() {
+	deleteConfirmationDialog.value.processing = true;
+
+	await deleteTransaction(props.groupId, deleteConfirmationDialog.value.transactionId);
+
+	closeDeleteConfirmDialog();
+}
 </script>
 
 <template>
@@ -81,7 +112,7 @@ const sortedTransactions = computed(() => {
 										</div>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem @click="console.log('todo delete transition')">
+									<DropdownMenuItem @click="openDeleteConfirmDialog(transactionId)">
 										<div class="w-full flex justify-between">
 											<span class="text-red-400">Delete</span>
 											<i class="pi pi-trash text-red-400" />
@@ -96,4 +127,24 @@ const sortedTransactions = computed(() => {
 			</div>
 		</div>
 	</div>
+
+	<AlertDialog v-model:open="deleteConfirmationDialog.open">
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+				<AlertDialogDescription>
+					This cannot be undone and will permanently delete the transaction.
+				</AlertDialogDescription>
+			</AlertDialogHeader>
+			<AlertDialogFooter>
+				<Button variant="outline" :disabled="deleteConfirmationDialog.processing" @click="closeDeleteConfirmDialog">
+					Cancel
+				</Button>
+				<Button variant="destructive" :disabled="deleteConfirmationDialog.processing" @click="handleDeleteTransaction">
+					<i :class="`pi ${deleteConfirmationDialog.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+					<span>Delete</span>
+				</Button>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
 </template>

@@ -439,6 +439,8 @@ export async function updateTransaction(
  * @param transactionId id of the transaction.
  */
 export async function deleteTransaction(groupId: string, transactionId: string): Promise<void> {
+	await new Promise((resolve) => setTimeout(resolve, 5000));
+
 	// todo implement
 	// // Get the existing transaction data
 	// const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
