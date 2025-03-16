@@ -3,18 +3,13 @@ import { Button, useToast } from "primevue";
 import { useRoute } from "vue-router";
 import { useGroup } from "../../composables/useGroup";
 import { cleanupInvites, invite } from "../../firebase/firestore";
-import { type GroupUserData } from "../../firebase/types";
-import { formatCurrency } from "../../util/util";
+import { formatCurrency, resolveBalance } from "../../util/util";
 
 const route = useRoute();
 const toast = useToast();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData, users } = useGroup(routeGroupId);
-
-function calculateBalance(balance: GroupUserData["balance"]): number {
-	return Object.values(balance).reduce((acc, value) => acc + value, 0);
-}
 
 async function inviteUser() {
 	// Cleanup old invites
@@ -50,7 +45,7 @@ async function inviteUser() {
 		<div class="bg-zinc-700 w-80 rounded-lg p-2 flex justify-between" v-for="user in users">
 			<div class="text-lg">{{ user.name }}</div>
 			<div class="text-lg">
-				{{ formatCurrency(calculateBalance(user.balance) / 100, groupData!.currency) }}
+				{{ formatCurrency(resolveBalance(user.balance) / 100, groupData!.currency) }}
 			</div>
 		</div>
 	</div>
