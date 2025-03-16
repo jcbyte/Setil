@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button, useToast } from "primevue";
 import { useRoute } from "vue-router";
-import { useGroup } from "../../composables/useGroup";
-import { cleanupInvites, invite } from "../../firebase/firestore";
-import { formatCurrency, resolveBalance } from "../../util/util";
+import { useGroup } from "../composables/useGroup";
+import { cleanupInvites, invite } from "../firebase/firestore";
+import { formatCurrency, resolveBalance } from "../util/util";
 
 const route = useRoute();
 const toast = useToast();

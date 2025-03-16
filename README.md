@@ -8,9 +8,8 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Restyle group page
-  - Restyle group overview
-  - Restyle group transactions
+- Restyle group overview
+- Restyle group transactions
 - Restyle settings page
 - Restyle transactions page
 - Restyle settle up page

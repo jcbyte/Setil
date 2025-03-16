@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { useGroup } from "@/composables/useGroup";
+import type { Transaction } from "@/firebase/types";
+import { formatCurrency } from "@/util/util";
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useGroup } from "../../composables/useGroup";
-import type { Transaction } from "../../firebase/types";
-import { formatCurrency } from "../../util/util";
 
 const route = useRoute();
 const router = useRouter();
