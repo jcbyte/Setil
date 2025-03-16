@@ -46,6 +46,8 @@ export function getBalanceStr(
 	return { str, status };
 }
 
+// todo split up util functions into multiple files
+
 export async function inviteUser(groupId: string) {
 	// Cleanup old invites
 	await cleanupInvites(groupId);

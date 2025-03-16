@@ -333,6 +333,7 @@ export async function createTransaction(groupId: string, transaction: Transactio
 
 	const fromUserRef = doc(groupRef, "users", transaction.from);
 
+	// todo this is very similar code to delete transaction
 	// Update each receiver with their new balances
 	Object.entries(transaction.to).forEach(([toUser, toAmount]) => {
 		// If the receiver is the sender this will make no changes, so ignore
@@ -421,6 +422,7 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 
 	const fromUserRef = doc(groupRef, "users", transaction.from);
 
+	// todo this is very similar code to add transaction
 	// Update each receiver to revert their balances
 	Object.entries(transaction.to).forEach(([toUser, toAmount]) => {
 		// If the receiver is the sender this will make no changes, so ignore

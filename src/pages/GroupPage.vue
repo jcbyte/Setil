@@ -7,9 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
-import { createTransaction } from "@/firebase/firestore";
 import { inviteUser } from "@/util/util";
-import { Timestamp } from "firebase/firestore";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -36,19 +34,7 @@ async function addMember() {
 				<Button variant="ghost" class="size-9" @click="router.push('/')">
 					<i class="pi pi-arrow-left" />
 				</Button>
-				<span
-					v-if="groupId"
-					class="text-lg font-semibold"
-					@click="
-						createTransaction(groupId, {
-							date: Timestamp.now(),
-							from: 'kJDi3KR9RoWRJtTXchRx6uA9XcM2',
-							title: 'Test trans',
-							to: { kJDi3KR9RoWRJtTXchRx6uA9XcM2: 50, AN972dWuq2SftNt712iTuQ2Jsd13: 50 },
-						})
-					"
-					>{{ groupData!.name }}</span
-				>
+				<span v-if="groupId" class="text-lg font-semibold">{{ groupData!.name }}</span>
 				<Skeleton v-else class="w-20 h-7" />
 			</div>
 			<div class="flex gap-2 justify-center items-center">
