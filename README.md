@@ -8,8 +8,13 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- Avatar Stack
-- Restyle
+- Restyle group page
+  - Restyle group overview
+  - Restyle group transactions
+- Restyle settings page
+- Restyle transactions page
+- Restyle settle up page
+
 - Animations
 - Remove inactive users from transactions after debt is cleared
 - Resolve debts over multiple people

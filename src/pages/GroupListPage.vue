@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import { firebaseSignOut } from "@/firebase/auth";
 import { getUser, getUserGroups, type ExtendedGroupData } from "@/firebase/firestore";
 import { useToast } from "primevue";
@@ -46,8 +47,6 @@ function signOut() {
 			});
 		});
 }
-
-// todo implement skeleton whilst loading
 </script>
 
 <template>
@@ -76,7 +75,13 @@ function signOut() {
 		</div>
 
 		<div class="flex flex-col gap-2">
-			<GroupListItem v-for="(group, groupId) in groups" :group="group" @click="router.push(`/group/${groupId}`)" />
+			<GroupListItem
+				v-if="groups"
+				v-for="(group, groupId) in groups"
+				:group="group"
+				@click="router.push(`/group/${groupId}`)"
+			/>
+			<Skeleton v-else v-for="_n in 3" class="rounded-lg h-[158px]" />
 		</div>
 	</div>
 </template>
