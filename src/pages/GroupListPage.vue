@@ -9,21 +9,14 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { firebaseSignOut } from "@/firebase/auth";
-import { getUser, getUserGroups } from "@/firebase/firestore";
-import type { GroupData, GroupUserData } from "@/firebase/types";
+import { getUser, getUserGroups, type ExtendedGroupData } from "@/firebase/firestore";
 import { useToast } from "primevue";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-interface ExtendedGroupData extends GroupData {
-	topUsers: GroupUserData;
-	userCount: number;
-	myself: GroupUserData;
-}
-
-const groups = ref<Record<string, GroupData> | null>(null);
+const groups = ref<Record<string, ExtendedGroupData> | null>(null);
 
 const user = computed(() => getUser());
 

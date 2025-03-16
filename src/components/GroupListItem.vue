@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { type GroupData } from "@/firebase/types";
+import type { ExtendedGroupData } from "@/firebase/firestore";
 import { Timestamp } from "firebase/firestore";
 
 defineProps<{
-	group: GroupData;
+	group: ExtendedGroupData;
 }>();
 
 function calculateLengthAgo(timestamp: Timestamp) {
@@ -29,8 +29,6 @@ function calculateLengthAgo(timestamp: Timestamp) {
 
 	return "Updated just now";
 }
-
-// todo implement avatars
 </script>
 
 <template>
@@ -40,16 +38,16 @@ function calculateLengthAgo(timestamp: Timestamp) {
 				<span class="text-lg font-semibold">{{ group.name }}</span>
 				<span v-if="group.description" class="text-sm text-zinc-400">{{ group.description }}</span>
 			</div>
-			<Avatar>
-				<AvatarImage src="https://github.com/unovue.png" alt="@unovue" />
-				<AvatarFallback>CN</AvatarFallback>
+			<Avatar v-for="topUser in group.topUsers">
+				<AvatarImage :src="topUser.photoURL ?? ''" :alt="topUser.name" />
+				<AvatarFallback>{{ topUser.name.substring(0, 2) }}</AvatarFallback>
 			</Avatar>
 			<span class="text-sm text-zinc-400">{{ calculateLengthAgo(group.lastUpdate) }}</span>
 		</div>
 
 		<div class="flex flex-col justify-between items-end">
 			<i class="pi pi-chevron-right text-zinc-200" />
-			<span class="text-sm bg-green-400/20 rounded-full px-1.5 py-0.5">(todo) your owed</span>
+			<span class="text-sm bg-green-400/20 rounded-full px-1.5 py-0.5">{{ group.myself.balance }}</span>
 		</div>
 	</div>
 </template>

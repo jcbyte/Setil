@@ -7,11 +7,15 @@ import {
 	deleteDoc,
 	deleteField,
 	doc,
+	getCountFromServer,
 	getDoc,
 	getDocs,
 	getFirestore,
 	increment,
+	limit,
 	onSnapshot,
+	orderBy,
+	query,
 	setDoc,
 	Timestamp,
 	updateDoc,
@@ -57,22 +61,6 @@ export async function initialiseUserData(): Promise<boolean> {
 }
 
 /**
- * Get a group's general data.
- * @param groupId id of the group.
- * @returns the general data form the group or null if the group cannot be accessed/does not exist.
- */
-export async function getGroupData(groupId: string): Promise<GroupData | null> {
-	const groupRef = doc(db, "groups", groupId);
-	// If this throws, most likely the user does not have permission to access the group
-	const groupDocSnap = await getDoc(groupRef).catch(() => null);
-
-	// If the group does not exist
-	if (!groupDocSnap || !groupDocSnap.exists()) return null;
-
-	return groupDocSnap.data() as GroupData;
-}
-
-/**
  * Get a live copy of a group's general data synced to a vue ref.
  * @param groupId id of the group.
  * @param groupDataRef the ref to sync the group data to.
@@ -101,13 +89,19 @@ export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupD
 	});
 }
 
+export interface ExtendedGroupData extends GroupData {
+	topUsers: GroupUserData[];
+	userCount: number;
+	myself: GroupUserData;
+}
+
 /**
- * Get a list of the user's groups, including there data.
+ * Get a list of the user's groups, including there extended data.
  * @param removeUnknownGroups if true, groups that the user does not have access to or have been deleted will be removed from the user.
  * @returns a list of the user's groups, including there data.
  * @throws an error if the user does not exist.
  */
-export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<Record<string, GroupData>> {
+export async function getUserGroups(removeUnknownGroups: boolean = true): Promise<Record<string, ExtendedGroupData>> {
 	const user = getUser();
 
 	const userRef = doc(db, "users", user.uid);
@@ -123,12 +117,33 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 		(
 			await Promise.all(
 				userData.groups.map(async (id) => {
-					const data = await getGroupData(id);
-					// If the group cannot be found, add it to the unknown groups list to be removed later
-					if (!data) {
+					const groupRef = doc(db, "groups", id);
+					// If this throws, most likely the user does not have permission to access the group
+					const groupDocSnap = await getDoc(groupRef).catch(() => null);
+
+					// If the group does not exist, add it to the unknown groups list to be removed later
+					if (!groupDocSnap || !groupDocSnap.exists()) {
 						unknownGroups.push(id);
 						return null;
 					}
+
+					const baseGroupData = groupDocSnap.data() as GroupData;
+
+					// Get the extended group data
+					// todo convert order by to use most recently updated
+					const groupUsersRef = collection(groupRef, "users");
+					const usersCount = await getCountFromServer(groupUsersRef);
+					const topUsersQuery = query(groupUsersRef, orderBy("name"), limit(3));
+					const topUsersSnap = await getDocs(topUsersQuery);
+
+					const myselfSnap = await getDoc(doc(groupUsersRef, user.uid));
+
+					const data: ExtendedGroupData = {
+						...baseGroupData,
+						topUsers: topUsersSnap.docs.map((topUserSnap) => topUserSnap.data() as GroupUserData),
+						userCount: usersCount.data().count,
+						myself: myselfSnap.data() as GroupUserData,
+					};
 
 					return [id, data];
 				})
