@@ -19,6 +19,7 @@ import {
 	setDoc,
 	Timestamp,
 	updateDoc,
+	writeBatch,
 } from "firebase/firestore";
 import type { Ref } from "vue";
 import { app } from "./firebase";
@@ -355,7 +356,8 @@ export async function getLiveUsers(
  * @returns the id of the new transaction.
  */
 export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
-	// todo convert this to use a batch
+	const batch = writeBatch(db);
+
 	// Add the transaction to the group
 	const groupRef = doc(db, "groups", groupId);
 	const groupTransactionsRef = collection(groupRef, "transactions");
@@ -370,17 +372,19 @@ export async function createTransaction(groupId: string, transaction: Transactio
 
 		const userRef = doc(groupRef, "users", toUser);
 
-		updateDoc(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
-		updateDoc(userRef, { [`balance.${transaction.from}`]: increment(-toAmount) });
+		batch.update(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
+		batch.update(userRef, { [`balance.${transaction.from}`]: increment(-toAmount) });
 	});
 
 	// Update the time when the current user has last added a transaction
 	const user = getUser();
 	const thisUserRef = doc(groupRef, "users", user.uid);
-	updateDoc(thisUserRef, { lastUpdate: Timestamp.now() });
+	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
 
 	// Update the last update field for the group
-	updateDoc(groupRef, { lastUpdate: Timestamp.now() });
+	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+
+	batch.commit();
 
 	// Return id of newly created transition
 	return transactionRef.id;
