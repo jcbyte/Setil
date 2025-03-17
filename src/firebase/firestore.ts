@@ -7,6 +7,7 @@ import {
 	deleteDoc,
 	deleteField,
 	doc,
+	DocumentReference,
 	getCountFromServer,
 	getDoc,
 	getDocs,
@@ -19,6 +20,7 @@ import {
 	setDoc,
 	Timestamp,
 	updateDoc,
+	WriteBatch,
 	writeBatch,
 } from "firebase/firestore";
 import type { Ref } from "vue";
@@ -318,6 +320,44 @@ export async function getLiveUsers(
 }
 
 /**
+ * Add firebase updates to a batch to update users balances in a group with the given from and to.
+ * @param groupRef Document of the group to update balances on
+ * @param batch WriteBatch to add the transactions to.
+ * @param from the user who bought the transaction.
+ * @param to  the users receiving teh transaction, with the value.
+ */
+function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, from: string, to: Record<string, number>) {
+	const fromUserRef = doc(groupRef, "users", from);
+
+	// Update each receiver with their new balances
+	Object.entries(to).forEach(([toUser, toAmount]) => {
+		// If the receiver is the sender this will make no changes, so ignore
+		if (toUser === from) return;
+
+		const userRef = doc(groupRef, "users", toUser);
+
+		// Add credit to the fromUser and debt to the toUser
+		batch.update(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
+		batch.update(userRef, { [`balance.${from}`]: increment(-toAmount) });
+	});
+}
+
+/**
+ * Update the lastUpdated property of this user and the group.
+ * @param groupRef Document of the group to update lastUpdate on.
+ * @param batch WriteBatch to add the transactions to.
+ */
+function updateGroupUpdateTime(groupRef: DocumentReference, batch: WriteBatch) {
+	// Update the time when the current user has last added a transaction
+	const user = getUser();
+	const thisUserRef = doc(groupRef, "users", user.uid);
+	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
+
+	// Update the last update field for the group
+	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+}
+
+/**
  * Create a transaction in a group and update relevant users balances.
  * @param groupId id of the group.
  * @param transaction transaction data.
@@ -331,27 +371,11 @@ export async function createTransaction(groupId: string, transaction: Transactio
 	const groupTransactionsRef = collection(groupRef, "transactions");
 	const transactionRef = await addDoc(groupTransactionsRef, transaction);
 
-	const fromUserRef = doc(groupRef, "users", transaction.from);
+	// Update users balances
+	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
 
-	// todo this is very similar code to delete transaction
-	// Update each receiver with their new balances
-	Object.entries(transaction.to).forEach(([toUser, toAmount]) => {
-		// If the receiver is the sender this will make no changes, so ignore
-		if (toUser === transaction.from) return;
-
-		const userRef = doc(groupRef, "users", toUser);
-
-		batch.update(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
-		batch.update(userRef, { [`balance.${transaction.from}`]: increment(-toAmount) });
-	});
-
-	// Update the time when the current user has last added a transaction
-	const user = getUser();
-	const thisUserRef = doc(groupRef, "users", user.uid);
-	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
-
-	// Update the last update field for the group
-	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+	// Update lastUpdate time
+	updateGroupUpdateTime(groupRef, batch);
 
 	await batch.commit();
 
@@ -370,36 +394,30 @@ export async function updateTransaction(
 	transactionId: string,
 	transaction: Transaction
 ): Promise<void> {
-	// todo implement
-	// // Get the existing transaction data
-	// const transactionRef = doc(db, "groups", groupId, "transactions", transactionId);
-	// const transactionSnap = await getDoc(transactionRef);
-	// const oldTransaction = transactionSnap.data() as Transaction;
-	// // Update the transaction to the group
-	// await setDoc(transactionRef, transaction);
-	// // Work out the original and new changes in balances for each user based on the transaction
-	// const oldBalancesDelta = calculateDeltas(oldTransaction.from, oldTransaction.to);
-	// const balancesDelta = calculateDeltas(transaction.from, transaction.to);
-	// // Calculate balancesDelta delta
-	// for (const userId in oldBalancesDelta) {
-	// 	if (!balancesDelta[userId]) balancesDelta[userId] = {};
-	// 	for (const receiverId in oldBalancesDelta[userId]) {
-	// 		if (!balancesDelta[userId][receiverId]) balancesDelta[userId][receiverId] = 0;
-	// 		balancesDelta[userId][receiverId] -= oldBalancesDelta[userId][receiverId];
-	// 	}
-	// }
-	// // Update balances in firestore
-	// const batch = writeBatch(db);
-	// Object.entries(balancesDelta).forEach(([userId, balanceDelta]) => {
-	// 	const userRef = doc(db, "groups", groupId, "users", userId);
-	// 	batch.update(
-	// 		userRef,
-	// 		Object.fromEntries(
-	// 			Object.entries(balanceDelta).map(([userId2, amount]) => [`balance.${userId2}`, increment(amount)])
-	// 		)
-	// 	);
-	// });
-	// await batch.commit();
+	// Get the existing transaction data
+	const groupRef = doc(db, "groups", groupId);
+	const transactionRef = doc(groupRef, "transactions", transactionId);
+	const transactionSnap = await getDoc(transactionRef);
+	const oldTransaction = transactionSnap.data() as Transaction;
+
+	const batch = writeBatch(db);
+
+	// Update the transaction to the group
+	batch.set(transactionRef, transaction);
+
+	// Update balances by "Deleting" the old transaction and "Creating" the new one
+	updateGroupBalances(
+		groupRef,
+		batch,
+		oldTransaction.from,
+		Object.fromEntries(Object.entries(oldTransaction.to).map(([userId, amount]) => [userId, -amount]))
+	);
+	updateGroupBalances(groupRef, batch, transaction.from, transaction.to);
+
+	// Update lastUpdate time
+	updateGroupUpdateTime(groupRef, batch);
+
+	await batch.commit();
 }
 
 /**
@@ -420,28 +438,16 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 	// Delete the transaction from the group
 	batch.delete(transactionRef);
 
-	const fromUserRef = doc(groupRef, "users", transaction.from);
+	// Update users balances, inverting the amounts
+	updateGroupBalances(
+		groupRef,
+		batch,
+		transaction.from,
+		Object.fromEntries(Object.entries(transaction.to).map(([userId, amount]) => [userId, -amount]))
+	);
 
-	// todo this is very similar code to add transaction
-	// Update each receiver to revert their balances
-	Object.entries(transaction.to).forEach(([toUser, toAmount]) => {
-		// If the receiver is the sender this will make no changes, so ignore
-		if (toUser === transaction.from) return;
-
-		const userRef = doc(groupRef, "users", toUser);
-
-		// Inverted transaction
-		batch.update(fromUserRef, { [`balance.${toUser}`]: increment(-toAmount) });
-		batch.update(userRef, { [`balance.${transaction.from}`]: increment(toAmount) });
-	});
-
-	// Update the time when the current user has updated the group
-	const user = getUser();
-	const thisUserRef = doc(groupRef, "users", user.uid);
-	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
-
-	// Update the last update field for the group
-	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+	// Update lastUpdate time
+	updateGroupUpdateTime(groupRef, batch);
 
 	await batch.commit();
 }

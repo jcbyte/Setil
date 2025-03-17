@@ -8,20 +8,21 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- STORY: Restyle transactions page
+- FIX: transaction page equal does not need to set num
+- FIX: GroupActivity - order by time
+- FIX: GroupActivity - Show no transaction
 - FIX: Swap text-zinc to text-muted-foreground
 - FIX: Replace primevue toast
 - STORY: Remove primevue
-- STORY: Create settle up page
 - FIX: Make owing colours look better
 - FIX: Vue Warnings
-
+- STORY: Create settle up page
 - FEAT: Rename users
 - FEAT: Removing users
 - STORY: Animations
-
-- Remove inactive users from transactions after debt is cleared
-- Resolve debts over multiple people
+- STORY: Remove inactive users from transactions after debt is cleared
+- STORY: Resolve debts over multiple people
+- FIX: inconsistency £0.01 = £1.00 = £0.01
 
 ## Run Locally
 

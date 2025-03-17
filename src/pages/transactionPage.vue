@@ -56,7 +56,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			from: transaction.from,
 			amount: resolveBalance(transaction.to),
 			to: {
-				type: "unequal",
+				type: "ratio",
 				selected: Object.fromEntries(
 					Object.keys(users.value!).map((userId) => {
 						const toBal = transaction.to[userId];
@@ -96,7 +96,7 @@ const formSchema = toTypedSchema(
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
 		to: z.object({
-			type: z.enum(["equal", "unequal", "percent"]).default("equal"),
+			type: z.enum(["equal", "unequal", "ratio"]).default("equal"),
 			selected: z
 				.record(
 					z.string(),
@@ -139,7 +139,7 @@ function resolveBalances(): Record<string, number> {
 				.filter(([, selectedData]) => selectedData!.selected)
 				.map(([userId, selectedData]) => [userId, selectedData!.num!])
 		);
-	} else if (values.to.type === "percent") {
+	} else if (values.to.type === "ratio") {
 		return splitAmountRatio(
 			values.amount ?? 0,
 			Object.fromEntries(
@@ -171,10 +171,9 @@ const onSubmit = handleSubmit(async (values) => {
 		await updateTransaction(groupId.value, routeTransactionId, transaction);
 	} else {
 		await createTransaction(groupId.value, transaction);
-
-		router.push(`/group/${groupId.value}`);
 	}
 
+	router.push(`/group/${groupId.value}`);
 	isTransactionUpdating.value = false;
 });
 </script>
@@ -306,12 +305,12 @@ const onSubmit = handleSubmit(async (values) => {
 								<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-2">
 									<Tabs
 										:model-value="values.to?.type"
-										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'percent')"
+										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'ratio')"
 									>
 										<TabsList class="grid w-full grid-cols-3">
 											<TabsTrigger value="equal" :disabled="isTransactionUpdating"> Equal </TabsTrigger>
 											<TabsTrigger value="unequal" :disabled="isTransactionUpdating"> Unequal </TabsTrigger>
-											<TabsTrigger value="percent" :disabled="isTransactionUpdating"> Percent </TabsTrigger>
+											<TabsTrigger value="ratio" :disabled="isTransactionUpdating"> Ratio </TabsTrigger>
 										</TabsList>
 									</Tabs>
 
@@ -331,15 +330,15 @@ const onSubmit = handleSubmit(async (values) => {
 												<div v-if="values.to?.type !== 'equal'" class="relative items-center">
 													<Input
 														type="number"
-														:class="values.to?.type !== 'percent' && 'pl-6'"
-														:placeholder="values.to?.type !== 'percent' ? '0.00' : '0'"
+														:class="values.to?.type !== 'ratio' && 'pl-6'"
+														:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
 														:step="0.01"
 														:model-value="values.to?.selected?.[userId]?.num"
 														@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
 														:disabled="isTransactionUpdating || !values.to?.selected?.[userId]?.selected"
 													/>
 													<span
-														v-if="values.to?.type !== 'percent'"
+														v-if="values.to?.type !== 'ratio'"
 														class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
 													>
 														{{ CurrencySettings[groupData!.currency].symbol }}
