@@ -95,22 +95,23 @@ const formSchema = toTypedSchema(
 		from: z
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
-		to: z.object({
-			type: z.enum(["equal", "unequal", "ratio"]).default("equal"),
-			selected: z
-				.record(
-					z.string(),
-					z.object({
-						selected: z.boolean(),
-						num: z.number().optional(),
-					})
-				)
-				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient")
-				.refine(
-					(v) => !Object.values(v).some((vo) => vo.selected && !vo.num),
-					"An amount is required for a selected member"
-				),
-		}),
+		to: z
+			.object({
+				type: z.enum(["equal", "unequal", "ratio"]).default("equal"),
+				selected: z
+					.record(
+						z.string(),
+						z.object({
+							selected: z.boolean(),
+							num: z.number().optional(),
+						})
+					)
+					.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
+			})
+			.refine(
+				(v) => v.type === "equal" || !Object.values(v.selected).some((vo) => vo.selected && !vo.num),
+				"An amount is required for a selected member"
+			),
 	})
 );
 

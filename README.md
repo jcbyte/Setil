@@ -8,7 +8,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: transaction page equal does not need to set num
 - FIX: GroupActivity - order by time
 - FIX: GroupActivity - Show no transaction
 - FIX: Swap text-zinc to text-muted-foreground
