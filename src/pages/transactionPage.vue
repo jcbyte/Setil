@@ -9,9 +9,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { createTransaction, updateTransaction } from "@/firebase/firestore";
+import type { Transaction } from "@/firebase/types";
 import { formatCurrency, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
+import { Timestamp } from "firebase/firestore";
 import { CalendarIcon } from "lucide-vue-next";
 import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
@@ -60,7 +63,7 @@ const formSchema = toTypedSchema(
 					z.string(),
 					z.object({
 						selected: z.boolean(),
-						num: z.number(),
+						num: z.number().optional(),
 					})
 				)
 				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
@@ -75,10 +78,6 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 const dateValue = computed({
 	get: () => (values.date ? parseDate(values.date) : undefined),
 	set: (val) => val,
-});
-
-const onSubmit = handleSubmit(async (values) => {
-	console.log(values);
 });
 
 function resolveBalances(): Record<string, number> {
@@ -113,45 +112,28 @@ function resolveBalances(): Record<string, number> {
 
 const toValue = computed<Record<string, number>>(resolveBalances);
 
-// async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
-// 	if (valid) {
-// 		updatingTransaction.value = true;
+const onSubmit = handleSubmit(async (values) => {
+	if (!groupId.value) return;
 
-// 		const transaction: Transaction = {
-// 			title: values.title,
-// 			to: splitAmount(
-// 				values.amount * 100,
-// 				values.to.map((user: UserOption) => user.id)
-// 			),
-// 			from: splitAmount(
-// 				values.amount * 100,
-// 				values.from.map((user: UserOption) => user.id)
-// 			),
-// 			date: Timestamp.fromDate(values.date),
-// 		};
+	isTransactionUpdating.value = true;
 
-// 		if (routeTransactionId) {
-// 			await updateTransaction(groupId.value!, routeTransactionId!, transaction);
+	const transaction: Transaction = {
+		title: values.title,
+		from: values.from,
+		date: Timestamp.fromDate(toDate(parseDate(values.date))),
+		to: resolveBalances(),
+	};
 
-// 			toast.add({
-// 				severity: "success",
-// 				summary: "Transaction updated",
-// 				life: 2000,
-// 			});
-// 		} else {
-// 			await createTransaction(groupId.value!, transaction);
+	if (routeTransactionId) {
+		await updateTransaction(groupId.value, routeTransactionId, transaction);
+	} else {
+		await createTransaction(groupId.value, transaction);
 
-// 			toast.add({
-// 				severity: "success",
-// 				summary: "Transaction created",
-// 				life: 2000,
-// 			});
-// 		}
+		router.push(`/group/${groupId.value}`);
+	}
 
-// 		router.push(`/group/${groupId.value!}/transactions`);
-// 		updatingTransaction.value = false;
-// 	}
-// }
+	isTransactionUpdating.value = false;
+});
 </script>
 
 <template>
@@ -268,9 +250,9 @@ const toValue = computed<Record<string, number>>(resolveBalances);
 										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'percent')"
 									>
 										<TabsList class="grid w-full grid-cols-3">
-											<TabsTrigger value="equal"> Equal </TabsTrigger>
-											<TabsTrigger value="unequal"> Unequal </TabsTrigger>
-											<TabsTrigger value="percent"> Percent </TabsTrigger>
+											<TabsTrigger value="equal" :disabled="isTransactionUpdating"> Equal </TabsTrigger>
+											<TabsTrigger value="unequal" :disabled="isTransactionUpdating"> Unequal </TabsTrigger>
+											<TabsTrigger value="percent" :disabled="isTransactionUpdating"> Percent </TabsTrigger>
 										</TabsList>
 									</Tabs>
 
@@ -281,6 +263,7 @@ const toValue = computed<Record<string, number>>(resolveBalances);
 													:id="`user-${userId}`"
 													:model-value="values.to?.selected?.[userId]?.selected ?? false"
 													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.selected`, Boolean(val))"
+													:disabled="isTransactionUpdating"
 												/>
 												<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
 													<Avatar :src="user.photoURL ?? ''" :name="user.name" class="size-6" />
@@ -293,11 +276,12 @@ const toValue = computed<Record<string, number>>(resolveBalances);
 													:step="0.01"
 													:model-value="values.to?.selected?.[userId]?.num ?? 0"
 													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
+													:disabled="isTransactionUpdating"
 												/>
 											</div>
-											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">{{
-												formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd")
-											}}</span>
+											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">
+												{{ formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd") }}
+											</span>
 										</div>
 									</div>
 								</div>
