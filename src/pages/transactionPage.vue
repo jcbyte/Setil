@@ -13,6 +13,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
+import { CurrencySettings } from "@/util/groupSettings";
 import { formatCurrency, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -59,7 +60,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 				selected: Object.fromEntries(
 					Object.keys(users.value!).map((userId) => {
 						const toBal = transaction.to[userId];
-						return [userId, { selected: !!toBal, num: toBal ?? 0 }];
+						return [userId, { selected: !!toBal, num: toBal ?? undefined }];
 					})
 				),
 			},
@@ -70,7 +71,9 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			from: currentUser.value!.uid,
 			to: {
 				type: "equal",
-				selected: Object.fromEntries(Object.keys(users.value!).map((userId) => [userId, { selected: false, num: 0 }])),
+				selected: Object.fromEntries(
+					Object.keys(users.value!).map((userId) => [userId, { selected: false, num: undefined }])
+				),
 			},
 		});
 	}
@@ -102,7 +105,11 @@ const formSchema = toTypedSchema(
 						num: z.number().optional(),
 					})
 				)
-				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
+				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient")
+				.refine(
+					(v) => !Object.values(v).some((vo) => vo.selected && !vo.num),
+					"An amount is required for a selected member"
+				),
 		}),
 	})
 );
@@ -138,7 +145,7 @@ function resolveBalances(): Record<string, number> {
 			Object.fromEntries(
 				Object.entries(values.to.selected)
 					.filter(([, selectedData]) => selectedData!.selected)
-					.map(([userId, selectedData]) => [userId, selectedData!.num!])
+					.map(([userId, selectedData]) => [userId, selectedData!.num ?? 0])
 			)
 		);
 	}
@@ -215,13 +222,21 @@ const onSubmit = handleSubmit(async (values) => {
 								<FormItem v-auto-animate class="flex-1">
 									<FormLabel>Amount</FormLabel>
 									<FormControl>
-										<Input
-											type="number"
-											placeholder="0.00"
-											:step="0.01"
-											:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
-											v-bind="componentField"
-										/>
+										<div class="relative items-center">
+											<Input
+												type="number"
+												class="pl-6"
+												placeholder="0.00"
+												:step="0.01"
+												:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
+												v-bind="componentField"
+											/>
+											<span
+												class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
+											>
+												{{ CurrencySettings[groupData!.currency].symbol }}
+											</span>
+										</div>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -313,15 +328,23 @@ const onSubmit = handleSubmit(async (values) => {
 													<Avatar :src="user.photoURL ?? ''" :name="user.name" class="size-6" />
 													<span class="text-sm text-nowrap">{{ user.name }}</span>
 												</label>
-												<Input
-													v-if="values.to?.type !== 'equal'"
-													type="number"
-													placeholder="0.00"
-													:step="0.01"
-													:model-value="values.to?.selected?.[userId]?.num ?? 0"
-													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
-													:disabled="isTransactionUpdating"
-												/>
+												<div v-if="values.to?.type !== 'equal'" class="relative items-center">
+													<Input
+														type="number"
+														:class="values.to?.type !== 'percent' && 'pl-6'"
+														:placeholder="values.to?.type !== 'percent' ? '0.00' : '0'"
+														:step="0.01"
+														:model-value="values.to?.selected?.[userId]?.num"
+														@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
+														:disabled="isTransactionUpdating || !values.to?.selected?.[userId]?.selected"
+													/>
+													<span
+														v-if="values.to?.type !== 'percent'"
+														class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
+													>
+														{{ CurrencySettings[groupData!.currency].symbol }}
+													</span>
+												</div>
 											</div>
 											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">
 												{{ formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd") }}
