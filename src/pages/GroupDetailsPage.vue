@@ -209,8 +209,8 @@ async function deleteGroup() {
 							<span>Leave Group</span>
 							<span class="text-sm text-zinc-400">Remove yourself from this group</span>
 						</div>
-						<Button variant="outline" @click="leaveGroup">
-							<i class="pi pi-sign-out" />
+						<Button variant="outline" :disabled="isLeavingGroup" @click="leaveGroup">
+							<i :class="`pi ${isLeavingGroup ? 'pi-spin pi-spinner' : 'pi-sign-out'}`" />
 							<span>Leave</span>
 						</Button>
 					</div>
@@ -222,8 +222,8 @@ async function deleteGroup() {
 							<span>Delete Group</span>
 							<span class="text-sm text-zinc-400">Remove yourself from this group</span>
 						</div>
-						<Button variant="destructive" @click="deleteGroup">
-							<i class="pi pi-trash" />
+						<Button variant="destructive" :disabled="isDeletingGroup" @click="deleteGroup">
+							<i :class="`pi ${isDeletingGroup ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
 							<span>Delete</span>
 						</Button>
 					</div>
