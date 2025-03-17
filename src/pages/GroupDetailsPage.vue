@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
+	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
 	updateGroup,
@@ -24,6 +25,7 @@ import {
 import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
+import { Timestamp } from "firebase/firestore";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -34,6 +36,16 @@ const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { currentUser } = useCurrentUser();
+
+const { groupId, groupData, users } = useGroup(routeGroupId, () => {
+	if (!groupId.value) return;
+
+	setValues({
+		name: groupData.value!.name,
+		description: groupData.value!.description ?? undefined,
+		currency: groupData.value!.currency,
+	});
+});
 
 interface DialogData {
 	open: boolean;
@@ -66,25 +78,32 @@ const { isFieldDirty, handleSubmit, setValues } = useForm({
 	validationSchema: formSchema,
 });
 
-const { groupId, groupData, users } = useGroup(routeGroupId, () => {
-	if (!groupId) return;
-
-	setValues({
-		name: groupData.value!.name,
-		description: groupData.value!.description ?? undefined,
-		currency: groupData.value!.currency,
-	});
-});
 const onSubmit = handleSubmit(async (values) => {
-	if (!groupId.value) return;
+	if (routeGroupId) {
+		if (!groupId.value) return;
 
-	isGroupDetailsUpdating.value = true;
-	await updateGroup(groupId.value, {
-		name: values.name,
-		description: values.description ?? null,
-		currency: values.currency as Currency,
-	});
-	isGroupDetailsUpdating.value = false;
+		isGroupDetailsUpdating.value = true;
+
+		await updateGroup(groupId.value, {
+			name: values.name,
+			description: values.description ?? null,
+			currency: values.currency as Currency,
+		});
+
+		isGroupDetailsUpdating.value = false;
+	} else {
+		isGroupDetailsUpdating.value = true;
+
+		const newGroupId = await createGroup({
+			name: values.name,
+			description: values.description ?? null,
+			currency: values.currency as Currency,
+			lastUpdate: Timestamp.now(),
+		});
+
+		router.push(`/group/${newGroupId}`);
+		isGroupDetailsUpdating.value = false;
+	}
 });
 
 async function addMember() {
@@ -116,20 +135,16 @@ async function deleteGroup() {
 	router.push("/");
 	closeDialog(deleteDialogData.value);
 }
-
-// todo remove users
-// todo new group page
 </script>
 
 <template>
 	<div class="w-full flex flex-col gap-4 items-center">
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="router.push(`/group/${routeGroupId}`)">
+				<Button variant="ghost" class="size-9" @click="router.push(routeGroupId ? `/group/${routeGroupId}` : '/')">
 					<i class="pi pi-arrow-left" />
 				</Button>
-				<span v-if="groupId" class="text-lg font-semibold">Group Settings</span>
-				<Skeleton v-else class="w-20 h-7" />
+				<span class="text-lg font-semibold">{{ routeGroupId ? "Group Settings" : "New Group" }}</span>
 			</div>
 			<YourAccountSettings />
 		</div>
@@ -138,7 +153,9 @@ async function deleteGroup() {
 			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Details</span>
-					<span class="text-sm text-zinc-400">Update your group information</span>
+					<span class="text-sm text-zinc-400">{{
+						routeGroupId ? "Update your group information" : "Enter your new groups information"
+					}}</span>
 				</div>
 
 				<form class="flex flex-col gap-4" @submit="onSubmit">
@@ -193,13 +210,13 @@ async function deleteGroup() {
 					</div>
 
 					<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
-						<i :class="`pi ${isGroupDetailsUpdating ? 'pi-spin pi-spinner' : 'pi-save'}`" />
-						<span>Save Changes</span>
+						<i :class="`pi ${isGroupDetailsUpdating ? 'pi-spin pi-spinner' : routeGroupId ? 'pi-save' : 'pi-plus'}`" />
+						<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
 					</Button>
 				</form>
 			</div>
 
-			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Members</span>
 					<span class="text-sm text-zinc-400">View and manage group members</span>
@@ -211,15 +228,15 @@ async function deleteGroup() {
 							<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
 							<div class="flex flex-col">
 								<span>{{ user.name }}</span>
-								<span class="text-sm text-zinc-400">{{ userId === groupData!.owner ? "Owner" : "Member" }}</span>
+								<span class="text-sm text-zinc-400">{{ userId === groupData?.owner ? "Owner" : "Member" }}</span>
 							</div>
 						</div>
 						<Button
 							v-if="currentUser?.uid === groupData?.owner"
 							variant="outline"
-							:disabled="userId === groupData!.owner"
+							:disabled="userId === groupData?.owner"
 						>
-							{{ userId === groupData!.owner ? "Owner" : "Remove" }}
+							{{ userId === groupData?.owner ? "Owner" : "Remove" }}
 						</Button>
 					</div>
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
@@ -229,7 +246,7 @@ async function deleteGroup() {
 				</div>
 			</div>
 
-			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Danger Zone</span>
 					<span class="text-sm text-zinc-400">Dangerous action for this group</span>

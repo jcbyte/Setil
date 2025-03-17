@@ -8,14 +8,16 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- STORY: Restyle settings page
 - STORY: Restyle transactions page
 - STORY: Restyle settle up page
-- FIX: Remove primevue toast
+- FIX: Replace primevue toast
 
+- STORY: Remove primevue
 - FIX: Make owing colours look better
+- FIX: Vue Warnings
 
 - FEAT: Rename users
+- FEAT: Removing users
 - STORY: Animations
 
 - Remove inactive users from transactions after debt is cleared
