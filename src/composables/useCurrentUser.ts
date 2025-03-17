@@ -7,7 +7,6 @@ const useCurrentUserStore = defineStore("user", () => {
 	const currentUser = ref<User | null>(auth.currentUser);
 
 	auth.onAuthStateChanged((user) => {
-		console.log("hello");
 		currentUser.value = user;
 	});
 

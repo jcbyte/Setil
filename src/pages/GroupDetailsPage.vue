@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
@@ -24,6 +25,7 @@ import { useGroup } from "../composables/useGroup";
 const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const { currentUser } = useCurrentUser();
 
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
@@ -88,7 +90,6 @@ async function deleteGroup() {
 }
 
 // todo remove users
-// todo disable certain buttons for non-owner
 // todo confirm leave/delete group
 // todo new group page
 </script>
@@ -186,7 +187,11 @@ async function deleteGroup() {
 								<span class="text-sm text-zinc-400">{{ userId === groupData!.owner ? "Owner" : "Member" }}</span>
 							</div>
 						</div>
-						<Button variant="outline" :disabled="userId === groupData!.owner">
+						<Button
+							v-if="currentUser?.uid === groupData?.owner"
+							variant="outline"
+							:disabled="userId === groupData!.owner"
+						>
 							{{ userId === groupData!.owner ? "Owner" : "Remove" }}
 						</Button>
 					</div>
@@ -215,9 +220,8 @@ async function deleteGroup() {
 						</Button>
 					</div>
 
-					<Separator />
-
-					<div class="flex justify-between items-center">
+					<Separator v-if="currentUser?.uid === groupData?.owner" />
+					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center">
 						<div class="flex flex-col">
 							<span>Delete Group</span>
 							<span class="text-sm text-zinc-400">Remove yourself from this group</span>

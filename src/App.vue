@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentUser } from "@/composables/useCurrentUser.ts";
+import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { Toast } from "primevue";
 import { onMounted, ref } from "vue";
 import SignInPage from "./pages/SignInPage.vue";
-import { useCurrentUser } from "@/composables/useCurrentUser.ts";
-import { useColorMode } from "@vueuse/core";
 
 const firebaseLoaded = ref(false);
-const currentUser = useCurrentUser();
+const { currentUser } = useCurrentUser();
 
 onMounted(() => {
 	getAuth().onAuthStateChanged(() => {
