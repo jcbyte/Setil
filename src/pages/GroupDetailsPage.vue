@@ -1,25 +1,27 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { CurrencySettings, type Currency } from "@/util/groupSettings";
-import { useRoute, useRouter } from "vue-router";
-import { useGroup } from "../composables/useGroup";
-
 import { updateGroup } from "@/firebase/firestore";
+import { CurrencySettings, type Currency } from "@/util/groupSettings";
+import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
+import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 
 const groupDetailsUpdating = ref<boolean>(false);
+const isAddingMember = ref<boolean>(false);
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -33,7 +35,7 @@ const { isFieldDirty, handleSubmit, setValues } = useForm({
 	validationSchema: formSchema,
 });
 
-const { groupId, groupData } = useGroup(routeGroupId, () => {
+const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	if (!groupId) return;
 
 	setValues({
@@ -46,15 +48,24 @@ const onSubmit = handleSubmit(async (values) => {
 	if (!groupId.value) return;
 
 	groupDetailsUpdating.value = true;
-
 	await updateGroup(groupId.value, {
 		name: values.name,
 		description: values.description ?? null,
 		currency: values.currency as Currency,
 	});
-
 	groupDetailsUpdating.value = false;
 });
+
+async function addMember() {
+	if (!groupId.value) return;
+
+	isAddingMember.value = true;
+	await inviteUser(groupId.value);
+	isAddingMember.value = false;
+}
+
+// todo remove users
+// todo disable certain buttons for non-owner
 </script>
 
 <template>
@@ -135,7 +146,28 @@ const onSubmit = handleSubmit(async (values) => {
 				</form>
 			</div>
 
-			<div class="border border-zinc-800 rounded-lg flex flex-col gap-4 p-4">next section</div>
+			<div class="border border-zinc-800 rounded-lg flex flex-col gap-4 p-4">
+				<div class="flex flex-col">
+					<span class="text-lg font-semibold">Members</span>
+					<span class="text-sm text-zinc-400">VIew and manage group members</span>
+				</div>
+				<div v-for="(user, userId) in users" class="flex justify-between items-center">
+					<div class="flex justify-center items-center gap-2">
+						<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
+						<div class="flex flex-col">
+							<span>{{ user.name }}</span>
+							<span class="text-sm text-zinc-400">{{ userId === groupData!.owner ? "Owner" : "Member" }}</span>
+						</div>
+					</div>
+					<Button variant="outline" :disabled="userId === groupData!.owner">
+						{{ userId === groupData!.owner ? "Owner" : "Remove" }}
+					</Button>
+				</div>
+				<Button variant="outline" :disabled="isAddingMember" @click="addMember">
+					<i :class="`pi ${isAddingMember ? 'pi pi-spin pi-spinner' : 'pi-user-plus'}`" />
+					<span>Add Member</span>
+				</Button>
+			</div>
 		</div>
 	</div>
 </template>
