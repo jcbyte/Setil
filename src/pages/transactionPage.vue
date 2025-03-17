@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { formatCurrency, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { CalendarIcon } from "lucide-vue-next";
@@ -26,8 +30,11 @@ const routeTransactionId = Array.isArray(route.params.transactionId)
 	? route.params.transactionId[0]
 	: route.params.transactionId || null;
 
-const { groupId, users, transactions } = useGroup(routeGroupId, () => {
+const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () => {
 	setValues({});
+	// toSelected.value = Object.fromEntries(
+	// 	Object.keys(users.value ?? {}).map((userId) => [userId, { selected: true, num: 0 }])
+	// );
 });
 
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
@@ -35,14 +42,29 @@ const df = new DateFormatter(navigator.language, { dateStyle: "long" });
 const formSchema = toTypedSchema(
 	z.object({
 		title: z.string().min(1, "Title is required").max(100, "Title cannot exceed 100 characters"),
-		amount: z
-			.number()
-			.min(0.01, "An amount is required")
-			.transform((val) => parseFloat(val.toFixed(2))),
+		amount: z // Must do all validation within refine, as we require no validation when values.to === "unequal"
+			.any()
+			.optional()
+			.refine((val) => {
+				if (values.to?.type === "unequal") return true;
+				return val && typeof val === "number" && val > 0.01;
+			}, "An amount is required"),
 		date: z.string().refine((v) => v, { message: "A date is required" }),
 		from: z
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
+		to: z.object({
+			type: z.enum(["equal", "unequal", "percent"]).default("equal"),
+			selected: z
+				.record(
+					z.string(),
+					z.object({
+						selected: z.boolean(),
+						num: z.number(),
+					})
+				)
+				.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
+		}),
 	})
 );
 
@@ -58,6 +80,38 @@ const dateValue = computed({
 const onSubmit = handleSubmit(async (values) => {
 	console.log(values);
 });
+
+function resolveBalances(): Record<string, number> {
+	if (!values.to?.selected) return {};
+
+	if (values.to.type === "equal") {
+		return splitAmountEven(
+			values.amount ?? 0,
+			Object.entries(values.to.selected)
+				.filter(([, selectedData]) => selectedData!.selected)
+				.map(([userId]) => userId)
+		);
+	} else if (values.to.type === "unequal") {
+		return Object.fromEntries(
+			Object.entries(values.to.selected)
+				.filter(([, selectedData]) => selectedData!.selected)
+				.map(([userId, selectedData]) => [userId, selectedData!.num!])
+		);
+	} else if (values.to.type === "percent") {
+		return splitAmountRatio(
+			values.amount ?? 0,
+			Object.fromEntries(
+				Object.entries(values.to.selected)
+					.filter(([, selectedData]) => selectedData!.selected)
+					.map(([userId, selectedData]) => [userId, selectedData!.num!])
+			)
+		);
+	}
+
+	return {};
+}
+
+const toValue = computed<Record<string, number>>(resolveBalances);
 
 // async function formSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 // 	if (valid) {
@@ -147,7 +201,7 @@ const onSubmit = handleSubmit(async (values) => {
 											type="number"
 											placeholder="0.00"
 											:step="0.01"
-											:disabled="isTransactionUpdating"
+											:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
 											v-bind="componentField"
 										/>
 									</FormControl>
@@ -205,7 +259,51 @@ const onSubmit = handleSubmit(async (values) => {
 							</FormItem>
 						</FormField>
 
-						// todo "Split with"
+						<FormField name="to" :validate-on-blur="!isFieldDirty">
+							<FormItem v-auto-animate>
+								<FormLabel>Split with</FormLabel>
+								<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-2">
+									<Tabs
+										:model-value="values.to?.type"
+										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'percent')"
+									>
+										<TabsList class="grid w-full grid-cols-3">
+											<TabsTrigger value="equal"> Equal </TabsTrigger>
+											<TabsTrigger value="unequal"> Unequal </TabsTrigger>
+											<TabsTrigger value="percent"> Percent </TabsTrigger>
+										</TabsList>
+									</Tabs>
+
+									<div class="flex flex-col gap-2">
+										<div v-for="(user, userId) in users" class="flex justify-between items-center">
+											<div class="flex justify-center items-center gap-2">
+												<Checkbox
+													:id="`user-${userId}`"
+													:model-value="values.to?.selected?.[userId]?.selected ?? false"
+													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.selected`, Boolean(val))"
+												/>
+												<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
+													<Avatar :src="user.photoURL ?? ''" :name="user.name" class="size-6" />
+													<span class="text-sm text-nowrap">{{ user.name }}</span>
+												</label>
+												<Input
+													v-if="values.to?.type !== 'equal'"
+													type="number"
+													placeholder="0.00"
+													:step="0.01"
+													:model-value="values.to?.selected?.[userId]?.num ?? 0"
+													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
+												/>
+											</div>
+											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">{{
+												formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd")
+											}}</span>
+										</div>
+									</div>
+								</div>
+								<FormMessage />
+							</FormItem>
+						</FormField>
 					</div>
 
 					<Button type="submit" :disabled="isTransactionUpdating" class="w-fit">
