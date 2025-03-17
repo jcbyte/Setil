@@ -6,8 +6,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { firebaseSignOut } from "@/firebase/auth";
-import { getUser } from "@/firebase/firestore";
 import { useToast } from "primevue";
 
 const toast = useToast();
@@ -31,13 +31,18 @@ function signOut() {
 		});
 }
 
-const user = getUser();
+const { currentUser } = useCurrentUser();
 </script>
 
 <template>
 	<DropdownMenu>
 		<DropdownMenuTrigger as-child>
-			<Avatar v-bind="$attrs" class="size-9" :src="user.photoURL" :name="user.displayName ?? 'Myself'" />
+			<Avatar
+				v-bind="$attrs"
+				class="size-9"
+				:src="currentUser?.photoURL ?? ''"
+				:name="currentUser?.displayName ?? 'Myself'"
+			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
 			<DropdownMenuItem @click="signOut">
