@@ -7,6 +7,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
@@ -183,7 +184,7 @@ const onSubmit = handleSubmit(async (values) => {
 			<YourAccountSettings />
 		</div>
 
-		<div class="min-w-[32rem] flex flex-col gap-4">
+		<div v-if="groupId" class="min-w-[32rem] flex flex-col gap-4">
 			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Expense Details</span>
@@ -342,5 +343,6 @@ const onSubmit = handleSubmit(async (values) => {
 				</form>
 			</div>
 		</div>
+		<Skeleton v-else class="w-[32rem] h-[38rem]" />
 	</div>
 </template>
