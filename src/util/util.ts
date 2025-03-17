@@ -1,5 +1,4 @@
 import { cleanupInvites, invite } from "@/firebase/firestore";
-import type { GroupUserData } from "@/firebase/types";
 import { CurrencySettings, type Currency } from "./groupSettings";
 
 export function splitAmountEven(amount: number, people: string[]): Record<string, number> {
@@ -34,12 +33,12 @@ export function formatCurrency(amount: number, currency: Currency): string {
 	return (negative ? "-" : "") + currencySettings.symbol + Math.abs(amount).toFixed(currencySettings.decimals);
 }
 
-export function resolveBalance(balance: GroupUserData["balance"]): number {
+export function resolveBalance(balance: Record<string, number>): number {
 	return Object.values(balance).reduce((acc, value) => acc + value, 0);
 }
 
 export function getBalanceStr(
-	balance: GroupUserData["balance"],
+	balance: Record<string, number>,
 	currency: Currency,
 	positiveGenerator: (formattedBal: string) => string,
 	negativeGenerator: (formattedBal: string) => string,

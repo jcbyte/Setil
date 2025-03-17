@@ -9,9 +9,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { formatCurrency, splitAmountEven, splitAmountRatio } from "@/util/util";
+import { formatCurrency, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -25,6 +26,7 @@ import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
+const { currentUser } = useCurrentUser();
 
 const isTransactionUpdating = ref<boolean>(false);
 
@@ -34,10 +36,43 @@ const routeTransactionId = Array.isArray(route.params.transactionId)
 	: route.params.transactionId || null;
 
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () => {
-	setValues({});
-	// toSelected.value = Object.fromEntries(
-	// 	Object.keys(users.value ?? {}).map((userId) => [userId, { selected: true, num: 0 }])
-	// );
+	if (!groupId.value) return;
+
+	if (routeTransactionId) {
+		const transaction = transactions.value![routeTransactionId];
+
+		const transactionDate = transaction.date.toDate();
+		const transactionCalendarDate = new CalendarDate(
+			transactionDate.getFullYear(),
+			transactionDate.getMonth(),
+			transactionDate.getDate()
+		);
+
+		setValues({
+			title: transaction.title,
+			date: transactionCalendarDate.toString(),
+			from: transaction.from,
+			amount: resolveBalance(transaction.to),
+			to: {
+				type: "unequal",
+				selected: Object.fromEntries(
+					Object.keys(users.value!).map((userId) => {
+						const toBal = transaction.to[userId];
+						return [userId, { selected: !!toBal, num: toBal ?? 0 }];
+					})
+				),
+			},
+		});
+	} else {
+		setValues({
+			date: today(getLocalTimeZone()).toString(),
+			from: currentUser.value!.uid,
+			to: {
+				type: "equal",
+				selected: Object.fromEntries(Object.keys(users.value!).map((userId) => [userId, { selected: false, num: 0 }])),
+			},
+		});
+	}
 });
 
 const df = new DateFormatter(navigator.language, { dateStyle: "long" });
@@ -228,11 +263,19 @@ const onSubmit = handleSubmit(async (values) => {
 								<FormControl>
 									<Select v-bind="componentField" :disabled="isTransactionUpdating">
 										<SelectTrigger>
-											<SelectValue placeholder="(todo) Default select You" />
+											<SelectValue>
+												<div v-if="groupId && values.from" class="flex items-center gap-2">
+													<Avatar :src="users![values.from].photoURL" :name="users![values.from].name" class="size-6" />
+													<span>{{ users![values.from!].name }} </span>
+												</div>
+											</SelectValue>
 										</SelectTrigger>
 										<SelectContent>
 											<SelectItem v-for="(user, userId) in users" :value="userId">
-												{{ user.name }}
+												<div class="flex items-center gap-2">
+													<Avatar :src="user.photoURL" :name="user.name" class="size-5" />
+													<span>{{ user.name }} </span>
+												</div>
 											</SelectItem>
 										</SelectContent>
 									</Select>
