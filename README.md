@@ -9,10 +9,10 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 ## TODO
 
 - STORY: Restyle transactions page
-- STORY: Restyle settle up page
+- FIX: Swap text-zinc to text-muted-foreground
 - FIX: Replace primevue toast
-
 - STORY: Remove primevue
+- STORY: Create settle up page
 - FIX: Make owing colours look better
 - FIX: Vue Warnings
 
