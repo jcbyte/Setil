@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
+import {
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -27,10 +35,24 @@ const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { currentUser } = useCurrentUser();
 
+interface DialogData {
+	open: boolean;
+	processing: boolean;
+}
+
+function openDialog(dialogData: DialogData) {
+	dialogData.processing = false;
+	dialogData.open = true;
+}
+
+function closeDialog(dialogData: DialogData) {
+	dialogData.open = false;
+}
+
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
-const isLeavingGroup = ref<boolean>(false);
-const isDeletingGroup = ref<boolean>(false);
+const leaveDialogData = ref<DialogData>({ open: false, processing: false });
+const deleteDialogData = ref<DialogData>({ open: false, processing: false });
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -76,21 +98,26 @@ async function addMember() {
 async function leaveGroup() {
 	if (!groupId.value) return;
 
-	isLeavingGroup.value = true;
+	leaveDialogData.value.processing = true;
+
 	await firestoreLeaveGroup(groupId.value);
-	isLeavingGroup.value = false;
+
+	router.push("/");
+	closeDialog(leaveDialogData.value);
 }
 
 async function deleteGroup() {
 	if (!groupId.value) return;
 
-	isDeletingGroup.value = true;
+	deleteDialogData.value.processing = true;
+
 	await firestoreDeleteGroup(groupId.value);
-	isDeletingGroup.value = false;
+
+	router.push("/");
+	closeDialog(deleteDialogData.value);
 }
 
 // todo remove users
-// todo confirm leave/delete group
 // todo new group page
 </script>
 
@@ -214,8 +241,8 @@ async function deleteGroup() {
 							<span>Leave Group</span>
 							<span class="text-sm text-zinc-400">Remove yourself from this group</span>
 						</div>
-						<Button variant="outline" :disabled="isLeavingGroup" @click="leaveGroup">
-							<i :class="`pi ${isLeavingGroup ? 'pi-spin pi-spinner' : 'pi-sign-out'}`" />
+						<Button variant="outline" @click="openDialog(leaveDialogData)">
+							<i class="pi pi-sign-out" />
 							<span>Leave</span>
 						</Button>
 					</div>
@@ -224,10 +251,10 @@ async function deleteGroup() {
 					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center">
 						<div class="flex flex-col">
 							<span>Delete Group</span>
-							<span class="text-sm text-zinc-400">Remove yourself from this group</span>
+							<span class="text-sm text-zinc-400">Permanently delete this group and all its data</span>
 						</div>
-						<Button variant="destructive" :disabled="isDeletingGroup" @click="deleteGroup">
-							<i :class="`pi ${isDeletingGroup ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+						<Button variant="destructive" @click="openDialog(deleteDialogData)">
+							<i class="pi pi-trash" />
 							<span>Delete</span>
 						</Button>
 					</div>
@@ -235,4 +262,44 @@ async function deleteGroup() {
 			</div>
 		</div>
 	</div>
+
+	<AlertDialog v-model:open="leaveDialogData.open">
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+				<AlertDialogDescription>
+					Your data will remain in the group until all debts are resolved.
+				</AlertDialogDescription>
+			</AlertDialogHeader>
+			<AlertDialogFooter>
+				<Button variant="outline" :disabled="leaveDialogData.processing" @click="closeDialog(leaveDialogData)">
+					Cancel
+				</Button>
+				<Button :disabled="leaveDialogData.processing" @click="leaveGroup">
+					<i :class="`pi ${leaveDialogData.processing ? 'pi-spin pi-spinner' : 'pi-sign-out'}`" />
+					<span>Leave</span>
+				</Button>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
+
+	<AlertDialog v-model:open="deleteDialogData.open">
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+				<AlertDialogDescription>
+					This action cannot be undone. This will permanently delete the group and all its data.
+				</AlertDialogDescription>
+			</AlertDialogHeader>
+			<AlertDialogFooter>
+				<Button variant="outline" :disabled="deleteDialogData.processing" @click="closeDialog(deleteDialogData)">
+					Cancel
+				</Button>
+				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="deleteGroup">
+					<i :class="`pi ${deleteDialogData.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+					<span>Delete</span>
+				</Button>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
 </template>
