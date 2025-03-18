@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getUserGroups, type ExtendedGroupData } from "@/firebase/firestore";
+import { Plus } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -25,7 +26,7 @@ onMounted(() => {
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
 				<Button @click="router.push('/create')">
-					<i class="pi pi-plus-circle font-semibold" />
+					<Plus :stroke-width="3" />
 					<span class="font-semibold">New Group</span>
 				</Button>
 			</div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToast } from "@/components/ui/toast";
 import { joinGroup } from "@/firebase/firestore";
+import { Loader } from "lucide-vue-next";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -41,17 +42,8 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="w-full flex flex-col gap-4">
-		<div>
-			<span class="text-lg font-semibold">Joining Group</span>
-		</div>
-		<div class="flex justify-center">
-			<div class="flex flex-col gap-2 justify-center items-center border border-border p-8 min-w-80 rounded-lg">
-				<div>
-					<i class="pi pi-spin pi-spinner text-[3rem]" />
-				</div>
-				<span class="text-muted-foreground font-semibold">Validating Invite Link</span>
-			</div>
-		</div>
+	<div class="flex flex-col items-center justify-center gap-4 border border-border p-8 min-w-80 rounded-lg">
+		<Loader class="animate-spin !size-12" />
+		<span class="text-muted-foreground font-semibold">Validating Invite Link</span>
 	</div>
 </template>
