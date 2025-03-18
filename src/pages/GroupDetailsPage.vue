@@ -153,7 +153,7 @@ async function deleteGroup() {
 			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Details</span>
-					<span class="text-sm text-zinc-400">{{
+					<span class="text-sm text-muted-foreground">{{
 						routeGroupId ? "Update your group information" : "Enter your new groups information"
 					}}</span>
 				</div>
@@ -219,7 +219,7 @@ async function deleteGroup() {
 			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Members</span>
-					<span class="text-sm text-zinc-400">View and manage group members</span>
+					<span class="text-sm text-muted-foreground">View and manage group members</span>
 				</div>
 
 				<div class="flex flex-col gap-4">
@@ -228,7 +228,9 @@ async function deleteGroup() {
 							<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
 							<div class="flex flex-col">
 								<span>{{ user.name }}</span>
-								<span class="text-sm text-zinc-400">{{ userId === groupData?.owner ? "Owner" : "Member" }}</span>
+								<span class="text-sm text-muted-foreground">{{
+									userId === groupData?.owner ? "Owner" : "Member"
+								}}</span>
 							</div>
 						</div>
 						<Button
@@ -249,14 +251,14 @@ async function deleteGroup() {
 			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Danger Zone</span>
-					<span class="text-sm text-zinc-400">Dangerous action for this group</span>
+					<span class="text-sm text-muted-foreground">Dangerous action for this group</span>
 				</div>
 
 				<div class="flex flex-col gap-4">
 					<div class="flex justify-between items-center">
 						<div class="flex flex-col">
 							<span>Leave Group</span>
-							<span class="text-sm text-zinc-400">Remove yourself from this group</span>
+							<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
 						</div>
 						<Button variant="outline" @click="openDialog(leaveDialogData)">
 							<i class="pi pi-sign-out" />
@@ -268,7 +270,7 @@ async function deleteGroup() {
 					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center">
 						<div class="flex flex-col">
 							<span>Delete Group</span>
-							<span class="text-sm text-zinc-400">Permanently delete this group and all its data</span>
+							<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
 						</div>
 						<Button variant="destructive" @click="openDialog(deleteDialogData)">
 							<i class="pi pi-trash" />

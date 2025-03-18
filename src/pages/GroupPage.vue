@@ -96,7 +96,7 @@ async function addMember() {
 							</div>
 							<div class="flex flex-col justify-center items-center">
 								<span class="text-md font-semibold">{{ groupButton.title }}</span>
-								<span class="text-sm text-zinc-400">{{ groupButton.description }}</span>
+								<span class="text-sm text-muted-foreground">{{ groupButton.description }}</span>
 							</div>
 						</div>
 					</Button>
@@ -106,11 +106,11 @@ async function addMember() {
 			<div v-if="groupId" class="border border-zinc-800 rounded-lg p-4 flex flex-col gap-2 h-fit w-64">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
-					<span v-if="groupData!.description" class="text-sm text-zinc-400">Description</span>
+					<span v-if="groupData!.description" class="text-sm text-muted-foreground">Description</span>
 					<span v-if="groupData!.description" class="text-sm">{{ groupData!.description }}</span>
 				</div>
 				<div class="flex flex-col gap-1">
-					<span class="text-sm text-zinc-400 font-semibold">Members ({{ Object.keys(users!).length }})</span>
+					<span class="text-sm text-muted-foreground font-semibold">Members ({{ Object.keys(users!).length }})</span>
 					<div class="flex gap-2 flex-wrap">
 						<div v-for="user in users" class="flex gap-1 justify-center items-center">
 							<Avatar :src="user.photoURL" :name="user.name" class="size-7" />

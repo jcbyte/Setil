@@ -8,7 +8,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: Swap text-zinc to text-muted-foreground
 - FIX: Replace primevue toast
 - STORY: Remove primevue
 - FIX: Make owing colours look better

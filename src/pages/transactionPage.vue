@@ -197,7 +197,7 @@ const onSubmit = handleSubmit(async (values) => {
 			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Expense Details</span>
-					<span class="text-sm text-zinc-400">{{
+					<span class="text-sm text-muted-foreground">{{
 						routeTransactionId ? "Update details of this expense" : "Add a new expense to your group"
 					}}</span>
 				</div>

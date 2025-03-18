@@ -70,7 +70,7 @@ async function handleDeleteTransaction() {
 	<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-4">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold">Group Activity</span>
-			<span class="text-sm text-zinc-400">Transactions in this group</span>
+			<span class="text-sm text-muted-foreground">Transactions in this group</span>
 		</div>
 		<div class="flex flex-col">
 			<div v-for="([transactionId, transaction], index) in sortedTransactions">
@@ -84,12 +84,14 @@ async function handleDeleteTransaction() {
 								<div class="text-lg font-semibold">{{ transaction.title }}</div>
 								<div class="flex justify-center items-center gap-3">
 									<div class="flex justify-center items-center gap-1">
-										<i class="pi pi-calendar !text-sm text-zinc-400" />
-										<span class="text-sm text-zinc-400">{{ transaction.date.toDate().toLocaleDateString() }}</span>
+										<i class="pi pi-calendar !text-sm text-muted-foreground" />
+										<span class="text-sm text-muted-foreground">{{
+											transaction.date.toDate().toLocaleDateString()
+										}}</span>
 									</div>
 									<div class="flex justify-center items-center gap-1">
-										<i class="pi pi-user !text-sm text-zinc-400" />
-										<span class="text-sm text-zinc-400">{{ users[transaction.from].name }}</span>
+										<i class="pi pi-user !text-sm text-muted-foreground" />
+										<span class="text-sm text-muted-foreground">{{ users[transaction.from].name }}</span>
 									</div>
 								</div>
 							</div>

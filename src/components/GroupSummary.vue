@@ -29,7 +29,7 @@ const usersBalanceStr = computed<Record<string, { str: string; status: "positive
 	<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-4">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold">Balances</span>
-			<span class="text-sm text-zinc-400">Who owes what in this group</span>
+			<span class="text-sm text-muted-foreground">Who owes what in this group</span>
 		</div>
 		<div class="flex flex-col gap-2">
 			<div v-for="(user, userId) in users" class="flex justify-between items-center">

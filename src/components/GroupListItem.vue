@@ -47,14 +47,14 @@ const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" |
 		<div class="flex flex-col gap-2">
 			<div class="flex flex-col">
 				<span class="text-lg font-semibold">{{ group.name }}</span>
-				<span v-if="group.description" class="text-sm text-zinc-400">{{ group.description }}</span>
+				<span v-if="group.description" class="text-sm text-muted-foreground">{{ group.description }}</span>
 			</div>
 			<AvatarStack
 				avatar-class="border border-zinc-950"
 				:avatars="group.topUsers.map((topUser) => ({ src: topUser.photoURL, name: topUser.name }))"
 				:total-count="group.userCount"
 			/>
-			<span class="text-sm text-zinc-400">{{ lastUpdatedStr }}</span>
+			<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
 		</div>
 
 		<div class="flex flex-col justify-between items-end">
