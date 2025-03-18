@@ -8,26 +8,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { firebaseSignOut } from "@/firebase/auth";
-import { useToast } from "primevue";
-
-const toast = useToast();
 
 function signOut() {
 	firebaseSignOut()
 		.then(() => {
-			toast.add({
-				severity: "success",
-				summary: "Signed Out",
-				life: 2000,
-			});
+			// todo show success toast
 		})
 		.catch((error) => {
-			toast.add({
-				severity: "error",
-				summary: "Sign Out Failed",
-				detail: error.message,
-				life: 5000,
-			});
+			// todo show error toast
 		});
 }
 

@@ -89,7 +89,7 @@ const formSchema = toTypedSchema(
 			.optional()
 			.refine((val) => {
 				if (values.to?.type === "unequal") return true;
-				return val && typeof val === "number" && val > 0.01;
+				return val && typeof val === "number" && val > 0;
 			}, "An amount is required"),
 		date: z.string().refine((v) => v, { message: "A date is required" }),
 		from: z

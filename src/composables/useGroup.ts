@@ -1,5 +1,4 @@
 import { defineStore, storeToRefs } from "pinia";
-import { useToast } from "primevue";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
 import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "../firebase/firestore";
@@ -38,14 +37,9 @@ export function useGroup(
 	} = storeToRefs(useGroupStore());
 
 	const router = useRouter();
-	const toast = useToast();
 
 	function errorHome() {
-		toast.add({
-			severity: "error",
-			summary: "Invalid Group",
-			life: 2000,
-		});
+		// todo show error toast
 
 		router.push("/");
 	}

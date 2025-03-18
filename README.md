@@ -8,8 +8,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: Replace primevue toast
-- STORY: Remove primevue
+- FIX: Add toasts
 - FIX: Make owing colours look better
 - FIX: Vue Warnings
 - STORY: Create settle up page

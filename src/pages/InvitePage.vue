@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useToast } from "primevue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { joinGroup } from "../firebase/firestore";
 
 const route = useRoute();
-const toast = useToast();
 const router = useRouter();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
@@ -15,11 +13,7 @@ const routeInviteCode = Array.isArray(route.params.inviteCode)
 
 onMounted(async () => {
 	function errorHome() {
-		toast.add({
-			severity: "error",
-			summary: "Could not join group",
-			life: 4000,
-		});
+		// todo show error toast
 
 		router.push(`/`);
 	}
@@ -31,11 +25,7 @@ onMounted(async () => {
 
 	const joined = await joinGroup(routeGroupId, routeInviteCode);
 	if (joined) {
-		toast.add({
-			severity: "success",
-			summary: "Joined group",
-			life: 2000,
-		});
+		// todo show success toast
 
 		router.push(`/group/${routeGroupId}`);
 	} else {

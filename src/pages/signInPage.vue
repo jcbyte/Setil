@@ -2,35 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { signInWithGoogle } from "@/firebase/auth";
-import { useToast, type ToastMessageOptions } from "primevue";
-
-const toast = useToast();
 
 function signIn() {
-	const persistentMessage: ToastMessageOptions = {
-		summary: "Signing In",
-		detail: "Continue in the popup window",
-		closable: false,
-	};
-
-	toast.add(persistentMessage);
+	// todo show persistent toast
 	signInWithGoogle()
 		.then(() => {
-			toast.remove(persistentMessage);
-			toast.add({
-				severity: "success",
-				summary: "Signed In",
-				life: 2000,
-			});
+			// todo show success toast
 		})
 		.catch((error) => {
-			toast.remove(persistentMessage);
-			toast.add({
-				severity: "error",
-				summary: "Sign In Failed",
-				detail: error.message,
-				life: 5000,
-			});
+			// todo show error toast
 		});
 }
 </script>

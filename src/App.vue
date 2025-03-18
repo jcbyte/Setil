@@ -3,7 +3,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
-import { Toast } from "primevue";
 import { onMounted, ref } from "vue";
 import SignInPage from "./pages/SignInPage.vue";
 
@@ -27,6 +26,4 @@ useColorMode().value = "dark";
 	<div v-else class="flex justify-center w-full p-4">
 		<Skeleton class="w-9/12 h-80" />
 	</div>
-
-	<Toast position="top-center" />
 </template>
