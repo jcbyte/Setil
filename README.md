@@ -8,12 +8,14 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## TODO
 
-- FIX: Add toasts
 - FIX: Make owing colours look better
 - FIX: Vue Warnings
+- STORY: Restyle InvitePage
 - STORY: Create settle up page
 - FEAT: Rename users
 - FEAT: Removing users
+- STORY: Convert to lucide icons
+- STORY: "Left" users still in the group should be italic/shown they are left
 - STORY: Animations
 - STORY: Mobile view
 - STORY: Remove inactive users from transactions after debt is cleared

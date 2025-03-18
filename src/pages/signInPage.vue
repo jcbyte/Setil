@@ -16,7 +16,7 @@ function signIn() {
 	signInWithGoogle()
 		.then((newUser) => {
 			persistentToast.dismiss();
-			toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 2000 });
+			toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 5000 });
 		})
 		.catch((error) => {
 			persistentToast.dismiss();

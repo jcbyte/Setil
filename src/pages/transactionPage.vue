@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
@@ -29,6 +30,7 @@ import { useGroup } from "../composables/useGroup";
 const router = useRouter();
 const route = useRoute();
 const { currentUser } = useCurrentUser();
+const { toast } = useToast();
 
 const isTransactionUpdating = ref<boolean>(false);
 
@@ -170,8 +172,10 @@ const onSubmit = handleSubmit(async (values) => {
 
 	if (routeTransactionId) {
 		await updateTransaction(groupId.value, routeTransactionId, transaction);
+		toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
 	} else {
 		await createTransaction(groupId.value, transaction);
+		toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
 	}
 
 	router.push(`/group/${groupId.value}`);

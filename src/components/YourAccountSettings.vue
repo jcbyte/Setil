@@ -15,7 +15,7 @@ const { toast } = useToast();
 function signOut() {
 	firebaseSignOut()
 		.then(() => {
-			toast({ title: "Signed Out", description: "See you again soon!", duration: 2000 });
+			toast({ title: "Signed Out", description: "See you again soon!", duration: 5000 });
 		})
 		.catch((error) => {
 			toast({ title: "Error Signing Out", description: error.code, variant: "destructive", duration: 5000 });

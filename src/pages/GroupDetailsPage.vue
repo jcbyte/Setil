@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
@@ -36,6 +37,7 @@ const router = useRouter();
 const route = useRoute();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { currentUser } = useCurrentUser();
+const { toast } = useToast();
 
 const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	if (!groupId.value) return;
@@ -91,6 +93,7 @@ const onSubmit = handleSubmit(async (values) => {
 		});
 
 		isGroupDetailsUpdating.value = false;
+		toast({ title: "Group Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
 	} else {
 		isGroupDetailsUpdating.value = true;
 
@@ -103,6 +106,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 		router.push(`/group/${newGroupId}`);
 		isGroupDetailsUpdating.value = false;
+		toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
 	}
 });
 
@@ -123,6 +127,8 @@ async function leaveGroup() {
 
 	router.push("/");
 	closeDialog(leaveDialogData.value);
+
+	toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
 }
 
 async function deleteGroup() {
@@ -134,6 +140,8 @@ async function deleteGroup() {
 
 	router.push("/");
 	closeDialog(deleteDialogData.value);
+
+	toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 }
 </script>
 
