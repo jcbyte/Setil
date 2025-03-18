@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/vue-table": "^8.21.2",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^13.0.0",
     "class-variance-authority": "^0.7.1",
