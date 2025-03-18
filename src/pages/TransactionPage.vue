@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
+import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,7 @@ import { formatCurrency, resolveBalance, splitAmountEven, splitAmountRatio } fro
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { CalendarIcon } from "lucide-vue-next";
+import { ArrowLeft, CalendarIcon, Plus, Save } from "lucide-vue-next";
 import { toDate } from "reka-ui/date";
 import { useForm } from "vee-validate";
 import { computed, ref } from "vue";
@@ -191,7 +192,7 @@ const onSubmit = handleSubmit(async (values) => {
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
 				<Button variant="ghost" class="size-9" @click="router.push(`/group/${routeGroupId}`)">
-					<i class="pi pi-arrow-left" />
+					<ArrowLeft class="!size-6" />
 				</Button>
 				<span class="text-lg font-semibold">{{ routeTransactionId ? "Edit Expense" : "New Expense" }}</span>
 			</div>
@@ -378,9 +379,7 @@ const onSubmit = handleSubmit(async (values) => {
 					</div>
 
 					<Button type="submit" :disabled="isTransactionUpdating" class="w-fit">
-						<i
-							:class="`pi ${isTransactionUpdating ? 'pi-spin pi-spinner' : routeTransactionId ? 'pi-save' : 'pi-plus'}`"
-						/>
+						<LoaderIcon :icon="routeTransactionId ? Save : Plus" :loading="isTransactionUpdating" />
 						<span>{{ routeTransactionId ? "Save Changes" : "Add Expense" }}</span>
 					</Button>
 				</form>
