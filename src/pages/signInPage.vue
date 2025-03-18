@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/toast";
 import { signInWithGoogle } from "@/firebase/auth";
 
+const { toast } = useToast();
+
 function signIn() {
-	// todo show persistent toast
+	const persistentToast = toast({
+		title: "Signing In",
+		description: "Please continue in the popup window.",
+		duration: 0,
+	});
+
 	signInWithGoogle()
 		.then(() => {
-			// todo show success toast
+			persistentToast.dismiss();
+			toast({ title: "Signed In", description: "Welcome back!", duration: 2000 });
 		})
 		.catch((error) => {
-			// todo show error toast
+			persistentToast.dismiss();
+			toast({ title: "Error Signing In", description: error.code, variant: "destructive", duration: 5000 });
 		});
 }
 </script>

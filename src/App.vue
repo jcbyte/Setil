@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Skeleton } from "@/components/ui/skeleton";
+import Toaster from "@/components/ui/toast/Toaster.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
@@ -26,4 +27,6 @@ useColorMode().value = "dark";
 	<div v-else class="flex justify-center w-full p-4">
 		<Skeleton class="w-9/12 h-80" />
 	</div>
+
+	<Toaster />
 </template>
