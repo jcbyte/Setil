@@ -181,7 +181,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 	const groupUserData: GroupUserData = {
 		name: user.displayName ?? "Unknown User",
 		photoURL: user.photoURL,
-		active: true,
+		status: "active",
 		balance: {},
 		lastUpdate: Timestamp.now(),
 	};
@@ -243,7 +243,7 @@ export async function leaveGroup(groupId: string) {
 		const firestoreUsersRef = collection(db, "groups", groupId, "users");
 		const userSnaps = await getDocs(firestoreUsersRef);
 
-		const newOwner = userSnaps.docs.find((userSnap) => (userSnap.data() as GroupUserData).active);
+		const newOwner = userSnaps.docs.find((userSnap) => (userSnap.data() as GroupUserData).status === "active");
 		if (newOwner) {
 			await updateDoc(groupRef, { owner: newOwner.id });
 		} else {
@@ -527,7 +527,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	const groupUserData: GroupUserData = {
 		name: user.displayName ?? "Unknown User",
 		photoURL: user.photoURL,
-		active: true,
+		status: "active",
 		balance: {},
 		lastUpdate: Timestamp.now(),
 	};
