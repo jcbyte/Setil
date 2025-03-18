@@ -169,10 +169,11 @@ async function deleteGroup() {
 				<form class="flex flex-col gap-4" @submit="onSubmit">
 					<div class="flex flex-col gap-2">
 						<FormField v-slot="{ componentField }" name="name" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Group Name</FormLabel>
 								<FormControl>
 									<Input
+										autocomplete="off"
 										type="text"
 										placeholder="Germany Trip"
 										:disabled="isGroupDetailsUpdating"
@@ -184,7 +185,7 @@ async function deleteGroup() {
 						</FormField>
 
 						<FormField v-slot="{ componentField }" name="description" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Description</FormLabel>
 								<FormControl>
 									<Textarea
@@ -198,20 +199,20 @@ async function deleteGroup() {
 						</FormField>
 
 						<FormField v-slot="{ componentField }" name="currency" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Currency</FormLabel>
-								<FormControl>
-									<Select v-bind="componentField" :disabled="isGroupDetailsUpdating">
+								<Select v-bind="componentField" :disabled="isGroupDetailsUpdating">
+									<FormControl>
 										<SelectTrigger>
 											<SelectValue placeholder="Euro (€)" />
 										</SelectTrigger>
-										<SelectContent>
-											<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
-												{{ currency.name }} ({{ currency.symbol }})
-											</SelectItem>
-										</SelectContent>
-									</Select>
-								</FormControl>
+									</FormControl>
+									<SelectContent>
+										<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
+											{{ currency.name }} ({{ currency.symbol }})
+										</SelectItem>
+									</SelectContent>
+								</Select>
 								<FormMessage />
 							</FormItem>
 						</FormField>

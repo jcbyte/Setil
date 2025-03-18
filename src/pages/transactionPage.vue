@@ -207,7 +207,7 @@ const onSubmit = handleSubmit(async (values) => {
 				<form class="flex flex-col gap-4" @submit="onSubmit">
 					<div class="flex flex-col gap-2">
 						<FormField v-slot="{ componentField }" name="title" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Title</FormLabel>
 								<FormControl>
 									<Input
@@ -223,10 +223,10 @@ const onSubmit = handleSubmit(async (values) => {
 
 						<div class="flex justify-center gap-4">
 							<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="!isFieldDirty">
-								<FormItem v-auto-animate class="flex-1">
+								<FormItem class="flex-1">
 									<FormLabel>Amount</FormLabel>
-									<FormControl>
-										<div class="relative items-center">
+									<div class="relative items-center">
+										<FormControl>
 											<Input
 												type="number"
 												class="pl-6"
@@ -235,19 +235,17 @@ const onSubmit = handleSubmit(async (values) => {
 												:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
 												v-bind="componentField"
 											/>
-											<span
-												class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
-											>
-												{{ CurrencySettings[groupData!.currency].symbol }}
-											</span>
-										</div>
-									</FormControl>
+										</FormControl>
+										<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
+											{{ CurrencySettings[groupData!.currency].symbol }}
+										</span>
+									</div>
 									<FormMessage />
 								</FormItem>
 							</FormField>
 
 							<FormField name="date" :validate-on-blur="!isFieldDirty">
-								<FormItem class="flex-1" v-auto-animate>
+								<FormItem class="flex-1">
 									<FormLabel>Date</FormLabel>
 									<Popover>
 										<PopoverTrigger as-child>
@@ -278,10 +276,10 @@ const onSubmit = handleSubmit(async (values) => {
 						</div>
 
 						<FormField v-slot="{ componentField }" name="from" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Paid By</FormLabel>
-								<FormControl>
-									<Select v-bind="componentField" :disabled="isTransactionUpdating">
+								<Select v-bind="componentField" :disabled="isTransactionUpdating">
+									<FormControl>
 										<SelectTrigger>
 											<SelectValue>
 												<div v-if="groupId && values.from" class="flex items-center gap-2">
@@ -290,22 +288,22 @@ const onSubmit = handleSubmit(async (values) => {
 												</div>
 											</SelectValue>
 										</SelectTrigger>
-										<SelectContent>
-											<SelectItem v-for="(user, userId) in users" :value="userId">
-												<div class="flex items-center gap-2">
-													<Avatar :src="user.photoURL" :name="user.name" class="size-5" />
-													<span>{{ user.name }} </span>
-												</div>
-											</SelectItem>
-										</SelectContent>
-									</Select>
-								</FormControl>
+									</FormControl>
+									<SelectContent>
+										<SelectItem v-for="(user, userId) in users" :value="userId">
+											<div class="flex items-center gap-2">
+												<Avatar :src="user.photoURL" :name="user.name" class="size-5" />
+												<span>{{ user.name }} </span>
+											</div>
+										</SelectItem>
+									</SelectContent>
+								</Select>
 								<FormMessage />
 							</FormItem>
 						</FormField>
 
 						<FormField name="to" :validate-on-blur="!isFieldDirty">
-							<FormItem v-auto-animate>
+							<FormItem>
 								<FormLabel>Split with</FormLabel>
 								<div class="flex flex-col gap-2 border border-border rounded-lg p-2">
 									<Tabs

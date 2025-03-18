@@ -9,7 +9,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 ## TODO
 
 - FIX: Make owing colours look better
-- FIX: Vue Warnings
+- STORY: Select all in transaction
 - STORY: Restyle InvitePage
 - STORY: Create settle up page
 - FEAT: Rename users
@@ -21,6 +21,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 - STORY: Remove inactive users from transactions after debt is cleared
 - STORY: Resolve debts over multiple people
 - FIX: inconsistency £0.01 = £1.00 = £0.01
+- STORY: PWA
 
 ## Run Locally
 
