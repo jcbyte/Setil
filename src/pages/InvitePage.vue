@@ -35,7 +35,7 @@ onMounted(async () => {
 		toast({ title: "Joined group", description: "Time to make cents of things.", duration: 5000 });
 		router.push(`/group/${routeGroupId}`);
 	} else {
-		// errorHome();
+		errorHome();
 		return;
 	}
 });
