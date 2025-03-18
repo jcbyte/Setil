@@ -4,7 +4,7 @@ import GroupListPage from "./pages/GroupListPage.vue";
 import GroupPage from "./pages/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
-import TransactionPage from "./pages/TransactionPageTemp.vue";
+import TransactionPage from "./pages/TransactionPage.vue";
 
 const routes = [
 	{
