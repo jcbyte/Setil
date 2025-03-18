@@ -27,6 +27,7 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
+import { ArrowLeft, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -150,7 +151,7 @@ async function deleteGroup() {
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
 				<Button variant="ghost" class="size-9" @click="router.push(routeGroupId ? `/group/${routeGroupId}` : '/')">
-					<i class="pi pi-arrow-left" />
+					<ArrowLeft class="!size-6" />
 				</Button>
 				<span class="text-lg font-semibold">{{ routeGroupId ? "Group Settings" : "New Group" }}</span>
 			</div>
@@ -219,7 +220,9 @@ async function deleteGroup() {
 					</div>
 
 					<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
-						<i :class="`pi ${isGroupDetailsUpdating ? 'pi-spin pi-spinner' : routeGroupId ? 'pi-save' : 'pi-plus'}`" />
+						<LoaderCircle v-if="isGroupDetailsUpdating" class="animate-spin" />
+						<Save v-else-if="routeGroupId" />
+						<Plus v-else />
 						<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
 					</Button>
 				</form>
@@ -251,7 +254,8 @@ async function deleteGroup() {
 						</Button>
 					</div>
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
-						<i :class="`pi ${isAddingMember ? 'pi pi-spin pi-spinner' : 'pi-user-plus'}`" />
+						<LoaderCircle v-if="isAddingMember" class="animate-spin" />
+						<UserRoundPlus v-else />
 						<span>Add Member</span>
 					</Button>
 				</div>
@@ -270,7 +274,7 @@ async function deleteGroup() {
 							<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
 						</div>
 						<Button variant="outline" @click="openDialog(leaveDialogData)">
-							<i class="pi pi-sign-out" />
+							<LogOut />
 							<span>Leave</span>
 						</Button>
 					</div>
@@ -282,7 +286,7 @@ async function deleteGroup() {
 							<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
 						</div>
 						<Button variant="destructive" @click="openDialog(deleteDialogData)">
-							<i class="pi pi-trash" />
+							<Trash />
 							<span>Delete</span>
 						</Button>
 					</div>
@@ -304,7 +308,8 @@ async function deleteGroup() {
 					Cancel
 				</Button>
 				<Button :disabled="leaveDialogData.processing" @click="leaveGroup">
-					<i :class="`pi ${leaveDialogData.processing ? 'pi-spin pi-spinner' : 'pi-sign-out'}`" />
+					<LoaderCircle v-if="leaveDialogData.processing" class="animate-spin" />
+					<LogOut v-else />
 					<span>Leave</span>
 				</Button>
 			</AlertDialogFooter>
@@ -324,7 +329,8 @@ async function deleteGroup() {
 					Cancel
 				</Button>
 				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="deleteGroup">
-					<i :class="`pi ${deleteDialogData.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+					<LoaderCircle v-if="deleteDialogData.processing" class="animate-spin" />
+					<Trash v-else />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
