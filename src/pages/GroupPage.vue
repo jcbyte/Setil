@@ -112,11 +112,15 @@ async function addMember() {
 					<span v-if="groupData!.description" class="text-sm">{{ groupData!.description }}</span>
 				</div>
 				<div class="flex flex-col gap-1">
-					<span class="text-sm text-muted-foreground font-semibold">Members ({{ Object.keys(users!).length }})</span>
+					<span class="text-sm text-muted-foreground font-semibold">
+						Members ({{ Object.values(users!).filter((user) => user.status === "active").length }})
+					</span>
 					<div class="flex gap-2 flex-wrap">
-						<div v-for="user in users" class="flex gap-1 justify-center items-center">
-							<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
-							<span class="text-sm">{{ user.name }}</span>
+						<div v-for="user in users">
+							<div v-if="user.status === 'active'" class="flex gap-1 justify-center items-center">
+								<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
+								<span class="text-sm">{{ user.name }}</span>
+							</div>
 						</div>
 					</div>
 				</div>

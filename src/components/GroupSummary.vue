@@ -33,12 +33,21 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 			<span class="text-sm text-muted-foreground">Who owes what in this group</span>
 		</div>
 		<div class="flex flex-col gap-2">
-			<div v-for="(user, userId) in users" class="flex justify-between items-center">
-				<div class="flex justify-center items-center gap-1">
-					<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
-					<span>{{ user.name }}</span>
+			<div v-for="(user, userId) in users">
+				<div v-if="user.status !== 'history'" class="flex justify-between items-center">
+					<div class="flex justify-center items-center gap-1">
+						<Avatar
+							:src="user.photoURL"
+							:name="user.name"
+							:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
+						/>
+						<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+						<span v-if="user.status === 'left'" class="text-xs place-self-end text-muted-foreground italic"
+							>(Left)</span
+						>
+					</div>
+					<BalanceStrBadge :balance-str="usersBalanceStr[userId]" />
 				</div>
-				<BalanceStrBadge :balance-str="usersBalanceStr[userId]" />
 			</div>
 		</div>
 	</div>
