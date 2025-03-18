@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { ExtendedGroupData } from "@/firebase/firestore";
-import { getBalanceStr } from "@/util/util";
+import { getBalanceStr, type BalanceStr } from "@/util/util";
 import { Timestamp } from "firebase/firestore";
 import { computed } from "vue";
 import AvatarStack from "./AvatarStack.vue";
+import BalanceStrBadge from "./balanceStrBadge.vue";
 
 const props = defineProps<{
 	group: ExtendedGroupData;
@@ -31,7 +32,7 @@ const lastUpdatedStr = computed<string>(() => {
 	return "Updated just now";
 });
 
-const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" | "neutral" }>(() =>
+const yourBalanceStr = computed<BalanceStr>(() =>
 	getBalanceStr(
 		props.group.myself.balance,
 		props.group.currency,
@@ -59,16 +60,7 @@ const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" |
 
 		<div class="flex flex-col justify-between items-end">
 			<i class="pi pi-chevron-right text-muted-foreground" />
-			<span
-				:class="`text-sm ${
-					yourBalanceStr.status !== 'neutral'
-						? yourBalanceStr.status === 'positive'
-							? 'bg-green-400/20'
-							: 'bg-red-400/20'
-						: ''
-				} rounded-full px-1.5 py-0.5`"
-				>{{ yourBalanceStr.str }}</span
-			>
+			<BalanceStrBadge :balance-str="yourBalanceStr" />
 		</div>
 	</div>
 </template>
