@@ -2,12 +2,14 @@
 import Avatar from "@/components/Avatar.vue";
 import GroupActivity from "@/components/GroupActivity.vue";
 import GroupSummary from "@/components/GroupSummary.vue";
+import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
 import { inviteUser } from "@/util/util";
+import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -32,7 +34,7 @@ async function addMember() {
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
 				<Button variant="ghost" class="size-9" @click="router.push('/')">
-					<i class="pi pi-arrow-left" />
+					<ArrowLeft class="!size-6" />
 				</Button>
 				<span v-if="groupId" class="text-lg font-semibold">{{ groupData!.name }}</span>
 				<Skeleton v-else class="w-20 h-7" />
@@ -40,7 +42,7 @@ async function addMember() {
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
 				<Button variant="outline" class="size-9" @click="router.push(`/group/${groupId}/edit`)">
-					<i class="pi pi-cog" />
+					<Settings class="!size-5" />
 				</Button>
 			</div>
 		</div>
@@ -74,13 +76,13 @@ async function addMember() {
 					<Button
 						v-for="groupButton in [
 							{
-								icon: 'pi-receipt',
+								icon: ReceiptText,
 								title: 'Add Expense',
 								description: 'Record a new expense',
 								onClick: () => router.push(`/group/${groupId}/transaction`),
 							},
 							{
-								icon: 'pi-wallet',
+								icon: Wallet,
 								title: 'Settle Up',
 								description: 'Settle member\'s debts',
 								onClick: () => router.push(`/group/${groupId}/settle`),
@@ -92,7 +94,7 @@ async function addMember() {
 					>
 						<div class="flex flex-col justify-center items-center gap-2">
 							<div class="bg-secondary p-3 rounded-lg aspect-square flex justify-center items-center">
-								<i :class="`pi ${groupButton.icon} !text-[26px]`" />
+								<component :is="groupButton.icon" class="!size-7" />
 							</div>
 							<div class="flex flex-col justify-center items-center">
 								<span class="text-md font-semibold">{{ groupButton.title }}</span>
@@ -119,7 +121,7 @@ async function addMember() {
 					</div>
 				</div>
 				<Button variant="outline" :disabled="isAddingMember" @click="addMember">
-					<i :class="`pi ${isAddingMember ? 'pi pi-spin pi-spinner' : 'pi-user-plus'}`" />
+					<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 					<span>Add Member</span>
 				</Button>
 			</div>
