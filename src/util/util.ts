@@ -38,13 +38,18 @@ export function resolveBalance(balance: Record<string, number>): number {
 	return Object.values(balance).reduce((acc, value) => acc + value, 0);
 }
 
+export interface BalanceStr {
+	str: string;
+	status: "positive" | "negative" | "neutral";
+}
+
 export function getBalanceStr(
 	balance: Record<string, number>,
 	currency: Currency,
 	positiveGenerator: (formattedBal: string) => string,
 	negativeGenerator: (formattedBal: string) => string,
 	neutralGenerator: () => string
-): { str: string; status: "positive" | "negative" | "neutral" } {
+): BalanceStr {
 	const bal = resolveBalance(balance);
 	const formattedBal = formatCurrency(Math.abs(bal), currency);
 

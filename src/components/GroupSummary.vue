@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import type { GroupData, GroupUserData } from "@/firebase/types";
-import { getBalanceStr } from "@/util/util";
+import { getBalanceStr, type BalanceStr } from "@/util/util";
 import { computed } from "vue";
 import Avatar from "./Avatar.vue";
+import BalanceStrBadge from "./balanceStrBadge.vue";
 
 const props = defineProps<{
 	groupData: GroupData;
 	users: Record<string, GroupUserData>;
 }>();
 
-const usersBalanceStr = computed<Record<string, { str: string; status: "positive" | "negative" | "neutral" }>>(() => {
+const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 	return Object.fromEntries(
 		Object.entries(props.users).map(([userId, user]) => [
 			userId,
@@ -37,16 +38,7 @@ const usersBalanceStr = computed<Record<string, { str: string; status: "positive
 					<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
 					<span>{{ user.name }}</span>
 				</div>
-				<span
-					:class="`text-sm ${
-						usersBalanceStr[userId].status !== 'neutral'
-							? usersBalanceStr[userId].status === 'positive'
-								? 'bg-green-400/20'
-								: 'bg-red-400/20'
-							: ''
-					} rounded-full px-1.5 py-0.5 h-fit`"
-					>{{ usersBalanceStr[userId].str }}</span
-				>
+				<BalanceStrBadge :balance-str="usersBalanceStr[userId]" />
 			</div>
 		</div>
 	</div>
