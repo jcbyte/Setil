@@ -15,6 +15,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 - FEAT: Rename users
 - FEAT: Removing users
 - STORY: Animations
+- STORY: Mobile view
 - STORY: Remove inactive users from transactions after debt is cleared
 - STORY: Resolve debts over multiple people
 - FIX: inconsistency £0.01 = £1.00 = £0.01

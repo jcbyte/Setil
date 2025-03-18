@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { useToast } from "@/components/ui/toast";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { joinGroup } from "../firebase/firestore";
 
 const route = useRoute();
 const router = useRouter();
+const { toast } = useToast();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const routeInviteCode = Array.isArray(route.params.inviteCode)
@@ -13,7 +15,13 @@ const routeInviteCode = Array.isArray(route.params.inviteCode)
 
 onMounted(async () => {
 	function errorHome() {
-		// todo show error toast
+		toast({
+			title: "Could not join Group",
+			description: "Ensure this is a valid link and that it has not expired.",
+			variant: "destructive",
+			duration: 5000,
+		});
+		router.push(`/`);
 
 		router.push(`/`);
 	}
@@ -25,8 +33,7 @@ onMounted(async () => {
 
 	const joined = await joinGroup(routeGroupId, routeInviteCode);
 	if (joined) {
-		// todo show success toast
-
+		toast({ title: "Joined group", description: "Time to make cents of things.", duration: 2000 });
 		router.push(`/group/${routeGroupId}`);
 	} else {
 		errorHome();

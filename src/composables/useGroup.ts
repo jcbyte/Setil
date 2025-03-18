@@ -1,3 +1,4 @@
+import { useToast } from "@/components/ui/toast";
 import { defineStore, storeToRefs } from "pinia";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
@@ -36,13 +37,8 @@ export function useGroup(
 		transactionsUnsubscribe,
 	} = storeToRefs(useGroupStore());
 
+	const { toast } = useToast();
 	const router = useRouter();
-
-	function errorHome() {
-		// todo show error toast
-
-		router.push("/");
-	}
 
 	// Initially get the group data if it has not already been loaded
 	onMounted(async () => {
@@ -72,7 +68,14 @@ export function useGroup(
 			groupDataUnsubscribe.value = await getLiveGroupData(groupId, groupData);
 		} catch {
 			// If the group cannot be found then return to the home page
-			errorHome();
+			toast({
+				title: "Group not found",
+				description: "Ensure you are a member of this group",
+				variant: "destructive",
+				duration: 5000,
+			});
+
+			router.push("/");
 			return;
 		}
 
