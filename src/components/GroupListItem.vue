@@ -43,7 +43,7 @@ const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" |
 </script>
 
 <template>
-	<div class="flex justify-between border border-zinc-800 rounded-lg p-4">
+	<div class="flex justify-between border border-border rounded-lg p-4">
 		<div class="flex flex-col gap-2">
 			<div class="flex flex-col">
 				<span class="text-lg font-semibold">{{ group.name }}</span>

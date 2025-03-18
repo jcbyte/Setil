@@ -194,7 +194,7 @@ const onSubmit = handleSubmit(async (values) => {
 		</div>
 
 		<div v-if="groupId" class="min-w-[32rem] flex flex-col gap-4">
-			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Expense Details</span>
 					<span class="text-sm text-muted-foreground">{{
@@ -305,7 +305,7 @@ const onSubmit = handleSubmit(async (values) => {
 						<FormField name="to" :validate-on-blur="!isFieldDirty">
 							<FormItem v-auto-animate>
 								<FormLabel>Split with</FormLabel>
-								<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-2">
+								<div class="flex flex-col gap-2 border border-border rounded-lg p-2">
 									<Tabs
 										:model-value="values.to?.type"
 										@update:modelValue="(val) => setFieldValue('to.type', val as 'equal'|'unequal'|'ratio')"

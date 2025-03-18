@@ -150,7 +150,7 @@ async function deleteGroup() {
 		</div>
 
 		<div class="min-w-[32rem] flex flex-col gap-4">
-			<div class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Details</span>
 					<span class="text-sm text-muted-foreground">{{
@@ -216,7 +216,7 @@ async function deleteGroup() {
 				</form>
 			</div>
 
-			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Members</span>
 					<span class="text-sm text-muted-foreground">View and manage group members</span>
@@ -248,7 +248,7 @@ async function deleteGroup() {
 				</div>
 			</div>
 
-			<div v-if="routeGroupId" class="border border-zinc-800 rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Danger Zone</span>
 					<span class="text-sm text-muted-foreground">Dangerous action for this group</span>

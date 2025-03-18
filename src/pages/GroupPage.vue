@@ -103,7 +103,7 @@ async function addMember() {
 				</div>
 			</div>
 
-			<div v-if="groupId" class="border border-zinc-800 rounded-lg p-4 flex flex-col gap-2 h-fit w-64">
+			<div v-if="groupId" class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-64">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
 					<span v-if="groupData!.description" class="text-sm text-muted-foreground">Description</span>

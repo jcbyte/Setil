@@ -26,7 +26,7 @@ const usersBalanceStr = computed<Record<string, { str: string; status: "positive
 </script>
 
 <template>
-	<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-4">
+	<div class="flex flex-col gap-2 border border-border rounded-lg p-4">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold">Balances</span>
 			<span class="text-sm text-muted-foreground">Who owes what in this group</span>

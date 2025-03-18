@@ -36,7 +36,7 @@ function signIn() {
 </script>
 
 <template>
-	<div class="flex flex-col items-center justify-center gap-4 border border-zinc-800 bg-zinc-950 p-8 rounded-lg">
+	<div class="flex flex-col items-center justify-center gap-4 border border-border bg-zinc-950 p-8 rounded-lg">
 		<div class="flex flex-col items-center justify-center">
 			<span class="text-2xl font-bold">Welcome to Setil</span>
 			<span class="text-muted-foreground">Sign in to start splitting expenses with friends</span>

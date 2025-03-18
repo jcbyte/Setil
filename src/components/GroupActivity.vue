@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
 import { deleteTransaction } from "@/firebase/firestore";
@@ -67,7 +67,7 @@ async function handleDeleteTransaction() {
 </script>
 
 <template>
-	<div class="flex flex-col gap-2 border border-zinc-800 rounded-lg p-4">
+	<div class="flex flex-col gap-2 border border-border rounded-lg p-4">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold">Group Activity</span>
 			<span class="text-sm text-muted-foreground">Transactions in this group</span>
