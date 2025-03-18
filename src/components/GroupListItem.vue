@@ -4,7 +4,7 @@ import { getBalanceStr, type BalanceStr } from "@/util/util";
 import { Timestamp } from "firebase/firestore";
 import { computed } from "vue";
 import AvatarStack from "./AvatarStack.vue";
-import BalanceStrBadge from "./balanceStrBadge.vue";
+import BalanceStrBadge from "./BalanceStrBadge.vue";
 
 const props = defineProps<{
 	group: ExtendedGroupData;
