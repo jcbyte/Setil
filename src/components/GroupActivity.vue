@@ -18,9 +18,12 @@ import Separator from "@/components/ui/separator/Separator.vue";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { formatCurrency } from "@/util/util";
+import { Calendar, EllipsisVertical, FilePen, ReceiptText, Trash, UserRound } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import LoaderIcon from "./LoaderIcon.vue";
 import Button from "./ui/button/Button.vue";
+import { useToast } from "./ui/toast";
 
 const props = defineProps<{
 	groupId: string;
@@ -30,6 +33,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const { toast } = useToast();
 
 const deleteDialogData = ref<{ open: boolean; transactionId: string; processing: boolean }>({
 	open: false,
@@ -49,6 +53,7 @@ function calculateTotalTransactionValue(transactionAmounts: Record<string, numbe
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
 }
 
+// todo convert this into a useControlledDialog composable
 function openDeleteConfirmDialog(transactionId: string) {
 	deleteDialogData.value = { open: true, transactionId: transactionId, processing: false };
 }
@@ -59,10 +64,9 @@ function closeDeleteConfirmDialog() {
 
 async function handleDeleteTransaction() {
 	deleteDialogData.value.processing = true;
-
 	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId);
-
 	closeDeleteConfirmDialog();
+	toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
 }
 </script>
 
@@ -78,19 +82,19 @@ async function handleDeleteTransaction() {
 					<div class="flex justify-between items-center">
 						<div class="flex items-center gap-3">
 							<div class="bg-secondary rounded-lg size-9 p-2 flex justify-center items-center">
-								<i class="pi pi-receipt" />
+								<ReceiptText />
 							</div>
 							<div class="flex flex-col">
 								<div class="text-lg font-semibold">{{ transaction.title }}</div>
 								<div class="flex justify-center items-center gap-3">
 									<div class="flex justify-center items-center gap-1">
-										<i class="pi pi-calendar !text-sm text-muted-foreground" />
+										<Calendar class="!size-4 text-muted-foreground" />
 										<span class="text-sm text-muted-foreground">{{
 											transaction.date.toDate().toLocaleDateString()
 										}}</span>
 									</div>
 									<div class="flex justify-center items-center gap-1">
-										<i class="pi pi-user !text-sm text-muted-foreground" />
+										<UserRound class="!size-4 text-muted-foreground" />
 										<span class="text-sm text-muted-foreground">{{ users[transaction.from].name }}</span>
 									</div>
 								</div>
@@ -103,21 +107,21 @@ async function handleDeleteTransaction() {
 							<DropdownMenu>
 								<DropdownMenuTrigger as-child>
 									<Button variant="ghost" class="size-8">
-										<i class="pi pi-ellipsis-v !text-[14px]" />
+										<EllipsisVertical class="!size-5" />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
 									<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
-										<div class="w-full flex justify-between">
+										<div class="w-full flex justify-between items-center">
 											<span>Edit</span>
-											<i class="pi pi-pencil" />
+											<FilePen />
 										</div>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem @click="openDeleteConfirmDialog(transactionId)">
-										<div class="w-full flex justify-between">
+										<div class="w-full flex justify-between items-center">
 											<span class="text-red-400">Delete</span>
-											<i class="pi pi-trash text-red-400" />
+											<Trash class="text-red-400" />
 										</div>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
@@ -146,7 +150,7 @@ async function handleDeleteTransaction() {
 					Cancel
 				</Button>
 				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="handleDeleteTransaction">
-					<i :class="`pi ${deleteDialogData.processing ? 'pi-spin pi-spinner' : 'pi-trash'}`" />
+					<LoaderIcon :icon="Trash" :loading="deleteDialogData.processing" />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
