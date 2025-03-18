@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
+import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -27,7 +28,7 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
+import { ArrowLeft, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -220,9 +221,7 @@ async function deleteGroup() {
 					</div>
 
 					<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
-						<LoaderCircle v-if="isGroupDetailsUpdating" class="animate-spin" />
-						<Save v-else-if="routeGroupId" />
-						<Plus v-else />
+						<LoaderIcon :icon="routeGroupId ? Save : Plus" :loading="isGroupDetailsUpdating" />
 						<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
 					</Button>
 				</form>
@@ -254,8 +253,7 @@ async function deleteGroup() {
 						</Button>
 					</div>
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
-						<LoaderCircle v-if="isAddingMember" class="animate-spin" />
-						<UserRoundPlus v-else />
+						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 						<span>Add Member</span>
 					</Button>
 				</div>
@@ -308,8 +306,7 @@ async function deleteGroup() {
 					Cancel
 				</Button>
 				<Button :disabled="leaveDialogData.processing" @click="leaveGroup">
-					<LoaderCircle v-if="leaveDialogData.processing" class="animate-spin" />
-					<LogOut v-else />
+					<LoaderIcon :icon="LogOut" :loading="leaveDialogData.processing" />
 					<span>Leave</span>
 				</Button>
 			</AlertDialogFooter>
@@ -329,8 +326,7 @@ async function deleteGroup() {
 					Cancel
 				</Button>
 				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="deleteGroup">
-					<LoaderCircle v-if="deleteDialogData.processing" class="animate-spin" />
-					<Trash v-else />
+					<LoaderIcon :icon="Trash" :loading="deleteDialogData.processing" />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
