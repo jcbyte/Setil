@@ -157,6 +157,9 @@ function resolveBalances(): Record<string, number> {
 }
 
 const toValue = computed<Record<string, number>>(resolveBalances);
+const allSelected = computed<boolean>(
+	() => !Object.values(values.to?.selected ?? {}).some((selectedData) => !selectedData?.selected)
+);
 
 const onSubmit = handleSubmit(async (values) => {
 	if (!groupId.value) return;
@@ -305,6 +308,7 @@ const onSubmit = handleSubmit(async (values) => {
 						<FormField name="to" :validate-on-blur="!isFieldDirty">
 							<FormItem>
 								<FormLabel>Split with</FormLabel>
+
 								<div class="flex flex-col gap-2 border border-border rounded-lg p-2">
 									<Tabs
 										:model-value="values.to?.type"
@@ -353,6 +357,20 @@ const onSubmit = handleSubmit(async (values) => {
 											</span>
 										</div>
 									</div>
+
+									<Button
+										variant="outline"
+										@click="
+											() => {
+												const targetValue = !allSelected;
+												Object.keys(values.to?.selected ?? {}).forEach((userId) => {
+													setFieldValue(`to.selected.${userId}.selected`, targetValue);
+												});
+											}
+										"
+									>
+										<span>{{ allSelected ? "Deselect All" : "Select All" }}</span>
+									</Button>
 								</div>
 								<FormMessage />
 							</FormItem>
