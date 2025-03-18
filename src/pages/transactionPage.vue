@@ -50,8 +50,6 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			transactionDate.getDate()
 		);
 
-		console.log(transactionDate, transactionCalendarDate);
-
 		setValues({
 			title: transaction.title,
 			date: transactionCalendarDate.toString(),

@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
 import { deleteTransaction } from "@/firebase/firestore";
@@ -77,7 +77,7 @@ async function handleDeleteTransaction() {
 				<div class="flex flex-col">
 					<div class="flex justify-between items-center">
 						<div class="flex items-center gap-3">
-							<div class="bg-zinc-800 rounded-lg size-9 p-2 flex justify-center items-center">
+							<div class="bg-secondary rounded-lg size-9 p-2 flex justify-center items-center">
 								<i class="pi pi-receipt" />
 							</div>
 							<div class="flex flex-col">

@@ -91,7 +91,7 @@ async function addMember() {
 						@click="groupButton.onClick"
 					>
 						<div class="flex flex-col justify-center items-center gap-2">
-							<div class="bg-zinc-500/20 p-3 rounded-lg aspect-square flex justify-center items-center">
+							<div class="bg-secondary p-3 rounded-lg aspect-square flex justify-center items-center">
 								<i :class="`pi ${groupButton.icon} !text-[26px]`" />
 							</div>
 							<div class="flex flex-col justify-center items-center">

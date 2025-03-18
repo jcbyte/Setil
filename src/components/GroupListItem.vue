@@ -50,7 +50,7 @@ const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" |
 				<span v-if="group.description" class="text-sm text-muted-foreground">{{ group.description }}</span>
 			</div>
 			<AvatarStack
-				avatar-class="border border-zinc-950"
+				avatar-class="border border-background"
 				:avatars="group.topUsers.map((topUser) => ({ src: topUser.photoURL, name: topUser.name }))"
 				:total-count="group.userCount"
 			/>
@@ -58,7 +58,7 @@ const yourBalanceStr = computed<{ str: string; status: "positive" | "negative" |
 		</div>
 
 		<div class="flex flex-col justify-between items-end">
-			<i class="pi pi-chevron-right text-zinc-200" />
+			<i class="pi pi-chevron-right text-muted-foreground" />
 			<span
 				:class="`text-sm ${
 					yourBalanceStr.status !== 'neutral'
