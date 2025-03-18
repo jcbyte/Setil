@@ -125,6 +125,9 @@ async function handleDeleteTransaction() {
 					<Separator v-if="index < sortedTransactions.length - 1" class="my-2" />
 				</div>
 			</div>
+			<div v-if="sortedTransactions.length === 0" class="flex justify-center items-center">
+				<span class="text-sm text-muted-foreground">No Activity</span>
+			</div>
 		</div>
 	</div>
 
