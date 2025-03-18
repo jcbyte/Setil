@@ -2,6 +2,7 @@
 import type { ExtendedGroupData } from "@/firebase/firestore";
 import { getBalanceStr, type BalanceStr } from "@/util/util";
 import { Timestamp } from "firebase/firestore";
+import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";
 import AvatarStack from "./AvatarStack.vue";
 import BalanceStrBadge from "./BalanceStrBadge.vue";
@@ -59,7 +60,7 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 		</div>
 
 		<div class="flex flex-col justify-between items-end">
-			<i class="pi pi-chevron-right text-muted-foreground" />
+			<ChevronRight class="text-muted-foreground" />
 			<BalanceStrBadge :balance-str="yourBalanceStr" />
 		</div>
 	</div>

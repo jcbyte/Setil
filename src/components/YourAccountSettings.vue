@@ -9,6 +9,7 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { firebaseSignOut } from "@/firebase/auth";
+import { LogOut } from "lucide-vue-next";
 
 const { toast } = useToast();
 
@@ -37,9 +38,9 @@ const { currentUser } = useCurrentUser();
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
 			<DropdownMenuItem @click="signOut">
-				<div class="w-full flex justify-between">
+				<div class="w-full flex justify-between items-center">
 					<span class="text-red-400">Sign Out</span>
-					<i class="pi pi-sign-out text-red-400" />
+					<LogOut class="text-red-400 !size-5" />
 				</div>
 			</DropdownMenuItem>
 		</DropdownMenuContent>

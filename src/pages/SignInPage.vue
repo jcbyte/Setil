@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { signInWithGoogle } from "@/firebase/auth";
+import { Chrome } from "lucide-vue-next";
 
 const { toast } = useToast();
 
@@ -33,7 +34,8 @@ function signIn() {
 		</div>
 		<Separator />
 		<Button @click="signIn()" class="w-96">
-			<i class="pi pi-google" />
+			// todo add google logo here
+			<Chrome :stroke-width="3" />
 			<span class="font-semibold">Continue with Google</span>
 		</Button>
 		<!-- Update here when version increases -->

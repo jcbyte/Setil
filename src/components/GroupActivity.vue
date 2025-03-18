@@ -114,14 +114,14 @@ async function handleDeleteTransaction() {
 									<DropdownMenuItem @click="router.push(`/group/${groupId}/transaction/${transactionId}`)">
 										<div class="w-full flex justify-between items-center">
 											<span>Edit</span>
-											<FilePen />
+											<FilePen class="!size-5" />
 										</div>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem @click="openDeleteConfirmDialog(transactionId)">
 										<div class="w-full flex justify-between items-center">
 											<span class="text-red-400">Delete</span>
-											<Trash class="text-red-400" />
+											<Trash class="text-red-400 !size-5" />
 										</div>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
