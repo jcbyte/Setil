@@ -5,7 +5,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser.ts";
 import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { onMounted, ref } from "vue";
-import SignInPage from "./pages/SignInPage.vue";
+import SignInPage from "./pages/SignInPageTemp.vue";
 
 const firebaseLoaded = ref(false);
 const { currentUser } = useCurrentUser();
