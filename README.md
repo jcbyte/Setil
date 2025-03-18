@@ -6,23 +6,6 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 // todo
 
-## TODO
-
-- FIX: Make owing colours look better
-- STORY: Select all in transaction
-- STORY: Restyle InvitePage
-- STORY: Create settle up page
-- FEAT: Rename users
-- FEAT: Removing users
-- STORY: Convert to lucide icons
-- STORY: "Left" users still in the group should be italic/shown they are left
-- STORY: Animations
-- STORY: Mobile view
-- STORY: Remove inactive users from transactions after debt is cleared
-- STORY: Resolve debts over multiple people
-- FIX: inconsistency £0.01 = £1.00 = £0.01
-- STORY: PWA
-
 ## Run Locally
 
 Install dependencies:
