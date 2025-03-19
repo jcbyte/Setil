@@ -16,7 +16,7 @@ export interface GroupData {
 export interface GroupUserData {
 	name: string;
 	photoURL: string | null;
-	active: boolean;
+	status: "active" | "left" | "history";
 	balance: Record<string, number>;
 	lastUpdate: Timestamp;
 }
