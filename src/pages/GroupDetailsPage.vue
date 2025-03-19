@@ -244,27 +244,35 @@ async function deleteGroup() {
 				</div>
 
 				<div class="flex flex-col gap-4">
-					<!-- todo don't show left and history users -->
-					<div v-for="(user, userId) in users" class="flex justify-between items-center">
-						<div class="flex justify-center items-center gap-2">
-							<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
-							<div class="flex flex-col">
-								<span>{{ user.name }}</span>
-								<span class="text-sm text-muted-foreground">
-									{{ userId === groupData?.owner ? "Owner" : "Member" }}
-								</span>
+					<div v-for="(user, userId) in users">
+						<div v-if="user.status !== 'history'" class="flex justify-between items-center">
+							<div class="flex justify-center items-center gap-2">
+								<Avatar
+									:src="user.photoURL"
+									:name="user.name"
+									:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
+								/>
+								<div class="flex flex-col">
+									<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+									<span class="text-sm text-muted-foreground">
+										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left" }}
+									</span>
+								</div>
 							</div>
+							<Button
+								v-if="currentUser?.uid === groupData?.owner"
+								variant="outline"
+								:disabled="userId === groupData?.owner || user.status !== 'active' || isRemovingMember.includes(userId)"
+								@click="removeMember(userId)"
+							>
+								<LoaderCircle v-if="isRemovingMember.includes(userId)" class="animate-spin" />
+								<span>
+									{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Remove") : "Left" }}
+								</span>
+							</Button>
 						</div>
-						<Button
-							v-if="currentUser?.uid === groupData?.owner"
-							variant="outline"
-							:disabled="userId === groupData?.owner || isRemovingMember.includes(userId)"
-							@click="removeMember(userId)"
-						>
-							<LoaderCircle v-if="isRemovingMember.includes(userId)" class="animate-spin" />
-							<span>{{ userId === groupData?.owner ? "Owner" : "Remove" }}</span>
-						</Button>
 					</div>
+
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
 						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 						<span>Add Member</span>
