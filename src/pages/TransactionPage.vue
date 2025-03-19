@@ -307,7 +307,11 @@ const onSubmit = handleSubmit(async (values) => {
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										<SelectItem v-for="userId in Object.keys(values.to?.people ?? {})" :value="userId">
+										<SelectItem
+											v-if="values.to?.people"
+											v-for="userId in Object.keys(values.to?.people)"
+											:value="userId"
+										>
 											<div class="flex items-center gap-2">
 												<Avatar
 													:src="users?.[userId].photoURL ?? null"
