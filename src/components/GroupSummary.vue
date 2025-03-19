@@ -33,21 +33,25 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 			<span class="text-sm text-muted-foreground">Who owes what in this group</span>
 		</div>
 		<div class="flex flex-col gap-2">
-			<div v-for="(user, userId) in users">
-				<div v-if="user.status !== 'history'" class="flex justify-between items-center">
-					<div class="flex justify-center items-center gap-1">
-						<Avatar
-							:src="user.photoURL"
-							:name="user.name"
-							:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
-						/>
-						<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.name }}</span>
-						<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic"
-							>(Left)</span
-						>
-					</div>
-					<BalanceStrBadge :balance-str="usersBalanceStr[userId]" />
+			<div
+				v-if="users"
+				v-for="(user, userId) in Object.fromEntries(
+					Object.entries(users).filter(([, user]) => user.status !== 'history')
+				) as Record<string, GroupUserData>"
+				class="flex justify-between items-center"
+			>
+				<div class="flex justify-center items-center gap-1">
+					<Avatar
+						:src="user.photoURL"
+						:name="user.name"
+						:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
+					/>
+					<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.name }}</span>
+					<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic">
+						(Left)
+					</span>
 				</div>
+				<BalanceStrBadge :balance-str="usersBalanceStr[userId]" />
 			</div>
 		</div>
 	</div>
