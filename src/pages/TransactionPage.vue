@@ -394,6 +394,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 									<Button
 										variant="outline"
+										type="button"
 										@click="
 											() => {
 												const targetValue = !allSelected;
