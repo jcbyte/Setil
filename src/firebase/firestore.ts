@@ -21,6 +21,7 @@ import {
 	setDoc,
 	Timestamp,
 	updateDoc,
+	where,
 	WriteBatch,
 	writeBatch,
 } from "firebase/firestore";
@@ -273,16 +274,17 @@ export async function leaveGroup(groupId: string) {
 	const groupData = groupDocSnap.data() as GroupData;
 
 	if (groupData.owner === user.uid) {
+		// Find an active owner
 		const firestoreUsersRef = collection(db, "groups", groupId, "users");
-		const userSnaps = await getDocs(firestoreUsersRef);
+		const activeUserQuery = query(firestoreUsersRef, where("status", "==", "active"), limit(1));
+		const userSnaps = await getDocs(activeUserQuery);
 
-		// todo Can this be turned into a firebase query?
-		const newOwner = userSnaps.docs.find((userSnap) => (userSnap.data() as GroupUserData).status === "active");
-		if (newOwner) {
-			await updateDoc(groupRef, { owner: newOwner.id });
-		} else {
+		if (userSnaps.empty) {
 			// Delete the group if the are no active users left
 			await deleteGroup(groupId);
+		} else {
+			// Set the owner to the new owner found
+			await updateDoc(groupRef, { owner: userSnaps.docs[0].id });
 		}
 	}
 }
