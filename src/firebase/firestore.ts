@@ -629,3 +629,18 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 
 	return true;
 }
+
+/**
+ * Remove a user from a group.
+ * @param groupId id of the group.
+ * @param userId id of the user to remove.
+ */
+export async function removeUser(groupId: string, userId: string) {
+	const groupUserRef = doc(db, "groups", groupId, "users", userId);
+
+	// Get the status of the user when not in the group
+	const status = await getLeftUserStatus(groupUserRef, true);
+
+	// If the status needs to be changed then do this
+	if (status) await updateDoc(groupUserRef, { status: status });
+}
