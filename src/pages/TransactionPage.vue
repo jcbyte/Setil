@@ -16,7 +16,13 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
 import { CurrencySettings } from "@/util/groupSettings";
-import { formatCurrency, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
+import {
+	formatCurrency,
+	getLeftUsersInTransaction,
+	resolveBalance,
+	splitAmountEven,
+	splitAmountRatio,
+} from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -63,7 +69,9 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 				// Only include active members (Unless this transaction contains an inactive member)
 				people: Object.fromEntries(
 					Object.entries(users.value!)
-						.filter(([userId, user]) => user.status === "active" || transaction.to[userId])
+						.filter(
+							([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from
+						)
 						.map(([userId]) => [userId, { selected: Boolean(transaction.to[userId]), num: transaction.to[userId] }])
 				),
 			},
@@ -177,11 +185,13 @@ const onSubmit = handleSubmit(async (values) => {
 		to: resolveBalances(),
 	};
 
+	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
+
 	if (routeTransactionId) {
-		await updateTransaction(groupId.value, routeTransactionId, transaction);
+		await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
 		toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
 	} else {
-		await createTransaction(groupId.value, transaction);
+		await createTransaction(groupId.value, transaction, leftUsers);
 		toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
 	}
 

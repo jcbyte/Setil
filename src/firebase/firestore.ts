@@ -4,6 +4,7 @@ import {
 	arrayRemove,
 	arrayUnion,
 	collection,
+	CollectionReference,
 	deleteDoc,
 	deleteField,
 	doc,
@@ -219,6 +220,30 @@ export async function deleteGroup(groupId: string) {
 }
 
 /**
+ * Works out if the user has left the group with credit/debt or they are history.
+ * @param userBalance balance of the user to test.
+ * @param forceLeft force the user to leave irrespective of what there current status is.
+ * @returns the status of the user given they have left the group, null if it doesn't require a change.
+ */
+async function getLeftUserStatus(
+	groupUserRef: DocumentReference,
+	forceLeft: boolean
+): Promise<"left" | "history" | null> {
+	const groupUserSnap = await getDoc(groupUserRef);
+	const groupUser = groupUserSnap.data() as GroupUserData;
+
+	// If the user is active then don't change
+	if (!forceLeft && groupUser.status === "active") return null;
+
+	// Check if there is any balance left on this user and calculate correct status
+	const hasData = Object.values(groupUser.balance).some((bal) => bal !== 0);
+	const status = hasData ? "left" : "history";
+
+	// Return new status if it is modified
+	return groupUser.status === status ? null : status;
+}
+
+/**
  * User leaves the group.
  * The users data will not be deleted from the group but they will no longer see it in there menu.
  * @param groupId id of the group.
@@ -226,9 +251,10 @@ export async function deleteGroup(groupId: string) {
 export async function leaveGroup(groupId: string) {
 	const user = getUser();
 
-	// Set the users active state to false to show they have left
-	const firestoreGroupUsersRef = doc(db, "groups", groupId, "users", user.uid);
-	await updateDoc(firestoreGroupUsersRef, { active: false });
+	// Set the users status to show they have left
+	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+	const newStatus = await getLeftUserStatus(groupUserRef, true);
+	if (newStatus) await updateDoc(groupUserRef, { status: newStatus });
 
 	// Remove group from users list so it will not show up
 	const userRef = doc(db, "users", user.uid);
@@ -243,6 +269,7 @@ export async function leaveGroup(groupId: string) {
 		const firestoreUsersRef = collection(db, "groups", groupId, "users");
 		const userSnaps = await getDocs(firestoreUsersRef);
 
+		// todo Can this be turned into a firebase query?
 		const newOwner = userSnaps.docs.find((userSnap) => (userSnap.data() as GroupUserData).status === "active");
 		if (newOwner) {
 			await updateDoc(groupRef, { owner: newOwner.id });
@@ -343,6 +370,26 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 }
 
 /**
+ * Add firebase updates to a batch to update users who have left a group to their valid status.
+ * @param groupUsersRef Collection to the users in the group.
+ * @param batch WriteBatch to add the transactions to.
+ * @param leftUsers Array of userId's which have left and status needs to be recalculated.
+ */
+async function updateLeftUsersStatus(groupUsersRef: CollectionReference, batch: WriteBatch, leftUsers: string[]) {
+	await Promise.all(
+		leftUsers.map(async (userId) => {
+			const leftUserRef = doc(groupUsersRef, userId);
+
+			// Check if there status is correct
+			const newStatus = await getLeftUserStatus(leftUserRef, false);
+
+			// If the status needs to be changed add this update
+			if (newStatus) batch.update(leftUserRef, { status: newStatus });
+		})
+	);
+}
+
+/**
  * Update the lastUpdated property of this user and the group.
  * @param groupRef Document of the group to update lastUpdate on.
  * @param batch WriteBatch to add the transactions to.
@@ -361,9 +408,14 @@ function updateGroupUpdateTime(groupRef: DocumentReference, batch: WriteBatch) {
  * Create a transaction in a group and update relevant users balances.
  * @param groupId id of the group.
  * @param transaction transaction data.
+ * @param leftUsers optional array of users who have left who's status needs to be recalculated.
  * @returns the id of the new transaction.
  */
-export async function createTransaction(groupId: string, transaction: Transaction): Promise<string> {
+export async function createTransaction(
+	groupId: string,
+	transaction: Transaction,
+	leftUsers?: string[]
+): Promise<string> {
 	const batch = writeBatch(db);
 
 	// Add the transaction to the group
@@ -379,6 +431,13 @@ export async function createTransaction(groupId: string, transaction: Transactio
 
 	await batch.commit();
 
+	// Update any left users status
+	if (leftUsers) {
+		const leftUserBatch = writeBatch(db);
+		await updateLeftUsersStatus(collection(groupRef, "users"), leftUserBatch, leftUsers);
+		await leftUserBatch.commit();
+	}
+
 	// Return id of newly created transition
 	return transactionRef.id;
 }
@@ -388,11 +447,13 @@ export async function createTransaction(groupId: string, transaction: Transactio
  * @param groupId id of the group.
  * @param transactionId id of the transaction.
  * @param transaction new transaction data.
+ * @param leftUsers optional array of users who have left who's status needs to be recalculated.
  */
 export async function updateTransaction(
 	groupId: string,
 	transactionId: string,
-	transaction: Transaction
+	transaction: Transaction,
+	leftUsers?: string[]
 ): Promise<void> {
 	// Get the existing transaction data
 	const groupRef = doc(db, "groups", groupId);
@@ -418,14 +479,22 @@ export async function updateTransaction(
 	updateGroupUpdateTime(groupRef, batch);
 
 	await batch.commit();
+
+	// Update any left users status
+	if (leftUsers) {
+		const leftUserBatch = writeBatch(db);
+		await updateLeftUsersStatus(collection(groupRef, "users"), leftUserBatch, leftUsers);
+		await leftUserBatch.commit();
+	}
 }
 
 /**
  * Delete a transaction in a group and update relevant users balances.
  * @param groupId id of the group.
  * @param transactionId id of the transaction.
+ * @param leftUsers optional array of users who have left who's status needs to be recalculated.
  */
-export async function deleteTransaction(groupId: string, transactionId: string): Promise<void> {
+export async function deleteTransaction(groupId: string, transactionId: string, leftUsers?: string[]): Promise<void> {
 	const groupRef = doc(db, "groups", groupId);
 
 	// Get the existing transaction data
@@ -450,6 +519,13 @@ export async function deleteTransaction(groupId: string, transactionId: string):
 	updateGroupUpdateTime(groupRef, batch);
 
 	await batch.commit();
+
+	// Update any left users status
+	if (leftUsers) {
+		const leftUserBatch = writeBatch(db);
+		await updateLeftUsersStatus(collection(groupRef, "users"), leftUserBatch, leftUsers);
+		await leftUserBatch.commit();
+	}
 }
 
 /**

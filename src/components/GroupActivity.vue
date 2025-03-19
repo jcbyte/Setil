@@ -17,7 +17,7 @@ import {
 import Separator from "@/components/ui/separator/Separator.vue";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
-import { formatCurrency } from "@/util/util";
+import { formatCurrency, getLeftUsersInTransaction } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, ReceiptText, Trash, UserRound } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -64,8 +64,12 @@ function closeDeleteConfirmDialog() {
 
 async function handleDeleteTransaction() {
 	deleteDialogData.value.processing = true;
-	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId);
+
+	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value.transactionId], props.users);
+	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId, leftUsers);
+
 	closeDeleteConfirmDialog();
+
 	toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
 }
 </script>

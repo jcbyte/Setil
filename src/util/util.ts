@@ -1,5 +1,6 @@
 import { useToast } from "@/components/ui/toast";
 import { cleanupInvites, invite } from "@/firebase/firestore";
+import type { GroupUserData, Transaction } from "@/firebase/types";
 import { CurrencySettings, type Currency } from "./groupSettings";
 
 export function splitAmountEven(amount: number, people: string[]): Record<string, number> {
@@ -100,4 +101,10 @@ export async function inviteUser(groupId: string, groupName?: string) {
 			});
 		});
 	}
+}
+
+export function getLeftUsersInTransaction(transaction: Transaction, users: Record<string, GroupUserData>) {
+	return [...new Set([...Object.keys(transaction.to), transaction.from])].filter(
+		(userId) => users[userId].status !== "active"
+	);
 }
