@@ -60,7 +60,8 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			amount: resolveBalance(transaction.to),
 			to: {
 				type: "ratio",
-				selected: Object.fromEntries(
+				// todo exclude left people (unless they have value)
+				people: Object.fromEntries(
 					Object.keys(users.value!).map((userId) => {
 						const toBal = transaction.to[userId];
 						return [userId, { selected: !!toBal, num: toBal ?? undefined }];
@@ -74,8 +75,10 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			from: currentUser.value!.uid,
 			to: {
 				type: "equal",
-				selected: Object.fromEntries(
-					Object.keys(users.value!).map((userId) => [userId, { selected: false, num: undefined }])
+				people: Object.fromEntries(
+					Object.entries(users.value!)
+						.filter(([, user]) => user.status === "active")
+						.map(([userId]) => [userId, { selected: false, num: undefined }])
 				),
 			},
 		});
@@ -101,7 +104,7 @@ const formSchema = toTypedSchema(
 		to: z
 			.object({
 				type: z.enum(["equal", "unequal", "ratio"]).default("equal"),
-				selected: z
+				people: z
 					.record(
 						z.string(),
 						z.object({
@@ -112,7 +115,7 @@ const formSchema = toTypedSchema(
 					.refine((v) => Object.values(v).some((vo) => vo.selected), "Must select at least one recipient"),
 			})
 			.refine(
-				(v) => v.type === "equal" || !Object.values(v.selected).some((vo) => vo.selected && !vo.num),
+				(v) => v.type === "equal" || !Object.values(v.people).some((vo) => vo.selected && !vo.num),
 				"An amount is required for a selected member"
 			),
 	})
@@ -128,28 +131,28 @@ const dateValue = computed({
 });
 
 function resolveBalances(): Record<string, number> {
-	if (!values.to?.selected) return {};
+	if (!values.to?.people) return {};
 
 	if (values.to.type === "equal") {
 		return splitAmountEven(
 			values.amount ?? 0,
-			Object.entries(values.to.selected)
-				.filter(([, selectedData]) => selectedData!.selected)
+			Object.entries(values.to.people)
+				.filter(([, userData]) => userData!.selected)
 				.map(([userId]) => userId)
 		);
 	} else if (values.to.type === "unequal") {
 		return Object.fromEntries(
-			Object.entries(values.to.selected)
-				.filter(([, selectedData]) => selectedData!.selected)
-				.map(([userId, selectedData]) => [userId, selectedData!.num!])
+			Object.entries(values.to.people)
+				.filter(([, userData]) => userData!.selected)
+				.map(([userId, UserData]) => [userId, UserData!.num!])
 		);
 	} else if (values.to.type === "ratio") {
 		return splitAmountRatio(
 			values.amount ?? 0,
 			Object.fromEntries(
-				Object.entries(values.to.selected)
-					.filter(([, selectedData]) => selectedData!.selected)
-					.map(([userId, selectedData]) => [userId, selectedData!.num ?? 0])
+				Object.entries(values.to.people)
+					.filter(([, userData]) => userData!.selected)
+					.map(([userId, userData]) => [userId, userData!.num ?? 0])
 			)
 		);
 	}
@@ -159,7 +162,7 @@ function resolveBalances(): Record<string, number> {
 
 const toValue = computed<Record<string, number>>(resolveBalances);
 const allSelected = computed<boolean>(
-	() => !Object.values(values.to?.selected ?? {}).some((selectedData) => !selectedData?.selected)
+	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData?.selected)
 );
 
 const onSubmit = handleSubmit(async (values) => {
@@ -294,10 +297,16 @@ const onSubmit = handleSubmit(async (values) => {
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										<SelectItem v-for="(user, userId) in users" :value="userId">
+										<SelectItem v-for="userId in Object.keys(values.to?.people ?? {})" :value="userId">
 											<div class="flex items-center gap-2">
-												<Avatar :src="user.photoURL" :name="user.name" class="size-5" />
-												<span>{{ user.name }} </span>
+												<Avatar
+													:src="users?.[userId].photoURL ?? null"
+													:name="users?.[userId].name ?? 'Unloaded User'"
+													class="size-5"
+												/>
+												<span>
+													{{ users?.[userId].name ?? "Unloaded User" }}
+												</span>
 											</div>
 										</SelectItem>
 									</SelectContent>
@@ -323,17 +332,23 @@ const onSubmit = handleSubmit(async (values) => {
 									</Tabs>
 
 									<div class="flex flex-col gap-2">
-										<div v-for="(user, userId) in users" class="flex justify-between items-center">
+										<div v-for="(userData, userId) in values.to?.people" class="flex justify-between items-center">
 											<div class="flex justify-center items-center gap-2">
 												<Checkbox
 													:id="`user-${userId}`"
-													:model-value="values.to?.selected?.[userId]?.selected ?? false"
-													@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.selected`, Boolean(val))"
+													:model-value="userData?.selected ?? false"
+													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.selected`, Boolean(val))"
 													:disabled="isTransactionUpdating"
 												/>
 												<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
-													<Avatar :src="user.photoURL ?? ''" :name="user.name" class="size-6" />
-													<span class="text-sm text-nowrap">{{ user.name }}</span>
+													<Avatar
+														:src="users?.[userId].photoURL ?? null"
+														:name="users?.[userId].name ?? 'Unloaded User'"
+														class="size-6"
+													/>
+													<span class="text-sm text-nowrap">
+														{{ users?.[userId].name ?? "Unloaded User" }}
+													</span>
 												</label>
 												<div v-if="values.to?.type !== 'equal'" class="relative items-center">
 													<Input
@@ -341,9 +356,9 @@ const onSubmit = handleSubmit(async (values) => {
 														:class="values.to?.type !== 'ratio' && 'pl-6'"
 														:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
 														:step="0.01"
-														:model-value="values.to?.selected?.[userId]?.num"
-														@update:modelValue="(val) => setFieldValue(`to.selected.${userId}.num`, Number(val))"
-														:disabled="isTransactionUpdating || !values.to?.selected?.[userId]?.selected"
+														:model-value="userData?.num"
+														@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
+														:disabled="isTransactionUpdating || !userData?.selected"
 													/>
 													<span
 														v-if="values.to?.type !== 'ratio'"
@@ -364,8 +379,8 @@ const onSubmit = handleSubmit(async (values) => {
 										@click="
 											() => {
 												const targetValue = !allSelected;
-												Object.keys(values.to?.selected ?? {}).forEach((userId) => {
-													setFieldValue(`to.selected.${userId}.selected`, targetValue);
+												Object.keys(values.to?.people ?? {}).forEach((userId) => {
+													setFieldValue(`to.people.${userId}.selected`, targetValue);
 												});
 											}
 										"
