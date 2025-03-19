@@ -60,12 +60,11 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			amount: resolveBalance(transaction.to),
 			to: {
 				type: "ratio",
-				// todo exclude left people (unless they have value)
+				// Only include active members (Unless this transaction contains an inactive member)
 				people: Object.fromEntries(
-					Object.keys(users.value!).map((userId) => {
-						const toBal = transaction.to[userId];
-						return [userId, { selected: !!toBal, num: toBal ?? undefined }];
-					})
+					Object.entries(users.value!)
+						.filter(([userId, user]) => user.status === "active" || transaction.to[userId])
+						.map(([userId]) => [userId, { selected: Boolean(transaction.to[userId]), num: transaction.to[userId] }])
 				),
 			},
 		});
@@ -75,6 +74,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			from: currentUser.value!.uid,
 			to: {
 				type: "equal",
+				// Only include active members
 				people: Object.fromEntries(
 					Object.entries(users.value!)
 						.filter(([, user]) => user.status === "active")
@@ -302,9 +302,9 @@ const onSubmit = handleSubmit(async (values) => {
 												<Avatar
 													:src="users?.[userId].photoURL ?? null"
 													:name="users?.[userId].name ?? 'Unloaded User'"
-													class="size-5"
+													:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
 												/>
-												<span>
+												<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
 													{{ users?.[userId].name ?? "Unloaded User" }}
 												</span>
 											</div>
@@ -344,9 +344,13 @@ const onSubmit = handleSubmit(async (values) => {
 													<Avatar
 														:src="users?.[userId].photoURL ?? null"
 														:name="users?.[userId].name ?? 'Unloaded User'"
-														class="size-6"
+														:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
 													/>
-													<span class="text-sm text-nowrap">
+													<span
+														:class="`text-sm text-nowrap ${
+															users?.[userId].status !== 'active' && 'text-muted-foreground'
+														}`"
+													>
 														{{ users?.[userId].name ?? "Unloaded User" }}
 													</span>
 												</label>

@@ -39,10 +39,10 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 						<Avatar
 							:src="user.photoURL"
 							:name="user.name"
-							:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
+							:class="`size-9 ${user.status !== 'active' && 'opacity-70'}`"
 						/>
-						<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
-						<span v-if="user.status === 'left'" class="text-xs place-self-end text-muted-foreground italic"
+						<span :class="`${user.status !== 'active' && 'text-muted-foreground'}`">{{ user.name }}</span>
+						<span v-if="user.status !== 'active'" class="text-xs place-self-end text-muted-foreground italic"
 							>(Left)</span
 						>
 					</div>
