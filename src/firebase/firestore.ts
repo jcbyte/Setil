@@ -139,12 +139,19 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 					const topUsersSnap = await getDocs(topUsersQuery);
 
 					const myselfSnap = await getDoc(doc(groupUsersRef, user.uid));
+					const myselfData = myselfSnap.data() as GroupUserData;
+
+					// If we have left or been removed from this group then, add it to the groups to be removed
+					if (myselfData.status !== "active") {
+						unknownGroups.push(id);
+						return null;
+					}
 
 					const data: ExtendedGroupData = {
 						...baseGroupData,
 						topUsers: topUsersSnap.docs.map((topUserSnap) => topUserSnap.data() as GroupUserData),
 						userCount: usersCount.data().count,
-						myself: myselfSnap.data() as GroupUserData,
+						myself: myselfData,
 					};
 
 					return [id, data];
@@ -595,6 +602,10 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	try {
 		const userSnap = await getDoc(groupUserRef);
 		if (userSnap.exists()) {
+			// Set ourselves to active in the group if we had previously been part of it
+			const userGroupData = userSnap.data() as GroupUserData;
+			if (userGroupData.status !== "active") updateDoc(groupUserRef, { status: "active" });
+
 			return true;
 		}
 	} catch {}
@@ -617,4 +628,19 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	}
 
 	return true;
+}
+
+/**
+ * Remove a user from a group.
+ * @param groupId id of the group.
+ * @param userId id of the user to remove.
+ */
+export async function removeUser(groupId: string, userId: string) {
+	const groupUserRef = doc(db, "groups", groupId, "users", userId);
+
+	// Get the status of the user when not in the group
+	const status = await getLeftUserStatus(groupUserRef, true);
+
+	// If the status needs to be changed then do this
+	if (status) await updateDoc(groupUserRef, { status: status });
 }

@@ -22,13 +22,14 @@ import {
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
+	removeUser,
 	updateGroup,
 } from "@/firebase/firestore";
 import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
+import { ArrowLeft, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -67,6 +68,7 @@ function closeDialog(dialogData: DialogData) {
 
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
+const isRemovingMember = ref<string[]>([]);
 const leaveDialogData = ref<DialogData>({ open: false, processing: false });
 const deleteDialogData = ref<DialogData>({ open: false, processing: false });
 
@@ -111,6 +113,14 @@ const onSubmit = handleSubmit(async (values) => {
 		toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
 	}
 });
+
+async function removeMember(userId: string) {
+	if (!groupId.value) return;
+
+	isRemovingMember.value.push(userId);
+	await removeUser(groupId.value, userId);
+	isRemovingMember.value.splice(isRemovingMember.value.indexOf(userId), 1);
+}
 
 async function addMember() {
 	if (!groupId.value) return;
@@ -234,24 +244,35 @@ async function deleteGroup() {
 				</div>
 
 				<div class="flex flex-col gap-4">
-					<div v-for="(user, userId) in users" class="flex justify-between items-center">
-						<div class="flex justify-center items-center gap-2">
-							<Avatar :src="user.photoURL" :name="user.name" class="size-9" />
-							<div class="flex flex-col">
-								<span>{{ user.name }}</span>
-								<span class="text-sm text-muted-foreground">{{
-									userId === groupData?.owner ? "Owner" : "Member"
-								}}</span>
+					<div v-for="(user, userId) in users">
+						<div v-if="user.status !== 'history'" class="flex justify-between items-center">
+							<div class="flex justify-center items-center gap-2">
+								<Avatar
+									:src="user.photoURL"
+									:name="user.name"
+									:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
+								/>
+								<div class="flex flex-col">
+									<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+									<span class="text-sm text-muted-foreground">
+										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left" }}
+									</span>
+								</div>
 							</div>
+							<Button
+								v-if="currentUser?.uid === groupData?.owner"
+								variant="outline"
+								:disabled="userId === groupData?.owner || user.status !== 'active' || isRemovingMember.includes(userId)"
+								@click="removeMember(userId)"
+							>
+								<LoaderCircle v-if="isRemovingMember.includes(userId)" class="animate-spin" />
+								<span>
+									{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Remove") : "Left" }}
+								</span>
+							</Button>
 						</div>
-						<Button
-							v-if="currentUser?.uid === groupData?.owner"
-							variant="outline"
-							:disabled="userId === groupData?.owner"
-						>
-							{{ userId === groupData?.owner ? "Owner" : "Remove" }}
-						</Button>
 					</div>
+
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
 						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
 						<span>Add Member</span>
