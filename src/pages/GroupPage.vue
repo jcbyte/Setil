@@ -116,11 +116,13 @@ async function addMember() {
 						Members ({{ Object.values(users!).filter((user) => user.status === "active").length }})
 					</span>
 					<div class="flex gap-2 flex-wrap">
-						<div v-for="user in users">
-							<div v-if="user.status === 'active'" class="flex gap-1 justify-center items-center">
-								<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
-								<span class="text-sm">{{ user.name }}</span>
-							</div>
+						<div
+							v-if="users"
+							v-for="user in Object.values(users).filter((user) => user.status === 'active')"
+							class="flex gap-1 justify-center items-center"
+						>
+							<Avatar :src="user.photoURL" :name="user.name" class="size-7" />
+							<span class="text-sm">{{ user.name }}</span>
 						</div>
 					</div>
 				</div>
