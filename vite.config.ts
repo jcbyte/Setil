@@ -11,7 +11,7 @@ const manifest: Partial<ManifestOptions> = {
 	start_url: "/",
 	display: "standalone",
 	background_color: "#09090b",
-	theme_color: "#fafafa",
+	theme_color: "#09090b",
 	icons: [
 		{ src: "/icon/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32" },
 		{ src: "/icon/icon-192.png", type: "image/png", sizes: "192x192" },
