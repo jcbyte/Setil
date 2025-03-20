@@ -33,7 +33,7 @@ const { currentUser } = useCurrentUser();
 				v-bind="$attrs"
 				class="size-9"
 				:src="currentUser?.photoURL ?? ''"
-				:name="currentUser?.displayName ?? 'Myself'"
+				:name="currentUser?.displayName ?? 'Me'"
 			/>
 		</DropdownMenuTrigger>
 		<DropdownMenuContent>
