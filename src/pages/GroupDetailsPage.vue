@@ -32,7 +32,7 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
+import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash, UserRound, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -267,7 +267,7 @@ async function deleteGroup() {
 				</form>
 			</div>
 
-			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-4 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Your Group Profile</span>
 					<span class="text-sm text-muted-foreground">How others see you in this group</span>
@@ -285,13 +285,19 @@ async function deleteGroup() {
 				<div class="flex flex-col gap-2">
 					<span :class="`text-sm font-[500] ${myDisplayNameErrors && 'text-destructive'}`">Display Name</span>
 					<div class="flex justify-center items-center gap-2">
-						<Input
-							v-model:model-value="myDisplayName"
-							autocomplete="off"
-							type="text"
-							placeholder="Name"
-							:disabled="isMyDisplayNameUpdating"
-						/>
+						<div class="relative w-full">
+							<Input
+								v-model:model-value="myDisplayName"
+								class="pl-8"
+								autocomplete="off"
+								type="text"
+								placeholder="Name"
+								:disabled="isMyDisplayNameUpdating"
+							/>
+							<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
+								<UserRound class="size-4" />
+							</span>
+						</div>
 						<Button type="button" :disabled="isMyDisplayNameUpdating" class="w-fit" @click="updateDisplayName">
 							<LoaderIcon :icon="Check" :loading="isMyDisplayNameUpdating" />
 							<span>Update</span>
