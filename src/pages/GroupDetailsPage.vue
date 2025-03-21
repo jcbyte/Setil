@@ -20,6 +20,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
+	changeUserName,
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
@@ -131,13 +132,14 @@ watch(myDisplayName, () => {
 });
 
 async function updateDisplayName() {
+	if (!groupId.value) return;
+
 	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
 	if (!parsedName.success) return;
 
 	isMyDisplayNameUpdating.value = true;
 
-	console.log(parsedName.data);
-	// todo update name
+	await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
 
 	isMyDisplayNameUpdating.value = false;
 }

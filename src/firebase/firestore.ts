@@ -646,3 +646,16 @@ export async function removeUser(groupId: string, userId: string) {
 	// If the status needs to be changed then do this
 	if (status) await updateDoc(groupUserRef, { status: status });
 }
+
+/**
+ * Change a users name within a group.
+ * @param groupId id of the group.
+ * @param userId id of the user to update name.
+ * @param name new name to give to the user.
+ */
+export async function changeUserName(groupId: string, userId: string, name: string) {
+	const groupUserRef = doc(db, "groups", groupId, "users", userId);
+
+	// Update the name of the user in the group
+	await updateDoc(groupUserRef, { name });
+}
