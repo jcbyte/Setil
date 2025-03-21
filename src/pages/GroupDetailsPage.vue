@@ -10,6 +10,12 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,7 +38,18 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash, UserRound, UserRoundPlus } from "lucide-vue-next";
+import {
+	ArrowBigUpDash,
+	ArrowLeft,
+	Check,
+	ChevronDown,
+	LogOut,
+	Plus,
+	Save,
+	Trash,
+	UserRound,
+	UserRoundPlus,
+} from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -73,7 +90,7 @@ function closeDialog(dialogData: DialogData) {
 
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
-const isRemovingMember = ref<string[]>([]);
+const isUpdatingMember = ref<string[]>([]);
 const leaveDialogData = ref<DialogData>({ open: false, processing: false });
 const deleteDialogData = ref<DialogData>({ open: false, processing: false });
 
@@ -147,9 +164,17 @@ async function updateDisplayName() {
 async function removeMember(userId: string) {
 	if (!groupId.value) return;
 
-	isRemovingMember.value.push(userId);
+	isUpdatingMember.value.push(userId);
 	await removeUser(groupId.value, userId);
-	isRemovingMember.value.splice(isRemovingMember.value.indexOf(userId), 1);
+	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
+}
+
+async function promoteMember(userId: string) {
+	if (!groupId.value) return;
+
+	isUpdatingMember.value.push(userId);
+	await new Promise((r) => setTimeout(r, 4000));
+	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
 async function addMember() {
@@ -334,17 +359,39 @@ async function deleteGroup() {
 								</span>
 							</div>
 						</div>
-						<Button
-							v-if="currentUser?.uid === groupData?.owner"
-							variant="outline"
-							:disabled="userId === groupData?.owner || user.status !== 'active' || isRemovingMember.includes(userId)"
-							@click="removeMember(userId)"
-						>
-							<LoaderCircle v-if="isRemovingMember.includes(userId)" class="animate-spin" />
-							<span>
-								{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Remove") : "Left" }}
-							</span>
-						</Button>
+						<DropdownMenu v-if="currentUser?.uid === groupData?.owner">
+							<DropdownMenuTrigger as-child>
+								<Button
+									variant="outline"
+									:disabled="
+										userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
+									"
+								>
+									<LoaderIcon
+										v-if="user.status === 'active' && userId !== groupData?.owner"
+										:icon="ChevronDown"
+										:loading="isUpdatingMember.includes(userId)"
+									/>
+									<span>
+										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+									</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem @click="promoteMember(userId)">
+									<div class="w-full flex justify-between items-center">
+										<span>Promote</span>
+										<ArrowBigUpDash class="!size-5" />
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem @click="removeMember(userId)">
+									<div class="w-full flex justify-between items-center">
+										<span class="text-red-400">Remove</span>
+										<Trash class="text-red-400 !size-5" />
+									</div>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
