@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GroupData, GroupUserData } from "@/firebase/types";
-import { getBalanceStr, type BalanceStr } from "@/util/util";
+import { getBalanceStr, type BalanceStr } from "@/util/currency";
 import { computed } from "vue";
 import Avatar from "./Avatar.vue";
 import BalanceStrBadge from "./BalanceStrBadge.vue";

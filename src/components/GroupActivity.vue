@@ -17,7 +17,8 @@ import {
 import Separator from "@/components/ui/separator/Separator.vue";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
-import { formatCurrency, getLeftUsersInTransaction } from "@/util/util";
+import { formatCurrency } from "@/util/currency";
+import { getLeftUsersInTransaction } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, ReceiptText, Trash, UserRound } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";

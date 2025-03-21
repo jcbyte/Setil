@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ExtendedGroupData } from "@/firebase/firestore";
-import { getBalanceStr, type BalanceStr } from "@/util/util";
+import { getBalanceStr, type BalanceStr } from "@/util/currency";
 import { Timestamp } from "firebase/firestore";
 import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";

@@ -15,14 +15,8 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings } from "@/util/groupSettings";
-import {
-	formatCurrency,
-	getLeftUsersInTransaction,
-	resolveBalance,
-	splitAmountEven,
-	splitAmountRatio,
-} from "@/util/util";
+import { CurrencySettings, formatCurrency } from "@/util/currency";
+import { getLeftUsersInTransaction, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";

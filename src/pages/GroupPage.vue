@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
-import { inviteUser } from "@/util/util";
+import { inviteUser } from "@/util/app";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";

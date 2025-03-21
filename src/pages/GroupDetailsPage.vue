@@ -35,8 +35,8 @@ import {
 	updateGroup,
 } from "@/firebase/firestore";
 import type { GroupUserData } from "@/firebase/types";
-import { CurrencySettings, type Currency } from "@/util/groupSettings";
-import { inviteUser } from "@/util/util";
+import { inviteUser } from "@/util/app";
+import { CurrencySettings, type Currency } from "@/util/currency";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import {

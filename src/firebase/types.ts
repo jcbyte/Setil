@@ -1,5 +1,5 @@
 import type { Timestamp } from "firebase/firestore";
-import type { Currency } from "../util/groupSettings";
+import type { Currency } from "../util/currency";
 
 export interface UserData {
 	groups: string[];

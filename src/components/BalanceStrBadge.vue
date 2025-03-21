@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Badge } from "@/components/ui/badge";
-import type { BalanceStr } from "@/util/util";
+import { type BalanceStr } from "@/util/currency";
 
 defineProps<{
 	balanceStr: BalanceStr;
