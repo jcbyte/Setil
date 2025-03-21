@@ -15,12 +15,13 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
+import { useControlledDialog } from "@/composables/useControlledDialog";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, ReceiptText, Trash, UserRound } from "lucide-vue-next";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import LoaderIcon from "./LoaderIcon.vue";
 import Button from "./ui/button/Button.vue";
@@ -36,11 +37,14 @@ const props = defineProps<{
 const router = useRouter();
 const { toast } = useToast();
 
-const deleteDialogData = ref<{ open: boolean; transactionId: string; processing: boolean }>({
-	open: false,
-	transactionId: "",
-	processing: false,
-});
+const {
+	open: deleteConfirmDialogOpen,
+	processing: deleteConfirmDialogProcessing,
+	openDialog: openDeleteConfirmDialog,
+	startDialogProcessing: startDeleteConfirmDialogProcessing,
+	closeDialog: closeDeleteConfirmDialog,
+	data: deleteDialogData,
+} = useControlledDialog<{ transactionId: string }>({ transactionId: "" });
 
 const sortedTransactions = computed(() => {
 	return Object.entries(props.transactions).sort(
@@ -54,17 +58,8 @@ function calculateTotalTransactionValue(transactionAmounts: Record<string, numbe
 	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
 }
 
-// todo convert this into a useControlledDialog composable
-function openDeleteConfirmDialog(transactionId: string) {
-	deleteDialogData.value = { open: true, transactionId: transactionId, processing: false };
-}
-
-function closeDeleteConfirmDialog() {
-	deleteDialogData.value.open = false;
-}
-
 async function handleDeleteTransaction() {
-	deleteDialogData.value.processing = true;
+	startDeleteConfirmDialogProcessing();
 
 	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value.transactionId], props.users);
 	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId, leftUsers);
@@ -123,7 +118,7 @@ async function handleDeleteTransaction() {
 										</div>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem @click="openDeleteConfirmDialog(transactionId)">
+									<DropdownMenuItem @click="openDeleteConfirmDialog({ transactionId })">
 										<div class="w-full flex justify-between items-center">
 											<span class="text-red-400">Delete</span>
 											<Trash class="text-red-400 !size-5" />
@@ -142,7 +137,7 @@ async function handleDeleteTransaction() {
 		</div>
 	</div>
 
-	<AlertDialog v-model:open="deleteDialogData.open">
+	<AlertDialog v-model:open="deleteConfirmDialogOpen">
 		<AlertDialogContent>
 			<AlertDialogHeader>
 				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -151,11 +146,11 @@ async function handleDeleteTransaction() {
 				</AlertDialogDescription>
 			</AlertDialogHeader>
 			<AlertDialogFooter>
-				<Button variant="outline" :disabled="deleteDialogData.processing" @click="closeDeleteConfirmDialog">
+				<Button variant="outline" :disabled="deleteConfirmDialogProcessing" @click="closeDeleteConfirmDialog">
 					Cancel
 				</Button>
-				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="handleDeleteTransaction">
-					<LoaderIcon :icon="Trash" :loading="deleteDialogData.processing" />
+				<Button variant="destructive" :disabled="deleteConfirmDialogProcessing" @click="handleDeleteTransaction">
+					<LoaderIcon :icon="Trash" :loading="deleteConfirmDialogProcessing" />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
