@@ -20,11 +20,21 @@ useColorMode().value = "dark";
 </script>
 
 <template>
-	<Transition name="loader">
+	<Transition name="loader-anim">
 		<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
-			<SignInPage v-if="!currentUser" />
-			<router-view v-else />
+			<Transition name="page-anim" mode="out-in">
+				<SignInPage v-if="!currentUser" />
+				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
+				<div v-else class="w-full">
+					<router-view v-slot="{ Component }">
+						<Transition name="page-anim" mode="out-in">
+							<component :is="Component" />
+						</Transition>
+					</router-view>
+				</div>
+			</Transition>
 		</div>
+
 		<div v-else class="fixed top-12 flex flex-col justify-center items-center gap-4 w-full p-4">
 			<img src="/icon/icon-192.png" alt="App Logo" class="size-24" />
 			<div class="flex gap-2 items-center">
@@ -38,16 +48,26 @@ useColorMode().value = "dark";
 </template>
 
 <style scoped>
-.loader-enter-active,
-.loader-leave-active {
+.loader-anim-enter-active,
+.loader-anim-leave-active {
 	transition: 0.2s ease;
 }
 
-.loader-enter-from {
+.loader-anim-enter-from {
 	opacity: 0;
 }
 
-.loader-leave-to {
+.loader-anim-leave-to {
 	transform: translateY(calc(-100% - 3rem));
+}
+
+.page-anim-enter-active,
+.page-anim-leave-active {
+	transition: 0.2s ease;
+}
+
+.page-anim-enter-from,
+.page-anim-leave-to {
+	opacity: 0;
 }
 </style>
