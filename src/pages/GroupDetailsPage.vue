@@ -94,6 +94,7 @@ const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
 const leaveDialogData = ref<DialogData>({ open: false, processing: false });
 const deleteDialogData = ref<DialogData>({ open: false, processing: false });
+const promoteDialogData = ref<DialogData & { userId?: string }>({ open: false, processing: false });
 
 const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
@@ -160,6 +161,12 @@ async function updateDisplayName() {
 	await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
 
 	isMyDisplayNameUpdating.value = false;
+
+	toast({
+		title: "Display Name Updated",
+		description: "And just like that... a new legend is born!",
+		duration: 5000,
+	});
 }
 
 async function removeMember(userId: string) {
@@ -170,12 +177,20 @@ async function removeMember(userId: string) {
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
-async function promoteMember(userId: string) {
+async function promoteMember() {
 	if (!groupId.value) return;
 
-	isUpdatingMember.value.push(userId);
-	await promoteUser(groupId.value, userId);
-	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
+	promoteDialogData.value.processing = true;
+
+	await promoteUser(groupId.value, promoteDialogData.value.userId!);
+
+	closeDialog(promoteDialogData.value);
+
+	toast({
+		title: `${users.value![promoteDialogData.value.userId!].name} Promoted`,
+		description: "Long live the new king.",
+		duration: 5000,
+	});
 }
 
 async function addMember() {
@@ -379,7 +394,12 @@ async function deleteGroup() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent>
-								<DropdownMenuItem @click="promoteMember(userId)">
+								<DropdownMenuItem
+									@click="
+										promoteDialogData.userId = userId;
+										openDialog(promoteDialogData);
+									"
+								>
 									<div class="w-full flex justify-between items-center">
 										<span>Promote</span>
 										<ArrowBigUpDash class="!size-5" />
@@ -435,6 +455,30 @@ async function deleteGroup() {
 			</div>
 		</div>
 	</div>
+
+	<AlertDialog v-model:open="promoteDialogData.open">
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+				<AlertDialogDescription>
+					Promoting
+					<span class="font-semibold">
+						{{ users![promoteDialogData.userId!].name }}
+					</span>
+					to Owner will change your role to Member.
+				</AlertDialogDescription>
+			</AlertDialogHeader>
+			<AlertDialogFooter>
+				<Button variant="outline" :disabled="promoteDialogData.processing" @click="closeDialog(promoteDialogData)">
+					Cancel
+				</Button>
+				<Button :disabled="promoteDialogData.processing" @click="promoteMember">
+					<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialogData.processing" />
+					<span>Promote</span>
+				</Button>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
 
 	<AlertDialog v-model:open="leaveDialogData.open">
 		<AlertDialogContent>
