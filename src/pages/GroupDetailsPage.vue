@@ -14,6 +14,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
@@ -32,7 +33,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { ArrowLeft, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 import { useGroup } from "../composables/useGroup";
@@ -72,6 +73,8 @@ const isAddingMember = ref<boolean>(false);
 const isRemovingMember = ref<string[]>([]);
 const leaveDialogData = ref<DialogData>({ open: false, processing: false });
 const deleteDialogData = ref<DialogData>({ open: false, processing: false });
+
+const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -238,6 +241,24 @@ async function deleteGroup() {
 				</form>
 			</div>
 
+			<!-- todo fix it doesn't show at the start -->
+			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+				<div class="flex flex-col">
+					<span class="text-lg font-semibold">Your Group Profile</span>
+					<span class="text-sm text-muted-foreground">How others see you in this group</span>
+				</div>
+				<div v-if="currentGroupUser" class="flex items-center gap-2">
+					<Avatar :src="currentGroupUser.photoURL" :name="currentGroupUser.name" class="size-9" />
+					<div class="flex flex-col">
+						<span>{{ currentGroupUser.name }}</span>
+						<span class="text-sm text-muted-foreground">
+							{{ currentUser?.uid === groupData?.owner ? "Owner" : "Member" }}
+						</span>
+					</div>
+				</div>
+				<Skeleton v-else class="w-56 h-10" />
+			</div>
+
 			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Members</span>
@@ -261,7 +282,7 @@ async function deleteGroup() {
 							<div class="flex flex-col">
 								<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
 								<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
-									{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left" }}
+									{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
 								</span>
 							</div>
 						</div>
