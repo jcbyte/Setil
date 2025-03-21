@@ -31,9 +31,9 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
+import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash, UserRoundPlus } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 import { useGroup } from "../composables/useGroup";
@@ -52,6 +52,8 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 		description: groupData.value!.description ?? undefined,
 		currency: groupData.value!.currency,
 	});
+
+	myDisplayName.value = users.value![currentUser.value!.uid].name;
 });
 
 interface DialogData {
@@ -117,6 +119,28 @@ const onSubmit = handleSubmit(async (values) => {
 		toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
 	}
 });
+
+const myDisplayName = ref<string | undefined>();
+const myDisplayNameErrors = ref<string | undefined>();
+const myDisplayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
+const isMyDisplayNameUpdating = ref<boolean>(false);
+
+watch(myDisplayName, () => {
+	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+	myDisplayNameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
+});
+
+async function updateDisplayName() {
+	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+	if (!parsedName.success) return;
+
+	isMyDisplayNameUpdating.value = true;
+
+	console.log(parsedName.data);
+	// todo update name
+
+	isMyDisplayNameUpdating.value = false;
+}
 
 async function removeMember(userId: string) {
 	if (!groupId.value) return;
@@ -241,7 +265,6 @@ async function deleteGroup() {
 				</form>
 			</div>
 
-			<!-- todo fix it doesn't show at the start -->
 			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Your Group Profile</span>
@@ -257,6 +280,23 @@ async function deleteGroup() {
 					</div>
 				</div>
 				<Skeleton v-else class="w-56 h-10" />
+				<div class="flex flex-col gap-2">
+					<span :class="`text-sm font-[500] ${myDisplayNameErrors && 'text-destructive'}`">Display Name</span>
+					<div class="flex justify-center items-center gap-2">
+						<Input
+							v-model:model-value="myDisplayName"
+							autocomplete="off"
+							type="text"
+							placeholder="Name"
+							:disabled="isMyDisplayNameUpdating"
+						/>
+						<Button type="button" :disabled="isMyDisplayNameUpdating" class="w-fit" @click="updateDisplayName">
+							<LoaderIcon :icon="Check" :loading="isMyDisplayNameUpdating" />
+							<span>Update</span>
+						</Button>
+					</div>
+					<span v-if="myDisplayNameErrors" class="text-[12.8px] text-destructive">{{ myDisplayNameErrors }}</span>
+				</div>
 			</div>
 
 			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
