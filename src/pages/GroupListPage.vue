@@ -32,18 +32,18 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-2">
-			<GroupListItem
-				v-if="groups"
-				v-for="(group, groupId) in groups"
-				:group="group"
-				@click="router.push(`/group/${groupId}`)"
-			/>
-			<Skeleton v-else v-for="_n in 3" class="rounded-lg h-[158px]" />
-			<div
-				v-if="groups && Object.keys(groups).length === 0"
-				class="flex flex-col justify-center items-center gap-2 pt-12"
-			>
+		<div class="flex justify-center items-center">
+			<div v-if="!groups || Object.keys(groups).length > 0" class="flex flex-wrap gap-4 justify-center w-full">
+				<GroupListItem
+					v-if="groups"
+					v-for="(group, groupId) in groups"
+					:group="group"
+					@click="router.push(`/group/${groupId}`)"
+					class="max-w-[26rem] w-full"
+				/>
+				<Skeleton v-else v-for="_n in 3" class="rounded-lg h-[158px] max-w-[26rem] w-full" />
+			</div>
+			<div v-else class="flex flex-col justify-center items-center gap-2 pt-12">
 				<span className="text-xl font-semibold">No groups yet</span>
 				<span className="text-muted-foreground mb-6"> Create or join a group to start splitting expenses </span>
 			</div>

@@ -206,7 +206,7 @@ const onSubmit = handleSubmit(async (values) => {
 			<YourAccountSettings />
 		</div>
 
-		<div v-if="groupId" class="min-w-[32rem] flex flex-col gap-4">
+		<div v-if="groupId" class="w-full max-w-[32rem] flex flex-col gap-4">
 			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Expense Details</span>
@@ -340,45 +340,43 @@ const onSubmit = handleSubmit(async (values) => {
 									</Tabs>
 
 									<div class="flex flex-col gap-2">
-										<div v-for="(userData, userId) in values.to?.people" class="flex justify-between items-center">
-											<div class="flex justify-center items-center gap-2">
-												<Checkbox
-													:id="`user-${userId}`"
-													:model-value="userData?.selected ?? false"
-													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.selected`, Boolean(val))"
-													:disabled="isTransactionUpdating"
+										<div v-for="(userData, userId) in values.to?.people" class="flex items-center gap-2">
+											<Checkbox
+												:id="`user-${userId}`"
+												:model-value="userData?.selected ?? false"
+												@update:modelValue="(val) => setFieldValue(`to.people.${userId}.selected`, Boolean(val))"
+												:disabled="isTransactionUpdating"
+											/>
+											<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
+												<Avatar
+													:src="users?.[userId].photoURL ?? null"
+													:name="users?.[userId].name ?? 'Unloaded User'"
+													:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
 												/>
-												<label :for="`user-${userId}`" class="flex justify-center items-center gap-2">
-													<Avatar
-														:src="users?.[userId].photoURL ?? null"
-														:name="users?.[userId].name ?? 'Unloaded User'"
-														:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
-													/>
-													<span
-														:class="`text-sm text-nowrap ${
-															users?.[userId].status !== 'active' && 'text-muted-foreground'
-														}`"
-													>
-														{{ users?.[userId].name ?? "Unloaded User" }}
-													</span>
-												</label>
-												<div v-if="values.to?.type !== 'equal'" class="relative items-center">
-													<Input
-														type="number"
-														:class="values.to?.type !== 'ratio' && 'pl-6'"
-														:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
-														:step="0.01"
-														:model-value="userData?.num"
-														@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
-														:disabled="isTransactionUpdating || !userData?.selected"
-													/>
-													<span
-														v-if="values.to?.type !== 'ratio'"
-														class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
-													>
-														{{ CurrencySettings[groupData!.currency].symbol }}
-													</span>
-												</div>
+												<span
+													:class="`text-sm text-nowrap ${
+														users?.[userId].status !== 'active' && 'text-muted-foreground'
+													}`"
+												>
+													{{ users?.[userId].name ?? "Unloaded User" }}
+												</span>
+											</label>
+											<div v-if="values.to?.type !== 'equal'" class="relative items-center">
+												<Input
+													type="number"
+													:class="values.to?.type !== 'ratio' && 'pl-6'"
+													:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
+													:step="0.01"
+													:model-value="userData?.num"
+													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
+													:disabled="isTransactionUpdating || !userData?.selected"
+												/>
+												<span
+													v-if="values.to?.type !== 'ratio'"
+													class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground"
+												>
+													{{ CurrencySettings[groupData!.currency].symbol }}
+												</span>
 											</div>
 											<span v-if="values.to?.type !== 'unequal'" class="text-sm text-muted-foreground">
 												{{ formatCurrency(toValue[userId] ?? 0, groupData?.currency ?? "usd") }}

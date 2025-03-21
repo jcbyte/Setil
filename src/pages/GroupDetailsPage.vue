@@ -250,7 +250,7 @@ async function deleteGroup() {
 			<YourAccountSettings />
 		</div>
 
-		<div class="min-w-[32rem] flex flex-col gap-4">
+		<div class="w-full max-w-[32rem] flex flex-col gap-4">
 			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Details</span>
@@ -434,7 +434,7 @@ async function deleteGroup() {
 				</div>
 
 				<div class="flex flex-col gap-4">
-					<div class="flex justify-between items-center">
+					<div class="flex justify-between items-center gap-2">
 						<div class="flex flex-col">
 							<span>Leave Group</span>
 							<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
@@ -446,7 +446,7 @@ async function deleteGroup() {
 					</div>
 
 					<Separator v-if="currentUser?.uid === groupData?.owner" />
-					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center">
+					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center gap-2">
 						<div class="flex flex-col">
 							<span>Delete Group</span>
 							<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
@@ -473,7 +473,7 @@ async function deleteGroup() {
 					to Owner will change your role to Member.
 				</AlertDialogDescription>
 			</AlertDialogHeader>
-			<AlertDialogFooter>
+			<AlertDialogFooter class="gap-2">
 				<Button variant="outline" :disabled="promoteDialogProcessing" @click="closePromoteDialog">Cancel</Button>
 				<Button :disabled="promoteDialogProcessing" @click="promoteMember">
 					<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialogProcessing" />
@@ -491,7 +491,7 @@ async function deleteGroup() {
 					Your data will remain in the group until all debts are resolved.
 				</AlertDialogDescription>
 			</AlertDialogHeader>
-			<AlertDialogFooter>
+			<AlertDialogFooter class="gap-2">
 				<Button variant="outline" :disabled="leaveDialogProcessing" @click="closeLeaveDialog">Cancel</Button>
 				<Button :disabled="leaveDialogProcessing" @click="leaveGroup">
 					<LoaderIcon :icon="LogOut" :loading="leaveDialogProcessing" />
@@ -509,7 +509,7 @@ async function deleteGroup() {
 					This action cannot be undone. This will permanently delete the group and all its data.
 				</AlertDialogDescription>
 			</AlertDialogHeader>
-			<AlertDialogFooter>
+			<AlertDialogFooter class="gap-2">
 				<Button variant="outline" :disabled="deleteDialogProcessing" @click="closeDeleteDialog">Cancel</Button>
 				<Button variant="destructive" :disabled="deleteDialogProcessing" @click="deleteGroup">
 					<LoaderIcon :icon="Trash" :loading="deleteDialogProcessing" />

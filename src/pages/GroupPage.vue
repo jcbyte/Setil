@@ -47,8 +47,8 @@ async function addMember() {
 			</div>
 		</div>
 
-		<div class="flex gap-4 w-full">
-			<div class="flex-1 flex flex-col gap-2">
+		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
+			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
 				<Tabs default-value="summary">
 					<TabsList class="grid w-full grid-cols-2">
 						<TabsTrigger value="summary">Summary</TabsTrigger>
@@ -105,7 +105,10 @@ async function addMember() {
 				</div>
 			</div>
 
-			<div v-if="groupId" class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-64">
+			<div
+				v-if="groupId"
+				class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-full md:w-auto md:max-w-72 lg:max-w-96"
+			>
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
 					<span v-if="groupData!.description" class="text-sm text-muted-foreground">Description</span>
@@ -131,7 +134,7 @@ async function addMember() {
 					<span>Add Member</span>
 				</Button>
 			</div>
-			<Skeleton v-else class="w-64 h-64" />
+			<Skeleton v-else class="h-64 w-full md:max-w-72 lg:max-w-96" />
 		</div>
 	</div>
 </template>

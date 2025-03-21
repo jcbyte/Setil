@@ -45,23 +45,19 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 </script>
 
 <template>
-	<div class="flex justify-between border border-border rounded-lg p-4">
-		<div class="flex flex-col gap-2">
-			<div class="flex flex-col">
-				<span class="text-lg font-semibold">{{ group.name }}</span>
-				<span v-if="group.description" class="text-sm text-muted-foreground">{{ group.description }}</span>
-			</div>
-			<AvatarStack
-				avatar-class="border border-background"
-				:avatars="group.topUsers.map((topUser) => ({ src: topUser.photoURL, name: topUser.name }))"
-				:total-count="group.userCount"
-			/>
-			<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
+	<div class="flex flex-col gap-2 border border-border rounded-lg p-4 relative">
+		<div class="flex flex-col">
+			<span class="text-lg font-semibold">{{ group.name }}</span>
+			<span v-if="group.description" class="text-sm text-muted-foreground">{{ group.description }}</span>
 		</div>
+		<AvatarStack
+			avatar-class="border border-background"
+			:avatars="group.topUsers.map((topUser) => ({ src: topUser.photoURL, name: topUser.name }))"
+			:total-count="group.userCount"
+		/>
+		<span class="text-sm text-muted-foreground">{{ lastUpdatedStr }}</span>
 
-		<div class="flex flex-col justify-between items-end">
-			<ChevronRight class="text-muted-foreground" />
-			<BalanceStrBadge :balance-str="yourBalanceStr" />
-		</div>
+		<ChevronRight class="text-muted-foreground absolute top-4 right-4" />
+		<BalanceStrBadge :balance-str="yourBalanceStr" class="absolute bottom-4 right-4" />
 	</div>
 </template>

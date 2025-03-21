@@ -86,16 +86,16 @@ async function handleDeleteTransaction() {
 							</div>
 							<div class="flex flex-col">
 								<div class="text-lg font-semibold">{{ transaction.title }}</div>
-								<div class="flex justify-center items-center gap-3">
-									<div class="flex justify-center items-center gap-1">
+								<div class="flex flex-col-reverse sm:flex-row gap-0 sm:gap-2">
+									<div class="flex items-center gap-1">
 										<Calendar class="!size-4 text-muted-foreground" />
-										<span class="text-sm text-muted-foreground">{{
+										<span class="text-sm text-muted-foreground text-nowrap">{{
 											transaction.date.toDate().toLocaleDateString()
 										}}</span>
 									</div>
-									<div class="flex justify-center items-center gap-1">
+									<div class="flex items-center gap-1">
 										<UserRound class="!size-4 text-muted-foreground" />
-										<span class="text-sm text-muted-foreground">{{ users[transaction.from].name }}</span>
+										<span class="text-sm text-muted-foreground text-nowrap">{{ users[transaction.from].name }}</span>
 									</div>
 								</div>
 							</div>
@@ -145,7 +145,7 @@ async function handleDeleteTransaction() {
 					This cannot be undone and will permanently delete the transaction.
 				</AlertDialogDescription>
 			</AlertDialogHeader>
-			<AlertDialogFooter>
+			<AlertDialogFooter class="gap-2">
 				<Button variant="outline" :disabled="deleteConfirmDialogProcessing" @click="closeDeleteConfirmDialog">
 					Cancel
 				</Button>
