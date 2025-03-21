@@ -145,7 +145,7 @@ async function handleDeleteTransaction() {
 					This cannot be undone and will permanently delete the transaction.
 				</AlertDialogDescription>
 			</AlertDialogHeader>
-			<AlertDialogFooter>
+			<AlertDialogFooter class="gap-2">
 				<Button variant="outline" :disabled="deleteConfirmDialogProcessing" @click="closeDeleteConfirmDialog">
 					Cancel
 				</Button>
