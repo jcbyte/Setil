@@ -659,3 +659,15 @@ export async function changeUserName(groupId: string, userId: string, name: stri
 	// Update the name of the user in the group
 	await updateDoc(groupUserRef, { name });
 }
+
+/**
+ * Set a groups owner to a different user.
+ * @param groupId id of the group.
+ * @param userId id of the user to promote.
+ */
+export async function promoteUser(groupId: string, userId: string) {
+	const groupRef = doc(db, "groups", groupId);
+
+	// Update the owner of the the group
+	await updateDoc(groupRef, { owner: userId });
+}

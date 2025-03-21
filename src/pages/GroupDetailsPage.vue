@@ -30,6 +30,7 @@ import {
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
+	promoteUser,
 	removeUser,
 	updateGroup,
 } from "@/firebase/firestore";
@@ -173,7 +174,7 @@ async function promoteMember(userId: string) {
 	if (!groupId.value) return;
 
 	isUpdatingMember.value.push(userId);
-	await new Promise((r) => setTimeout(r, 4000));
+	await promoteUser(groupId.value, userId);
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
