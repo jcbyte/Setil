@@ -10,6 +10,12 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +30,7 @@ import {
 	createGroup,
 	deleteGroup as firestoreDeleteGroup,
 	leaveGroup as firestoreLeaveGroup,
+	promoteUser,
 	removeUser,
 	updateGroup,
 } from "@/firebase/firestore";
@@ -32,7 +39,18 @@ import { CurrencySettings, type Currency } from "@/util/groupSettings";
 import { inviteUser } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, Check, LoaderCircle, LogOut, Plus, Save, Trash, UserRound, UserRoundPlus } from "lucide-vue-next";
+import {
+	ArrowBigUpDash,
+	ArrowLeft,
+	Check,
+	ChevronDown,
+	LogOut,
+	Plus,
+	Save,
+	Trash,
+	UserRound,
+	UserRoundPlus,
+} from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -73,9 +91,10 @@ function closeDialog(dialogData: DialogData) {
 
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
-const isRemovingMember = ref<string[]>([]);
+const isUpdatingMember = ref<string[]>([]);
 const leaveDialogData = ref<DialogData>({ open: false, processing: false });
 const deleteDialogData = ref<DialogData>({ open: false, processing: false });
+const promoteDialogData = ref<DialogData & { userId?: string }>({ open: false, processing: false });
 
 const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
@@ -142,14 +161,36 @@ async function updateDisplayName() {
 	await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
 
 	isMyDisplayNameUpdating.value = false;
+
+	toast({
+		title: "Display Name Updated",
+		description: "And just like that... a new legend is born!",
+		duration: 5000,
+	});
 }
 
 async function removeMember(userId: string) {
 	if (!groupId.value) return;
 
-	isRemovingMember.value.push(userId);
+	isUpdatingMember.value.push(userId);
 	await removeUser(groupId.value, userId);
-	isRemovingMember.value.splice(isRemovingMember.value.indexOf(userId), 1);
+	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
+}
+
+async function promoteMember() {
+	if (!groupId.value) return;
+
+	promoteDialogData.value.processing = true;
+
+	await promoteUser(groupId.value, promoteDialogData.value.userId!);
+
+	closeDialog(promoteDialogData.value);
+
+	toast({
+		title: `${users.value![promoteDialogData.value.userId!].name} Promoted`,
+		description: "Long live the new king.",
+		duration: 5000,
+	});
 }
 
 async function addMember() {
@@ -334,17 +375,44 @@ async function deleteGroup() {
 								</span>
 							</div>
 						</div>
-						<Button
-							v-if="currentUser?.uid === groupData?.owner"
-							variant="outline"
-							:disabled="userId === groupData?.owner || user.status !== 'active' || isRemovingMember.includes(userId)"
-							@click="removeMember(userId)"
-						>
-							<LoaderCircle v-if="isRemovingMember.includes(userId)" class="animate-spin" />
-							<span>
-								{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Remove") : "Left" }}
-							</span>
-						</Button>
+						<DropdownMenu v-if="currentUser?.uid === groupData?.owner">
+							<DropdownMenuTrigger as-child>
+								<Button
+									variant="outline"
+									:disabled="
+										userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
+									"
+								>
+									<LoaderIcon
+										v-if="user.status === 'active' && userId !== groupData?.owner"
+										:icon="ChevronDown"
+										:loading="isUpdatingMember.includes(userId)"
+									/>
+									<span>
+										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+									</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem
+									@click="
+										promoteDialogData.userId = userId;
+										openDialog(promoteDialogData);
+									"
+								>
+									<div class="w-full flex justify-between items-center">
+										<span>Promote</span>
+										<ArrowBigUpDash class="!size-5" />
+									</div>
+								</DropdownMenuItem>
+								<DropdownMenuItem @click="removeMember(userId)">
+									<div class="w-full flex justify-between items-center">
+										<span class="text-red-400">Remove</span>
+										<Trash class="text-red-400 !size-5" />
+									</div>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 
 					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
@@ -387,6 +455,30 @@ async function deleteGroup() {
 			</div>
 		</div>
 	</div>
+
+	<AlertDialog v-model:open="promoteDialogData.open">
+		<AlertDialogContent>
+			<AlertDialogHeader>
+				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+				<AlertDialogDescription>
+					Promoting
+					<span class="font-semibold">
+						{{ users![promoteDialogData.userId!].name }}
+					</span>
+					to Owner will change your role to Member.
+				</AlertDialogDescription>
+			</AlertDialogHeader>
+			<AlertDialogFooter>
+				<Button variant="outline" :disabled="promoteDialogData.processing" @click="closeDialog(promoteDialogData)">
+					Cancel
+				</Button>
+				<Button :disabled="promoteDialogData.processing" @click="promoteMember">
+					<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialogData.processing" />
+					<span>Promote</span>
+				</Button>
+			</AlertDialogFooter>
+		</AlertDialogContent>
+	</AlertDialog>
 
 	<AlertDialog v-model:open="leaveDialogData.open">
 		<AlertDialogContent>
