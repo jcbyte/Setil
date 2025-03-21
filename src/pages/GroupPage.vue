@@ -105,7 +105,10 @@ async function addMember() {
 				</div>
 			</div>
 
-			<div v-if="groupId" class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-full md:w-auto">
+			<div
+				v-if="groupId"
+				class="border border-border rounded-lg p-4 flex flex-col gap-2 h-fit w-full md:w-auto md:max-w-72 lg:max-w-96"
+			>
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Group Info</span>
 					<span v-if="groupData!.description" class="text-sm text-muted-foreground">Description</span>
@@ -131,7 +134,7 @@ async function addMember() {
 					<span>Add Member</span>
 				</Button>
 			</div>
-			<Skeleton v-else class="h-64 w-full md:w-auto" />
+			<Skeleton v-else class="h-64 w-full md:w-auto md:max-w-72 lg:max-w-96" />
 		</div>
 	</div>
 </template>
