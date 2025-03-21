@@ -134,7 +134,7 @@ async function addMember() {
 					<span>Add Member</span>
 				</Button>
 			</div>
-			<Skeleton v-else class="h-64 w-full md:w-auto md:max-w-72 lg:max-w-96" />
+			<Skeleton v-else class="h-64 w-full md:max-w-72 lg:max-w-96" />
 		</div>
 	</div>
 </template>
