@@ -61,8 +61,8 @@ function calculateTotalTransactionValue(transactionAmounts: Record<string, numbe
 async function handleDeleteTransaction() {
 	startDeleteConfirmDialogProcessing();
 
-	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value.transactionId], props.users);
-	await deleteTransaction(props.groupId, deleteDialogData.value.transactionId, leftUsers);
+	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value!.transactionId], props.users);
+	await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
 
 	closeDeleteConfirmDialog();
 

@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
 	changeUserName,
@@ -93,9 +94,22 @@ function closeDialog(dialogData: DialogData) {
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
-const leaveDialogData = ref<DialogData>({ open: false, processing: false });
-const deleteDialogData = ref<DialogData>({ open: false, processing: false });
 const promoteDialogData = ref<DialogData & { userId?: string }>({ open: false, processing: false });
+
+const {
+	open: leaveDialogOpen,
+	processing: leaveDialogProcessing,
+	openDialog: openLeaveDialog,
+	startDialogProcessing: startLeaveDialogProcessing,
+	closeDialog: closeLeaveDialog,
+} = useControlledDialog();
+const {
+	open: deleteDialogOpen,
+	processing: deleteDialogProcessing,
+	openDialog: openDeleteDialog,
+	startDialogProcessing: startDeleteDialogProcessing,
+	closeDialog: closeDeleteDialog,
+} = useControlledDialog();
 
 const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
@@ -205,12 +219,12 @@ async function addMember() {
 async function leaveGroup() {
 	if (!groupId.value) return;
 
-	leaveDialogData.value.processing = true;
+	startLeaveDialogProcessing();
 
 	await firestoreLeaveGroup(groupId.value);
 
 	router.push("/");
-	closeDialog(leaveDialogData.value);
+	closeLeaveDialog();
 
 	toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
 }
@@ -218,12 +232,12 @@ async function leaveGroup() {
 async function deleteGroup() {
 	if (!groupId.value) return;
 
-	deleteDialogData.value.processing = true;
+	startDeleteDialogProcessing();
 
 	await firestoreDeleteGroup(groupId.value);
 
 	router.push("/");
-	closeDialog(deleteDialogData.value);
+	closeDeleteDialog();
 
 	toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 }
@@ -435,7 +449,7 @@ async function deleteGroup() {
 							<span>Leave Group</span>
 							<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
 						</div>
-						<Button variant="outline" @click="openDialog(leaveDialogData)">
+						<Button variant="outline" @click="openLeaveDialog">
 							<LogOut />
 							<span>Leave</span>
 						</Button>
@@ -447,7 +461,7 @@ async function deleteGroup() {
 							<span>Delete Group</span>
 							<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
 						</div>
-						<Button variant="destructive" @click="openDialog(deleteDialogData)">
+						<Button variant="destructive" @click="openDeleteDialog">
 							<Trash />
 							<span>Delete</span>
 						</Button>
@@ -481,7 +495,7 @@ async function deleteGroup() {
 		</AlertDialogContent>
 	</AlertDialog>
 
-	<AlertDialog v-model:open="leaveDialogData.open">
+	<AlertDialog v-model:open="leaveDialogOpen">
 		<AlertDialogContent>
 			<AlertDialogHeader>
 				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -490,18 +504,16 @@ async function deleteGroup() {
 				</AlertDialogDescription>
 			</AlertDialogHeader>
 			<AlertDialogFooter>
-				<Button variant="outline" :disabled="leaveDialogData.processing" @click="closeDialog(leaveDialogData)">
-					Cancel
-				</Button>
-				<Button :disabled="leaveDialogData.processing" @click="leaveGroup">
-					<LoaderIcon :icon="LogOut" :loading="leaveDialogData.processing" />
+				<Button variant="outline" :disabled="leaveDialogProcessing" @click="closeLeaveDialog">Cancel</Button>
+				<Button :disabled="leaveDialogProcessing" @click="leaveGroup">
+					<LoaderIcon :icon="LogOut" :loading="leaveDialogProcessing" />
 					<span>Leave</span>
 				</Button>
 			</AlertDialogFooter>
 		</AlertDialogContent>
 	</AlertDialog>
 
-	<AlertDialog v-model:open="deleteDialogData.open">
+	<AlertDialog v-model:open="deleteDialogOpen">
 		<AlertDialogContent>
 			<AlertDialogHeader>
 				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -510,11 +522,9 @@ async function deleteGroup() {
 				</AlertDialogDescription>
 			</AlertDialogHeader>
 			<AlertDialogFooter>
-				<Button variant="outline" :disabled="deleteDialogData.processing" @click="closeDialog(deleteDialogData)">
-					Cancel
-				</Button>
-				<Button variant="destructive" :disabled="deleteDialogData.processing" @click="deleteGroup">
-					<LoaderIcon :icon="Trash" :loading="deleteDialogData.processing" />
+				<Button variant="outline" :disabled="deleteDialogProcessing" @click="closeDeleteDialog">Cancel</Button>
+				<Button variant="destructive" :disabled="deleteDialogProcessing" @click="deleteGroup">
+					<LoaderIcon :icon="Trash" :loading="deleteDialogProcessing" />
 					<span>Delete</span>
 				</Button>
 			</AlertDialogFooter>
