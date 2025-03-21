@@ -1,3 +1,5 @@
 <script setup lang="ts"></script>
 
-<template>todo</template>
+<template>
+	<div>todo</div>
+</template>

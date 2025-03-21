@@ -25,7 +25,7 @@ useColorMode().value = "dark";
 			<Transition name="page-anim" mode="out-in">
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
-				<div v-else class="w-full overflow-hidden relative">
+				<div v-else class="w-full overflow-hidden">
 					<router-view v-slot="{ Component }">
 						<Transition name="page-anim" mode="out-in">
 							<component :is="Component" class="overflow-visible" />
