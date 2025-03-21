@@ -45,7 +45,7 @@ const yourBalanceStr = computed<BalanceStr>(() =>
 </script>
 
 <template>
-	<div class="flex flex-col gap-2 border border-border rounded-lg p-4 relative max-w-[620px] w-full">
+	<div class="flex flex-col gap-2 border border-border rounded-lg p-4 relative">
 		<div class="flex flex-col">
 			<span class="text-lg font-semibold">{{ group.name }}</span>
 			<span v-if="group.description" class="text-sm text-muted-foreground">{{ group.description }}</span>
