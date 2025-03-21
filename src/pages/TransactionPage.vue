@@ -189,7 +189,7 @@ const onSubmit = handleSubmit(async (values) => {
 		toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
 	}
 
-	router.push(`/group/${groupId.value}`);
+	router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	isTransactionUpdating.value = false;
 });
 </script>
@@ -198,7 +198,11 @@ const onSubmit = handleSubmit(async (values) => {
 	<div class="w-full flex flex-col gap-4 items-center">
 		<div class="w-full flex justify-between items-center">
 			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="router.push(`/group/${routeGroupId}`)">
+				<Button
+					variant="ghost"
+					class="size-9"
+					@click="router.push({ path: `/group/${routeGroupId}`, query: { tab: 'activity' } })"
+				>
 					<ArrowLeft class="!size-6" />
 				</Button>
 				<span class="text-lg font-semibold">{{ routeTransactionId ? "Edit Expense" : "New Expense" }}</span>

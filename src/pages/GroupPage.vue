@@ -16,6 +16,8 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
+console.log(route.query);
+
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
@@ -49,10 +51,10 @@ async function addMember() {
 
 		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
 			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
-				<Tabs default-value="summary">
+				<Tabs :default-value="route.query.tab ? String(route.query.tab) : 'summary'">
 					<TabsList class="grid w-full grid-cols-2">
-						<TabsTrigger value="summary">Summary</TabsTrigger>
-						<TabsTrigger value="activity">Activity</TabsTrigger>
+						<TabsTrigger value="summary" @click="router.replace({ query: { tab: 'summary' } })">Summary</TabsTrigger>
+						<TabsTrigger value="activity" @click="router.replace({ query: { tab: 'activity' } })">Activity</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="summary">
