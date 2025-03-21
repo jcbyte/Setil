@@ -44,7 +44,7 @@ const {
 	startDialogProcessing: startDeleteConfirmDialogProcessing,
 	closeDialog: closeDeleteConfirmDialog,
 	data: deleteDialogData,
-} = useControlledDialog<{ transactionId: string }>({ transactionId: "" });
+} = useControlledDialog<{ transactionId: string }>();
 
 const sortedTransactions = computed(() => {
 	return Object.entries(props.transactions).sort(
