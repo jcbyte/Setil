@@ -1,7 +1,7 @@
 import { useToast } from "@/components/ui/toast";
 import { cleanupInvites, invite } from "@/firebase/firestore";
 
-export async function inviteUser(groupId: string, groupName?: string) {
+export async function inviteUser(groupId: string, groupName: string) {
 	// Cleanup old invites
 	await cleanupInvites(groupId);
 
@@ -10,7 +10,7 @@ export async function inviteUser(groupId: string, groupName?: string) {
 	const inviteLink = `${window.location.origin}/invite/${groupId}/${inviteCode}`;
 	const sharedData = {
 		title: "Setil Invite Link",
-		text: `Join my Setil Group${groupName && `, ${groupName}`}! This link will be valid for 3 days.`,
+		text: `Join my Setil Group, ${groupName}! This link will be valid for 3 days.`,
 		url: inviteLink,
 	};
 

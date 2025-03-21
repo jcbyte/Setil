@@ -207,7 +207,7 @@ async function addMember() {
 	if (!groupId.value) return;
 
 	isAddingMember.value = true;
-	await inviteUser(groupId.value);
+	await inviteUser(groupId.value, groupData.value!.name);
 	isAddingMember.value = false;
 }
 
