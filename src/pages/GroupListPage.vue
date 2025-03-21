@@ -32,7 +32,7 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col justify-center items-center gap-2">
 			<GroupListItem
 				v-if="groups"
 				v-for="(group, groupId) in groups"
