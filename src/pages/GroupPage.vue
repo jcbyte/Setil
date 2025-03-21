@@ -5,12 +5,13 @@ import GroupSummary from "@/components/GroupSummary.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
 import { inviteUser } from "@/util/app";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -19,7 +20,13 @@ const router = useRouter();
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
+const currentTab = ref(
+	route.query.tab && ["summary", "activity"].includes(String(route.query.tab)) ? String(route.query.tab) : "summary"
+);
+watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
+
 const isAddingMember = ref<boolean>(false);
+
 async function addMember() {
 	if (!groupId.value) return;
 
@@ -49,28 +56,25 @@ async function addMember() {
 
 		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
 			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
-				<Tabs :default-value="route.query.tab ? String(route.query.tab) : 'summary'">
+				<Tabs :default-value="route.query.tab ? String(route.query.tab) : 'summary'" v-model:model-value="currentTab">
 					<TabsList class="grid w-full grid-cols-2">
-						<TabsTrigger value="summary" @click="router.replace({ query: { tab: 'summary' } })">Summary</TabsTrigger>
-						<TabsTrigger value="activity" @click="router.replace({ query: { tab: 'activity' } })">Activity</TabsTrigger>
+						<TabsTrigger value="summary">Summary</TabsTrigger>
+						<TabsTrigger value="activity">Activity</TabsTrigger>
 					</TabsList>
-
-					<TabsContent value="summary">
-						<GroupSummary v-if="groupId" :group-data="groupData!" :users="users!" />
-						<Skeleton v-else class="w-full h-96" />
-					</TabsContent>
-
-					<TabsContent value="activity">
-						<GroupActivity
-							v-if="groupId"
-							:group-id="groupId"
-							:group-data="groupData!"
-							:users="users!"
-							:transactions="transactions!"
-						/>
-						<Skeleton v-else class="w-full h-96" />
-					</TabsContent>
 				</Tabs>
+				<div v-if="groupId">
+					<!-- <Transition name="tab-anim" mode="out-in"> -->
+					<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
+					<GroupActivity
+						v-else
+						:group-id="groupId"
+						:group-data="groupData!"
+						:users="users!"
+						:transactions="transactions!"
+					/>
+					<!-- </Transition> -->
+				</div>
+				<Skeleton v-else class="w-full h-96" />
 
 				<div class="flex w-full gap-2">
 					<Button
@@ -138,3 +142,19 @@ async function addMember() {
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.tab-anim-enter-active,
+.tab-anim-leave-active {
+	transition: 0.2s ease;
+}
+
+.tab-anim-enter-from {
+	opacity: 0;
+	transform: translateX(-1rem);
+}
+.tab-anim-leave-to {
+	opacity: 0;
+	transform: translateX(1rem);
+}
+</style>
