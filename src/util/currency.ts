@@ -1,6 +1,5 @@
+import type { Currency } from "@/firebase/types";
 import { resolveBalance } from "./util";
-
-export type Currency = "gbp" | "usd" | "eur";
 
 export interface CurrencyData {
 	name: string;
