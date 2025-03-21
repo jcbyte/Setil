@@ -20,7 +20,7 @@ useColorMode().value = "dark";
 </script>
 
 <template>
-	<div v-if="false && firebaseLoaded" class="flex justify-center items-center p-4">
+	<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 		<SignInPage v-if="!currentUser" />
 		<router-view v-else />
 	</div>
