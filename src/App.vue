@@ -25,10 +25,10 @@ useColorMode().value = "dark";
 			<Transition name="page-anim" mode="out-in">
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
-				<div v-else class="w-full">
+				<div v-else class="w-full overflow-hidden relative">
 					<router-view v-slot="{ Component }">
 						<Transition name="page-anim" mode="out-in">
-							<component :is="Component" />
+							<component :is="Component" class="overflow-visible" />
 						</Transition>
 					</router-view>
 				</div>
@@ -66,8 +66,12 @@ useColorMode().value = "dark";
 	transition: 0.2s ease;
 }
 
-.page-anim-enter-from,
+.page-anim-enter-from {
+	opacity: 0;
+	transform: translateX(-1rem);
+}
 .page-anim-leave-to {
 	opacity: 0;
+	transform: translateX(1rem);
 }
 </style>
