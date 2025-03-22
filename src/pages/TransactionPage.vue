@@ -14,7 +14,8 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
-import type { Transaction } from "@/firebase/types";
+import type { Transaction, TransactionCategory } from "@/firebase/types";
+import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
@@ -58,6 +59,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			date: transactionCalendarDate.toString(),
 			from: transaction.from,
 			amount: resolveBalance(transaction.to),
+			category: transaction.category,
 			to: {
 				type: "ratio",
 				// Only include active members (Unless this transaction contains an inactive member)
@@ -74,6 +76,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 		setValues({
 			date: today(getLocalTimeZone()).toString(),
 			from: currentUser.value!.uid,
+			category: "expense",
 			to: {
 				type: "equal",
 				// Only include active members
@@ -100,6 +103,7 @@ const formSchema = toTypedSchema(
 				return val && typeof val === "number" && val > 0;
 			}, "An amount is required"),
 		date: z.string().refine((v) => v, { message: "A date is required" }),
+		category: z.string().refine((val) => Object.keys(CategorySettings).includes(val), "Must select a valid category"),
 		from: z
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
@@ -177,6 +181,7 @@ const onSubmit = handleSubmit(async (values) => {
 		from: values.from,
 		date: Timestamp.fromDate(toDate(parseDate(values.date))),
 		to: resolveBalances(),
+		category: values.category as TransactionCategory,
 	};
 
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
@@ -289,6 +294,28 @@ const onSubmit = handleSubmit(async (values) => {
 								</FormItem>
 							</FormField>
 						</div>
+
+						<FormField v-slot="{ componentField }" name="category" :validate-on-blur="!isFieldDirty">
+							<FormItem>
+								<FormLabel>Category</FormLabel>
+								<Select v-bind="componentField" :disabled="isTransactionUpdating">
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Expense" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem v-for="(category, categoryId) in CategorySettings" :value="categoryId">
+											<div class="flex items-center gap-2">
+												<component :is="category.icon" class="size-5" />
+												<span>{{ category.name }}</span>
+											</div>
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						</FormField>
 
 						<FormField v-slot="{ componentField }" name="from" :validate-on-blur="!isFieldDirty">
 							<FormItem>

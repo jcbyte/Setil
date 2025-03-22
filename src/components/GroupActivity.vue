@@ -18,9 +18,10 @@ import Separator from "@/components/ui/separator/Separator.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
+import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
 import { getLeftUsersInTransaction } from "@/util/util";
-import { Calendar, EllipsisVertical, FilePen, ReceiptText, Trash, UserRound } from "lucide-vue-next";
+import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "lucide-vue-next";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import LoaderIcon from "./LoaderIcon.vue";
@@ -83,7 +84,7 @@ async function handleDeleteTransaction() {
 						<div class="flex justify-between items-center">
 							<div class="flex items-center gap-3">
 								<div class="bg-secondary rounded-lg size-9 p-2 flex justify-center items-center">
-									<ReceiptText />
+									<component :is="CategorySettings[transaction.category].icon" />
 								</div>
 								<div class="flex flex-col">
 									<div class="text-lg font-semibold">{{ transaction.title }}</div>
