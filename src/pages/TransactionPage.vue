@@ -307,7 +307,9 @@ const onSubmit = handleSubmit(async (values) => {
 									<SelectContent>
 										<SelectItem v-for="(category, categoryId) in CategorySettings" :value="categoryId">
 											<div class="flex items-center gap-2">
-												<component :is="category.icon" class="size-5" />
+												<div class="bg-secondary rounded-lg size-6 flex justify-center items-center">
+													<component :is="category.icon" class="size-4" />
+												</div>
 												<span>{{ category.name }}</span>
 											</div>
 										</SelectItem>
@@ -341,7 +343,7 @@ const onSubmit = handleSubmit(async (values) => {
 												<Avatar
 													:src="users?.[userId].photoURL ?? null"
 													:name="users?.[userId].name ?? 'Unloaded User'"
-													:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+													:class="`size-6 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
 												/>
 												<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
 													{{ users?.[userId].name ?? "Unloaded User" }}
