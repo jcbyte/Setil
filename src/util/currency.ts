@@ -1,5 +1,4 @@
 import type { Currency } from "@/firebase/types";
-import { resolveBalance } from "./util";
 
 export interface CurrencyData {
 	name: string;
@@ -25,22 +24,21 @@ export interface BalanceStr {
 }
 
 export function getBalanceStr(
-	balance: Record<string, number>,
+	balance: number,
 	currency: Currency,
 	positiveGenerator: (formattedBal: string) => string,
 	negativeGenerator: (formattedBal: string) => string,
 	neutralGenerator: () => string
 ): BalanceStr {
-	const bal = resolveBalance(balance);
-	const formattedBal = formatCurrency(Math.abs(bal), currency);
+	const formattedBal = formatCurrency(Math.abs(balance), currency);
 
 	let status: "positive" | "negative" | "neutral";
 	let str: string;
 
-	if (bal === 0) {
+	if (balance === 0) {
 		status = "neutral";
 		str = neutralGenerator();
-	} else if (bal > 0) {
+	} else if (balance > 0) {
 		status = "positive";
 		str = positiveGenerator(formattedBal);
 	} else {

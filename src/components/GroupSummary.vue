@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { GroupData, GroupUserData } from "@/firebase/types";
 import { getBalanceStr, type BalanceStr } from "@/util/currency";
+import { resolveBalance } from "@/util/util";
 import { computed } from "vue";
 import Avatar from "./Avatar.vue";
 import BalanceStrBadge from "./BalanceStrBadge.vue";
@@ -15,7 +16,7 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 		Object.entries(props.users).map(([userId, user]) => [
 			userId,
 			getBalanceStr(
-				user.balance,
+				resolveBalance(user.balance),
 				props.groupData.currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,

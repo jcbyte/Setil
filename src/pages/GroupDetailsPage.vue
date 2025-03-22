@@ -255,9 +255,9 @@ async function deleteGroup() {
 				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
 						<span class="text-lg font-semibold">Group Details</span>
-						<span class="text-sm text-muted-foreground">{{
-							routeGroupId ? "Update your group information" : "Enter your new groups information"
-						}}</span>
+						<span class="text-sm text-muted-foreground">
+							{{ routeGroupId ? "Update your group information" : "Enter your new groups information" }}
+						</span>
 					</div>
 
 					<form class="flex flex-col gap-4" @submit="onSubmit">
