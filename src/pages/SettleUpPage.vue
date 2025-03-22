@@ -14,7 +14,7 @@ import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currenc
 import { toTypedSchema } from "@vee-validate/zod";
 import { ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 
@@ -62,6 +62,16 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 	validationSchema: formSchema,
 });
 
+const recordPaymentPulser = useTemplateRef("record-payment-pulser");
+
+function fillForm(from: string, to: string, amount: number) {
+	setValues({ from, to, amount });
+
+	console.log(recordPaymentPulser.value);
+	recordPaymentPulser.value?.classList.add("pulse");
+	setTimeout(() => recordPaymentPulser.value?.classList.remove("pulse"), 500);
+}
+
 const onSubmit = handleSubmit(async (values) => {
 	isMakingPayment.value = true;
 
@@ -99,7 +109,7 @@ const onSubmit = handleSubmit(async (values) => {
 						<div
 							v-for="(owed, owedUserId) in Object.fromEntries(
 								Object.entries(user.balance).filter(([, owed]) => owed < 0)
-							)"
+							) as Record<string, number>"
 							class="flex flex-col border border-border rounded-lg gap-4 p-4"
 						>
 							<div class="flex justify-between items-center">
@@ -121,14 +131,19 @@ const onSubmit = handleSubmit(async (values) => {
 									<Avatar :src="users![owedUserId].photoURL" :name="users![owedUserId].name" class="size-10" />
 								</div>
 							</div>
-							<Button variant="outline">Record this payment</Button>
+							<Button variant="outline" @click="fillForm(userId, owedUserId, -owed)">Record this payment</Button>
 						</div>
 					</div>
 					<Skeleton v-else v-for="_n in 3" class="w-full h-32" />
 				</div>
 			</div>
 
-			<div v-if="groupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="groupId" class="border border-border rounded-lg flex flex-col gap-6 p-4 relative">
+				<div
+					class="absolute inset-0 bg-zinc-100 rounded-lg pointer-events-none opacity-0"
+					ref="record-payment-pulser"
+				/>
+
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Record Payment</span>
 					<span class="text-sm text-muted-foreground">Settle debts between group members</span>
@@ -241,3 +256,21 @@ const onSubmit = handleSubmit(async (values) => {
 		</div>
 	</div>
 </template>
+
+<style scoped>
+@keyframes pulse {
+	0% {
+		opacity: 0;
+	}
+	50% {
+		opacity: 0.25;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+.pulse {
+	animation: pulse 500ms ease-in-out;
+}
+</style>
