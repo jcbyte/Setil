@@ -415,6 +415,6 @@ const onSubmit = handleSubmit(async (values) => {
 				</form>
 			</div>
 		</div>
-		<Skeleton v-else class="w-[32rem] h-[38rem]" />
+		<Skeleton v-else class="w-full max-w-[32rem] h-[38rem]" />
 	</div>
 </template>
