@@ -1,18 +1,39 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
-import { getBalanceStr, type BalanceStr } from "@/util/currency";
-import { ArrowLeft, ArrowRight } from "lucide-vue-next";
+import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currency";
+import { toTypedSchema } from "@vee-validate/zod";
+import { ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
+import { useForm } from "vee-validate";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
 
+const { currentUser } = useCurrentUser();
+
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const { groupId, groupData, users } = useGroup(routeGroupId);
+const { groupId, groupData, users } = useGroup(routeGroupId, () => {
+	setFieldValue("from", currentUser.value!.uid);
+});
+
+const allowedPaymentUsers = computed<string[] | undefined>(() =>
+	users.value
+		? Object.entries(users.value)
+				.filter(([, user]) => user.status !== "history")
+				.map(([userId]) => userId)
+		: undefined
+);
 
 function getPaymentBalanceStr(bal: number): BalanceStr {
 	return getBalanceStr(
@@ -23,6 +44,30 @@ function getPaymentBalanceStr(bal: number): BalanceStr {
 		() => "in balance"
 	);
 }
+
+const isMakingPayment = ref<boolean>(false);
+
+const formSchema = toTypedSchema(
+	z.object({
+		from: z
+			.string()
+			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
+		to: z.string().refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
+		amount: z.number().min(0.01, "An amount is required"),
+	})
+);
+
+const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm({
+	validationSchema: formSchema,
+});
+
+const onSubmit = handleSubmit(async (values) => {
+	isMakingPayment.value = true;
+
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
+	isMakingPayment.value = false;
+});
 </script>
 
 <template>
@@ -80,7 +125,116 @@ function getPaymentBalanceStr(bal: number): BalanceStr {
 					</div>
 				</div>
 			</div>
-			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">make a payment box</div>
+
+			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
+				<div class="flex flex-col">
+					<span class="text-lg font-semibold">Record Payment</span>
+					<span class="text-sm text-muted-foreground">Settle debts between group members</span>
+				</div>
+
+				<form class="flex flex-col gap-4" @submit="onSubmit">
+					<div class="flex flex-col gap-2">
+						<div class="flex gap-2">
+							<FormField v-slot="{ componentField }" name="from" :validate-on-blur="!isFieldDirty">
+								<FormItem class="flex-1">
+									<FormLabel>From</FormLabel>
+									<Select v-bind="componentField" :disabled="isMakingPayment">
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue placeholder="Select a member">
+													<div v-if="groupId && values.from" class="flex items-center gap-2">
+														<Avatar
+															:src="users![values.from].photoURL"
+															:name="users![values.from].name"
+															class="size-6"
+														/>
+														<span>{{ users![values.from!].name }} </span>
+													</div>
+												</SelectValue>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
+												<div class="flex items-center gap-2">
+													<Avatar
+														:src="users?.[userId].photoURL ?? null"
+														:name="users?.[userId].name ?? 'Unloaded User'"
+														:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+													/>
+													<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
+														{{ users?.[userId].name ?? "Unloaded User" }}
+													</span>
+												</div>
+											</SelectItem>
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							</FormField>
+
+							<FormField v-slot="{ componentField }" name="to" :validate-on-blur="!isFieldDirty">
+								<FormItem class="flex-1">
+									<FormLabel>Recipient</FormLabel>
+									<Select v-bind="componentField" :disabled="isMakingPayment">
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue placeholder="Select a member">
+													<div v-if="groupId && values.to" class="flex items-center gap-2">
+														<Avatar :src="users![values.to].photoURL" :name="users![values.to].name" class="size-6" />
+														<span>{{ users![values.to!].name }} </span>
+													</div>
+												</SelectValue>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											<SelectItem v-for="userId in allowedPaymentUsers" :value="userId">
+												<div class="flex items-center gap-2">
+													<Avatar
+														:src="users?.[userId].photoURL ?? null"
+														:name="users?.[userId].name ?? 'Unloaded User'"
+														:class="`size-5 ${users?.[userId].status !== 'active' && 'opacity-70'}`"
+													/>
+													<span :class="`${users?.[userId].status !== 'active' && 'text-muted-foreground'}`">
+														{{ users?.[userId].name ?? "Unloaded User" }}
+													</span>
+												</div>
+											</SelectItem>
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							</FormField>
+						</div>
+
+						<FormField v-slot="{ componentField }" name="amount" :validate-on-blur="!isFieldDirty">
+							<FormItem class="flex-1">
+								<FormLabel>Amount</FormLabel>
+								<div class="relative items-center">
+									<FormControl>
+										<Input
+											type="number"
+											class="pl-6"
+											placeholder="0.00"
+											:step="0.01"
+											:disabled="isMakingPayment"
+											v-bind="componentField"
+										/>
+									</FormControl>
+									<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
+										{{ CurrencySettings[groupData!.currency].symbol }}
+									</span>
+								</div>
+								<FormMessage />
+							</FormItem>
+						</FormField>
+					</div>
+
+					<Button type="submit" :disabled="isMakingPayment" class="w-fit">
+						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+						<span>Record Payment</span>
+					</Button>
+				</form>
+			</div>
 		</div>
 	</div>
 </template>
