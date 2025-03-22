@@ -6,7 +6,7 @@ export interface CategoryData {
 	icon: FunctionalComponent<LucideProps, {}, any, {}>;
 }
 
-export const CurrencySettings: Record<TransactionCategory, CategoryData> = {
+export const CategorySettings: Record<TransactionCategory, CategoryData> = {
 	expense: { icon: ReceiptText },
 	payment: { icon: Wallet },
 };
