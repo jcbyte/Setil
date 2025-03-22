@@ -279,7 +279,7 @@ const onSubmit = handleSubmit(async (values) => {
 						</FormField>
 					</div>
 
-					<Button type="submit" :disabled="isMakingPayment" class="w-fit">
+					<Button type="submit" :disabled="isMakingPayment" class="w-fit place-self-end">
 						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
 						<span>Record Payment</span>
 					</Button>

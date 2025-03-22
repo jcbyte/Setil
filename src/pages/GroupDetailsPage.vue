@@ -312,7 +312,7 @@ async function deleteGroup() {
 							</FormField>
 						</div>
 
-						<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
+						<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit place-self-end">
 							<LoaderIcon :icon="routeGroupId ? Save : Plus" :loading="isGroupDetailsUpdating" />
 							<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
 						</Button>

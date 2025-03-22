@@ -408,7 +408,7 @@ const onSubmit = handleSubmit(async (values) => {
 						</FormField>
 					</div>
 
-					<Button type="submit" :disabled="isTransactionUpdating" class="w-fit">
+					<Button type="submit" :disabled="isTransactionUpdating" class="w-fit place-self-end">
 						<LoaderIcon :icon="routeTransactionId ? Save : Plus" :loading="isTransactionUpdating" />
 						<span>{{ routeTransactionId ? "Save Changes" : "Add Expense" }}</span>
 					</Button>
