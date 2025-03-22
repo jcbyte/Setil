@@ -62,17 +62,17 @@ async function addMember() {
 						<TabsTrigger value="activity">Activity</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div v-if="groupId">
-					<!-- <Transition name="tab-anim" mode="out-in"> -->
-					<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
-					<GroupActivity
-						v-else
-						:group-id="groupId"
-						:group-data="groupData!"
-						:users="users!"
-						:transactions="transactions!"
-					/>
-					<!-- </Transition> -->
+				<div v-if="groupId" class="relative">
+					<Transition name="fade-slide" mode="out-in">
+						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
+						<GroupActivity
+							v-else
+							:group-id="groupId"
+							:group-data="groupData!"
+							:users="users!"
+							:transactions="transactions!"
+						/>
+					</Transition>
 				</div>
 				<Skeleton v-else class="w-full h-96" />
 
@@ -142,19 +142,3 @@ async function addMember() {
 		</div>
 	</div>
 </template>
-
-<style scoped>
-.tab-anim-enter-active,
-.tab-anim-leave-active {
-	transition: 0.2s ease;
-}
-
-.tab-anim-enter-from {
-	opacity: 0;
-	transform: translateX(-1rem);
-}
-.tab-anim-leave-to {
-	opacity: 0;
-	transform: translateX(1rem);
-}
-</style>

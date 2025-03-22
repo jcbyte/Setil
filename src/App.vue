@@ -22,12 +22,12 @@ useColorMode().value = "dark";
 <template>
 	<Transition name="loader-anim">
 		<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
-			<Transition name="page-anim" mode="out-in">
+			<Transition name="fade-slide" mode="out-in">
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
 					<router-view v-slot="{ Component }">
-						<Transition name="page-anim" mode="out-in">
+						<Transition name="fade-slide" mode="out-in">
 							<component :is="Component" class="overflow-visible" />
 						</Transition>
 					</router-view>
@@ -60,17 +60,19 @@ useColorMode().value = "dark";
 .loader-anim-leave-to {
 	transform: translateY(calc(-100% - 3rem));
 }
+</style>
 
-.page-anim-enter-active,
-.page-anim-leave-active {
+<style>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
 	transition: 0.2s ease;
 }
 
-.page-anim-enter-from {
+.fade-slide-enter-from {
 	opacity: 0;
 	transform: translateX(-1rem);
 }
-.page-anim-leave-to {
+.fade-slide-leave-to {
 	opacity: 0;
 	transform: translateX(1rem);
 }
