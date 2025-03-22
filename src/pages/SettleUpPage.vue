@@ -10,13 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
+import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
 import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currency";
 import { getLeftUsersInTransaction } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
+import { ArrowDown, ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -26,6 +27,7 @@ const router = useRouter();
 const route = useRoute();
 
 const { currentUser } = useCurrentUser();
+const { breakpointSplit } = useScreenSize();
 
 const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
 const { groupId, groupData, users } = useGroup(routeGroupId, () => {
@@ -135,7 +137,7 @@ const onSubmit = handleSubmit(async (values) => {
 						v-for="userPayment in usersPayments"
 						class="flex flex-col border border-border rounded-lg gap-4 p-4"
 					>
-						<div class="flex justify-between items-center">
+						<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 							<div class="flex items-center gap-2">
 								<Avatar
 									:src="users![userPayment.userId].photoURL"
@@ -148,7 +150,7 @@ const onSubmit = handleSubmit(async (values) => {
 								</div>
 							</div>
 							<div>
-								<ArrowRight class="text-muted-foreground" />
+								<component :is="breakpointSplit(ArrowDown, ArrowRight, 'sm')" class="text-muted-foreground" />
 							</div>
 							<div class="flex items-center gap-2">
 								<div class="flex flex-col gap-1 text-right">
