@@ -2,6 +2,8 @@ import type { Timestamp } from "firebase/firestore";
 
 export type Currency = "gbp" | "usd" | "eur";
 
+export type TransactionCategory = "expense" | "payment";
+
 export interface UserData {
 	groups: string[];
 }
@@ -27,6 +29,7 @@ export interface Transaction {
 	from: string;
 	to: Record<string, number>;
 	date: Timestamp;
+	category: TransactionCategory;
 }
 
 export interface Invite {

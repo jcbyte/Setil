@@ -99,6 +99,7 @@ const onSubmit = handleSubmit(async (values) => {
 		from: values.from,
 		date: Timestamp.now(),
 		to: { [values.to]: values.amount },
+		category: "payment",
 	};
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
 	await createTransaction(groupId.value, transaction, leftUsers);

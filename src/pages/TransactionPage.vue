@@ -177,6 +177,7 @@ const onSubmit = handleSubmit(async (values) => {
 		from: values.from,
 		date: Timestamp.fromDate(toDate(parseDate(values.date))),
 		to: resolveBalances(),
+		category: "expense", // todo allow user to decide
 	};
 
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
