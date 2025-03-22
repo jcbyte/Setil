@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
@@ -94,7 +95,7 @@ const onSubmit = handleSubmit(async (values) => {
 				</div>
 
 				<div class="flex flex-col gap-2">
-					<div v-for="(user, userId) in users" class="flex flex-col gap-2">
+					<div v-if="groupId" v-for="(user, userId) in users" class="flex flex-col gap-2">
 						<div
 							v-for="(owed, owedUserId) in Object.fromEntries(
 								Object.entries(user.balance).filter(([, owed]) => owed < 0)
@@ -123,10 +124,11 @@ const onSubmit = handleSubmit(async (values) => {
 							<Button variant="outline">Record this payment</Button>
 						</div>
 					</div>
+					<Skeleton v-else v-for="_n in 3" class="w-full h-32" />
 				</div>
 			</div>
 
-			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
+			<div v-if="groupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold">Record Payment</span>
 					<span class="text-sm text-muted-foreground">Settle debts between group members</span>
@@ -235,6 +237,7 @@ const onSubmit = handleSubmit(async (values) => {
 					</Button>
 				</form>
 			</div>
+			<Skeleton v-else class="w-full max-w-[32rem] h-72" />
 		</div>
 	</div>
 </template>
