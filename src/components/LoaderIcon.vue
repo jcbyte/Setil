@@ -9,8 +9,5 @@ defineProps<{
 </script>
 
 <template>
-	<div v-if="loading" class="animate-spin">
-		<LoaderCircle v-bind="$attrs" />
-	</div>
-	<icon v-else v-bind="$attrs" />
+	<component :is="loading ? LoaderCircle : icon" v-bind="$attrs" />
 </template>
