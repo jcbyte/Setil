@@ -32,6 +32,18 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	setFieldValue("from", currentUser.value!.uid);
 });
 
+const usersPayments = computed(() =>
+	users.value
+		? Object.entries(users.value)
+				.map(([userId, user]) =>
+					Object.entries(user.balance)
+						.filter(([, owed]) => owed < 0)
+						.map(([owedUserId, owed]) => ({ userId, owedUserId, owed: -owed }))
+				)
+				.flat()
+		: undefined
+);
+
 const allowedPaymentUsers = computed<string[] | undefined>(() =>
 	users.value
 		? Object.entries(users.value)
@@ -68,10 +80,9 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 
 const recordPaymentPulser = useTemplateRef("record-payment-pulser");
 
-function fillForm(from: string, to: string, amount: number) {
-	setValues({ from, to, amount });
+function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
+	setValues({ from: userPayment.userId, to: userPayment.owedUserId, amount: userPayment.owed });
 
-	console.log(recordPaymentPulser.value);
 	recordPaymentPulser.value?.classList.add("pulse");
 	setTimeout(() => recordPaymentPulser.value?.classList.remove("pulse"), 500);
 }
@@ -119,36 +130,44 @@ const onSubmit = handleSubmit(async (values) => {
 				</div>
 
 				<div class="flex flex-col gap-2">
-					<div v-if="groupId" v-for="(user, userId) in users" class="flex flex-col gap-2">
-						<div
-							v-for="(owed, owedUserId) in Object.fromEntries(
-								Object.entries(user.balance).filter(([, owed]) => owed < 0)
-							) as Record<string, number>"
-							class="flex flex-col border border-border rounded-lg gap-4 p-4"
-						>
-							<div class="flex justify-between items-center">
-								<div class="flex items-center gap-2">
-									<Avatar :src="users![userId].photoURL" :name="users![userId].name" class="size-10" />
-									<div class="flex flex-col gap-1">
-										<span class="text-sm">{{ users![userId].name }}</span>
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(owed)" />
-									</div>
-								</div>
-								<div>
-									<ArrowRight class="text-muted-foreground" />
-								</div>
-								<div class="flex items-center gap-2">
-									<div class="flex flex-col gap-1 text-right">
-										<span class="text-sm">{{ users![owedUserId].name }}</span>
-										<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-owed)" />
-									</div>
-									<Avatar :src="users![owedUserId].photoURL" :name="users![owedUserId].name" class="size-10" />
+					<div
+						v-if="groupId"
+						v-for="userPayment in usersPayments"
+						class="flex flex-col border border-border rounded-lg gap-4 p-4"
+					>
+						<div class="flex justify-between items-center">
+							<div class="flex items-center gap-2">
+								<Avatar
+									:src="users![userPayment.userId].photoURL"
+									:name="users![userPayment.userId].name"
+									class="size-10"
+								/>
+								<div class="flex flex-col gap-1">
+									<span class="text-sm">{{ users![userPayment.userId].name }}</span>
+									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.owed)" />
 								</div>
 							</div>
-							<Button variant="outline" @click="fillForm(userId, owedUserId, -owed)">Record this payment</Button>
+							<div>
+								<ArrowRight class="text-muted-foreground" />
+							</div>
+							<div class="flex items-center gap-2">
+								<div class="flex flex-col gap-1 text-right">
+									<span class="text-sm">{{ users![userPayment.owedUserId].name }}</span>
+									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.owed)" />
+								</div>
+								<Avatar
+									:src="users![userPayment.owedUserId].photoURL"
+									:name="users![userPayment.owedUserId].name"
+									class="size-10"
+								/>
+							</div>
 						</div>
+						<Button variant="outline" @click="fillForm(userPayment)">Record this payment</Button>
 					</div>
 					<Skeleton v-else v-for="_n in 3" class="w-full h-32" />
+					<div v-if="usersPayments?.length === 0" class="flex justify-center">
+						<span class="text-muted-foreground">No payments needed</span>
+					</div>
 				</div>
 			</div>
 
