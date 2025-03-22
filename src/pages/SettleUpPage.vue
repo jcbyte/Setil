@@ -10,8 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
+import { createTransaction } from "@/firebase/firestore";
+import type { Transaction } from "@/firebase/types";
 import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currency";
+import { getLeftUsersInTransaction } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
+import { Timestamp } from "firebase/firestore";
 import { ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, useTemplateRef } from "vue";
@@ -73,10 +77,20 @@ function fillForm(from: string, to: string, amount: number) {
 }
 
 const onSubmit = handleSubmit(async (values) => {
+	if (!groupId.value) return;
+
 	isMakingPayment.value = true;
 
-	await new Promise((resolve) => setTimeout(resolve, 1000));
+	const transaction: Transaction = {
+		title: "Setil Up",
+		from: values.from,
+		date: Timestamp.now(),
+		to: { [values.to]: values.amount },
+	};
+	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
+	await createTransaction(groupId.value, transaction, leftUsers);
 
+	router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	isMakingPayment.value = false;
 });
 </script>
