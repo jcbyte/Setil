@@ -3,10 +3,11 @@ import { ReceiptText, Wallet, type LucideProps } from "lucide-vue-next";
 import type { FunctionalComponent } from "vue";
 
 export interface CategoryData {
+	name: string;
 	icon: FunctionalComponent<LucideProps, {}, any, {}>;
 }
 
 export const CategorySettings: Record<TransactionCategory, CategoryData> = {
-	expense: { icon: ReceiptText },
-	payment: { icon: Wallet },
+	expense: { name: "Expense", icon: ReceiptText },
+	payment: { name: "Payment", icon: Wallet },
 };
