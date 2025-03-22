@@ -239,283 +239,285 @@ async function deleteGroup() {
 </script>
 
 <template>
-	<div class="w-full flex flex-col gap-4 items-center">
-		<div class="w-full flex justify-between items-center">
-			<div class="flex gap-2 justify-center items-center">
-				<Button variant="ghost" class="size-9" @click="router.push(routeGroupId ? `/group/${routeGroupId}` : '/')">
-					<ArrowLeft class="!size-6" />
-				</Button>
-				<span class="text-lg font-semibold">{{ routeGroupId ? "Group Settings" : "New Group" }}</span>
-			</div>
-			<YourAccountSettings />
-		</div>
-
-		<div class="w-full max-w-[32rem] flex flex-col gap-4">
-			<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
-				<div class="flex flex-col">
-					<span class="text-lg font-semibold">Group Details</span>
-					<span class="text-sm text-muted-foreground">{{
-						routeGroupId ? "Update your group information" : "Enter your new groups information"
-					}}</span>
-				</div>
-
-				<form class="flex flex-col gap-4" @submit="onSubmit">
-					<div class="flex flex-col gap-2">
-						<FormField v-slot="{ componentField }" name="name" :validate-on-blur="!isFieldDirty">
-							<FormItem>
-								<FormLabel>Group Name</FormLabel>
-								<FormControl>
-									<Input
-										autocomplete="off"
-										type="text"
-										placeholder="Germany Trip"
-										:disabled="isGroupDetailsUpdating"
-										v-bind="componentField"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						</FormField>
-
-						<FormField v-slot="{ componentField }" name="description" :validate-on-blur="!isFieldDirty">
-							<FormItem>
-								<FormLabel>Description</FormLabel>
-								<FormControl>
-									<Textarea
-										placeholder="Expenses for Munich Trip."
-										:disabled="isGroupDetailsUpdating"
-										v-bind="componentField"
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						</FormField>
-
-						<FormField v-slot="{ componentField }" name="currency" :validate-on-blur="!isFieldDirty">
-							<FormItem>
-								<FormLabel>Currency</FormLabel>
-								<Select v-bind="componentField" :disabled="isGroupDetailsUpdating">
-									<FormControl>
-										<SelectTrigger>
-											<SelectValue placeholder="Euro (€)" />
-										</SelectTrigger>
-									</FormControl>
-									<SelectContent>
-										<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
-											{{ currency.name }} ({{ currency.symbol }})
-										</SelectItem>
-									</SelectContent>
-								</Select>
-								<FormMessage />
-							</FormItem>
-						</FormField>
-					</div>
-
-					<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
-						<LoaderIcon :icon="routeGroupId ? Save : Plus" :loading="isGroupDetailsUpdating" />
-						<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
+	<div>
+		<div class="w-full flex flex-col gap-4 items-center">
+			<div class="w-full flex justify-between items-center">
+				<div class="flex gap-2 justify-center items-center">
+					<Button variant="ghost" class="size-9" @click="router.push(routeGroupId ? `/group/${routeGroupId}` : '/')">
+						<ArrowLeft class="!size-6" />
 					</Button>
-				</form>
+					<span class="text-lg font-semibold">{{ routeGroupId ? "Group Settings" : "New Group" }}</span>
+				</div>
+				<YourAccountSettings />
 			</div>
 
-			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-4 p-4">
-				<div class="flex flex-col">
-					<span class="text-lg font-semibold">Your Group Profile</span>
-					<span class="text-sm text-muted-foreground">How others see you in this group</span>
-				</div>
-				<div v-if="currentGroupUser" class="flex items-center gap-2">
-					<Avatar :src="currentGroupUser.photoURL" :name="currentGroupUser.name" class="size-9" />
+			<div class="w-full max-w-[32rem] flex flex-col gap-4">
+				<div class="border border-border rounded-lg flex flex-col gap-6 p-4">
 					<div class="flex flex-col">
-						<span>{{ currentGroupUser.name }}</span>
-						<span class="text-sm text-muted-foreground">
-							{{ currentUser?.uid === groupData?.owner ? "Owner" : "Member" }}
-						</span>
+						<span class="text-lg font-semibold">Group Details</span>
+						<span class="text-sm text-muted-foreground">{{
+							routeGroupId ? "Update your group information" : "Enter your new groups information"
+						}}</span>
 					</div>
+
+					<form class="flex flex-col gap-4" @submit="onSubmit">
+						<div class="flex flex-col gap-2">
+							<FormField v-slot="{ componentField }" name="name" :validate-on-blur="!isFieldDirty">
+								<FormItem>
+									<FormLabel>Group Name</FormLabel>
+									<FormControl>
+										<Input
+											autocomplete="off"
+											type="text"
+											placeholder="Germany Trip"
+											:disabled="isGroupDetailsUpdating"
+											v-bind="componentField"
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							</FormField>
+
+							<FormField v-slot="{ componentField }" name="description" :validate-on-blur="!isFieldDirty">
+								<FormItem>
+									<FormLabel>Description</FormLabel>
+									<FormControl>
+										<Textarea
+											placeholder="Expenses for Munich Trip."
+											:disabled="isGroupDetailsUpdating"
+											v-bind="componentField"
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							</FormField>
+
+							<FormField v-slot="{ componentField }" name="currency" :validate-on-blur="!isFieldDirty">
+								<FormItem>
+									<FormLabel>Currency</FormLabel>
+									<Select v-bind="componentField" :disabled="isGroupDetailsUpdating">
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue placeholder="Euro (€)" />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
+												{{ currency.name }} ({{ currency.symbol }})
+											</SelectItem>
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							</FormField>
+						</div>
+
+						<Button type="submit" :disabled="isGroupDetailsUpdating" class="w-fit">
+							<LoaderIcon :icon="routeGroupId ? Save : Plus" :loading="isGroupDetailsUpdating" />
+							<span>{{ routeGroupId ? "Save Changes" : "Create Group" }}</span>
+						</Button>
+					</form>
 				</div>
-				<Skeleton v-else class="w-56 h-10" />
-				<div class="flex flex-col gap-2">
-					<span :class="`text-sm font-[500] ${myDisplayNameErrors && 'text-destructive'}`">Display Name</span>
-					<div class="flex justify-center items-center gap-2">
-						<div class="relative w-full">
-							<Input
-								v-model:model-value="myDisplayName"
-								class="pl-8"
-								autocomplete="off"
-								type="text"
-								placeholder="Name"
-								:disabled="isMyDisplayNameUpdating"
-							/>
-							<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
-								<UserRound class="size-4" />
+
+				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-4 p-4">
+					<div class="flex flex-col">
+						<span class="text-lg font-semibold">Your Group Profile</span>
+						<span class="text-sm text-muted-foreground">How others see you in this group</span>
+					</div>
+					<div v-if="currentGroupUser" class="flex items-center gap-2">
+						<Avatar :src="currentGroupUser.photoURL" :name="currentGroupUser.name" class="size-9" />
+						<div class="flex flex-col">
+							<span>{{ currentGroupUser.name }}</span>
+							<span class="text-sm text-muted-foreground">
+								{{ currentUser?.uid === groupData?.owner ? "Owner" : "Member" }}
 							</span>
 						</div>
-						<Button type="button" :disabled="isMyDisplayNameUpdating" class="w-fit" @click="updateDisplayName">
-							<LoaderIcon :icon="Check" :loading="isMyDisplayNameUpdating" />
-							<span>Update</span>
-						</Button>
 					</div>
-					<span v-if="myDisplayNameErrors" class="text-[12.8px] text-destructive">{{ myDisplayNameErrors }}</span>
-				</div>
-			</div>
-
-			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
-				<div class="flex flex-col">
-					<span class="text-lg font-semibold">Members</span>
-					<span class="text-sm text-muted-foreground">View and manage group members</span>
-				</div>
-
-				<div class="flex flex-col gap-4">
-					<div
-						v-if="users"
-						v-for="(user, userId) in Object.fromEntries(
-							Object.entries(users).filter(([, user]) => user.status !== 'history')
-						) as Record<string, GroupUserData>"
-						class="flex justify-between items-center"
-					>
+					<Skeleton v-else class="w-56 h-10" />
+					<div class="flex flex-col gap-2">
+						<span :class="`text-sm font-[500] ${myDisplayNameErrors && 'text-destructive'}`">Display Name</span>
 						<div class="flex justify-center items-center gap-2">
-							<Avatar
-								:src="user.photoURL"
-								:name="user.name"
-								:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
-							/>
-							<div class="flex flex-col">
-								<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
-								<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
-									{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
+							<div class="relative w-full">
+								<Input
+									v-model:model-value="myDisplayName"
+									class="pl-8"
+									autocomplete="off"
+									type="text"
+									placeholder="Name"
+									:disabled="isMyDisplayNameUpdating"
+								/>
+								<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
+									<UserRound class="size-4" />
 								</span>
 							</div>
+							<Button type="button" :disabled="isMyDisplayNameUpdating" class="w-fit" @click="updateDisplayName">
+								<LoaderIcon :icon="Check" :loading="isMyDisplayNameUpdating" />
+								<span>Update</span>
+							</Button>
 						</div>
-						<DropdownMenu v-if="currentUser?.uid === groupData?.owner">
-							<DropdownMenuTrigger as-child>
-								<Button
-									variant="outline"
-									:disabled="
-										userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
-									"
-								>
-									<LoaderIcon
-										v-if="user.status === 'active' && userId !== groupData?.owner"
-										:icon="ChevronDown"
-										:loading="isUpdatingMember.includes(userId)"
-									/>
-									<span>
-										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+						<span v-if="myDisplayNameErrors" class="text-[12.8px] text-destructive">{{ myDisplayNameErrors }}</span>
+					</div>
+				</div>
+
+				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+					<div class="flex flex-col">
+						<span class="text-lg font-semibold">Members</span>
+						<span class="text-sm text-muted-foreground">View and manage group members</span>
+					</div>
+
+					<div class="flex flex-col gap-4">
+						<div
+							v-if="users"
+							v-for="(user, userId) in Object.fromEntries(
+							Object.entries(users).filter(([, user]) => user.status !== 'history')
+						) as Record<string, GroupUserData>"
+							class="flex justify-between items-center"
+						>
+							<div class="flex justify-center items-center gap-2">
+								<Avatar
+									:src="user.photoURL"
+									:name="user.name"
+									:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
+								/>
+								<div class="flex flex-col">
+									<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+									<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
+										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
 									</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent>
-								<DropdownMenuItem @click="openPromoteDialog({ userId })">
-									<div class="w-full flex justify-between items-center">
-										<span>Promote</span>
-										<ArrowBigUpDash class="!size-5" />
-									</div>
-								</DropdownMenuItem>
-								<DropdownMenuItem @click="removeMember(userId)">
-									<div class="w-full flex justify-between items-center">
-										<span class="text-red-400">Remove</span>
-										<Trash class="text-red-400 !size-5" />
-									</div>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-
-					<Button variant="outline" :disabled="isAddingMember" @click="addMember">
-						<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
-						<span>Add Member</span>
-					</Button>
-				</div>
-			</div>
-
-			<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
-				<div class="flex flex-col">
-					<span class="text-lg font-semibold">Danger Zone</span>
-					<span class="text-sm text-muted-foreground">Dangerous action for this group</span>
-				</div>
-
-				<div class="flex flex-col gap-4">
-					<div class="flex justify-between items-center gap-2">
-						<div class="flex flex-col">
-							<span>Leave Group</span>
-							<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
+								</div>
+							</div>
+							<DropdownMenu v-if="currentUser?.uid === groupData?.owner">
+								<DropdownMenuTrigger as-child>
+									<Button
+										variant="outline"
+										:disabled="
+											userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
+										"
+									>
+										<LoaderIcon
+											v-if="user.status === 'active' && userId !== groupData?.owner"
+											:icon="ChevronDown"
+											:loading="isUpdatingMember.includes(userId)"
+										/>
+										<span>
+											{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+										</span>
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem @click="openPromoteDialog({ userId })">
+										<div class="w-full flex justify-between items-center">
+											<span>Promote</span>
+											<ArrowBigUpDash class="!size-5" />
+										</div>
+									</DropdownMenuItem>
+									<DropdownMenuItem @click="removeMember(userId)">
+										<div class="w-full flex justify-between items-center">
+											<span class="text-red-400">Remove</span>
+											<Trash class="text-red-400 !size-5" />
+										</div>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
-						<Button variant="outline" @click="openLeaveDialog">
-							<LogOut />
-							<span>Leave</span>
+
+						<Button variant="outline" :disabled="isAddingMember" @click="addMember">
+							<LoaderIcon :icon="UserRoundPlus" :loading="isAddingMember" />
+							<span>Add Member</span>
 						</Button>
 					</div>
+				</div>
 
-					<Separator v-if="currentUser?.uid === groupData?.owner" />
-					<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center gap-2">
-						<div class="flex flex-col">
-							<span>Delete Group</span>
-							<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
+				<div v-if="routeGroupId" class="border border-border rounded-lg flex flex-col gap-6 p-4">
+					<div class="flex flex-col">
+						<span class="text-lg font-semibold">Danger Zone</span>
+						<span class="text-sm text-muted-foreground">Dangerous action for this group</span>
+					</div>
+
+					<div class="flex flex-col gap-4">
+						<div class="flex justify-between items-center gap-2">
+							<div class="flex flex-col">
+								<span>Leave Group</span>
+								<span class="text-sm text-muted-foreground">Remove yourself from this group</span>
+							</div>
+							<Button variant="outline" @click="openLeaveDialog">
+								<LogOut />
+								<span>Leave</span>
+							</Button>
 						</div>
-						<Button variant="destructive" @click="openDeleteDialog">
-							<Trash />
-							<span>Delete</span>
-						</Button>
+
+						<Separator v-if="currentUser?.uid === groupData?.owner" />
+						<div v-if="currentUser?.uid === groupData?.owner" class="flex justify-between items-center gap-2">
+							<div class="flex flex-col">
+								<span>Delete Group</span>
+								<span class="text-sm text-muted-foreground">Permanently delete this group and all its data</span>
+							</div>
+							<Button variant="destructive" @click="openDeleteDialog">
+								<Trash />
+								<span>Delete</span>
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<AlertDialog v-model:open="promoteDialogOpen">
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+					<AlertDialogDescription>
+						Promoting
+						<span class="font-semibold">
+							{{ users![promoteDialogData!.userId].name }}
+						</span>
+						to Owner will change your role to Member.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter class="gap-2">
+					<Button variant="outline" :disabled="promoteDialogProcessing" @click="closePromoteDialog">Cancel</Button>
+					<Button :disabled="promoteDialogProcessing" @click="promoteMember">
+						<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialogProcessing" />
+						<span>Promote</span>
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+
+		<AlertDialog v-model:open="leaveDialogOpen">
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+					<AlertDialogDescription>
+						Your data will remain in the group until all debts are resolved.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter class="gap-2">
+					<Button variant="outline" :disabled="leaveDialogProcessing" @click="closeLeaveDialog">Cancel</Button>
+					<Button :disabled="leaveDialogProcessing" @click="leaveGroup">
+						<LoaderIcon :icon="LogOut" :loading="leaveDialogProcessing" />
+						<span>Leave</span>
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+
+		<AlertDialog v-model:open="deleteDialogOpen">
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+					<AlertDialogDescription>
+						This action cannot be undone. This will permanently delete the group and all its data.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter class="gap-2">
+					<Button variant="outline" :disabled="deleteDialogProcessing" @click="closeDeleteDialog">Cancel</Button>
+					<Button variant="destructive" :disabled="deleteDialogProcessing" @click="deleteGroup">
+						<LoaderIcon :icon="Trash" :loading="deleteDialogProcessing" />
+						<span>Delete</span>
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	</div>
-
-	<AlertDialog v-model:open="promoteDialogOpen">
-		<AlertDialogContent>
-			<AlertDialogHeader>
-				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-				<AlertDialogDescription>
-					Promoting
-					<span class="font-semibold">
-						{{ users![promoteDialogData!.userId].name }}
-					</span>
-					to Owner will change your role to Member.
-				</AlertDialogDescription>
-			</AlertDialogHeader>
-			<AlertDialogFooter class="gap-2">
-				<Button variant="outline" :disabled="promoteDialogProcessing" @click="closePromoteDialog">Cancel</Button>
-				<Button :disabled="promoteDialogProcessing" @click="promoteMember">
-					<LoaderIcon :icon="ArrowBigUpDash" :loading="promoteDialogProcessing" />
-					<span>Promote</span>
-				</Button>
-			</AlertDialogFooter>
-		</AlertDialogContent>
-	</AlertDialog>
-
-	<AlertDialog v-model:open="leaveDialogOpen">
-		<AlertDialogContent>
-			<AlertDialogHeader>
-				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-				<AlertDialogDescription>
-					Your data will remain in the group until all debts are resolved.
-				</AlertDialogDescription>
-			</AlertDialogHeader>
-			<AlertDialogFooter class="gap-2">
-				<Button variant="outline" :disabled="leaveDialogProcessing" @click="closeLeaveDialog">Cancel</Button>
-				<Button :disabled="leaveDialogProcessing" @click="leaveGroup">
-					<LoaderIcon :icon="LogOut" :loading="leaveDialogProcessing" />
-					<span>Leave</span>
-				</Button>
-			</AlertDialogFooter>
-		</AlertDialogContent>
-	</AlertDialog>
-
-	<AlertDialog v-model:open="deleteDialogOpen">
-		<AlertDialogContent>
-			<AlertDialogHeader>
-				<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-				<AlertDialogDescription>
-					This action cannot be undone. This will permanently delete the group and all its data.
-				</AlertDialogDescription>
-			</AlertDialogHeader>
-			<AlertDialogFooter class="gap-2">
-				<Button variant="outline" :disabled="deleteDialogProcessing" @click="closeDeleteDialog">Cancel</Button>
-				<Button variant="destructive" :disabled="deleteDialogProcessing" @click="deleteGroup">
-					<LoaderIcon :icon="Trash" :loading="deleteDialogProcessing" />
-					<span>Delete</span>
-				</Button>
-			</AlertDialogFooter>
-		</AlertDialogContent>
-	</AlertDialog>
 </template>
