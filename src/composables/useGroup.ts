@@ -48,6 +48,8 @@ export function useGroup(
 			return;
 		}
 
+		currentGroupId.value = null;
+
 		// Unsubscribe from existing listeners
 		if (groupDataUnsubscribe.value) groupDataUnsubscribe.value();
 		if (usersUnsubscribe.value) usersUnsubscribe.value();
