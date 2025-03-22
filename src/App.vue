@@ -65,7 +65,7 @@ useColorMode().value = "dark";
 <style>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-	transition: 0.2s ease;
+	transition: 0.1s ease;
 }
 
 .fade-slide-enter-from {
