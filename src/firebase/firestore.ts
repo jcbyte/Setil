@@ -71,6 +71,9 @@ export async function initialiseUserData(): Promise<boolean> {
  * @returns the unsubscribe function.
  */
 export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupData | null>): Promise<() => void> {
+	// Clear the group data ref to reset it
+	groupDataRef.value = null;
+
 	const groupRef = doc(db, "groups", groupId);
 
 	return await new Promise<() => void>((resolve, reject) => {
@@ -299,6 +302,9 @@ export async function getLiveTransactions(
 	groupId: string,
 	transactionsRef: Ref<Record<string, Transaction> | null>
 ): Promise<() => void> {
+	// Clear the transactions ref to reset it
+	transactionsRef.value = null;
+
 	const firestoreTransactionsRef = collection(db, "groups", groupId, "transactions");
 
 	// Initialise transactions if they have not been yet
@@ -332,6 +338,9 @@ export async function getLiveUsers(
 	groupId: string,
 	usersRef: Ref<Record<string, GroupUserData> | null>
 ): Promise<() => void> {
+	// Clear the users ref to reset it
+	usersRef.value = null;
+
 	const firestoreUsersRef = collection(db, "groups", groupId, "users");
 
 	// Initialise users if they have not been yet
