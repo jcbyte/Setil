@@ -14,6 +14,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -47,11 +48,13 @@ import {
 	Check,
 	ChevronDown,
 	LogOut,
+	Pencil,
 	Plus,
 	Save,
 	Trash,
 	UserRound,
 	UserRoundPlus,
+	X,
 } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
@@ -80,6 +83,23 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 const isGroupDetailsUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
+const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean }>>({});
+
+function startRename(userId: string) {
+	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
+}
+
+function cancelRename(userId: string) {
+	memberNewName.value[userId].updating = false;
+}
+
+async function acceptRename(userId: string) {
+	if (!groupId.value) return;
+
+	memberNewName.value[userId].processing = true;
+	await changeUserName(groupId.value, userId, memberNewName.value[userId].name);
+	memberNewName.value[userId].updating = false;
+}
 
 const {
 	open: leaveDialogOpen,
