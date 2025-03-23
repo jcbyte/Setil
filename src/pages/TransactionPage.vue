@@ -137,42 +137,33 @@ const dateValue = computed({
 });
 
 function resolveBalances(): Record<string, number> {
-	function splitBalances(): Record<string, number> {
-		if (!values.to?.people) return {};
+	if (!values.to?.people) return {};
 
-		if (values.to.type === "equal") {
-			return splitAmountEven(
-				values.amount ?? 0,
+	if (values.to.type === "equal") {
+		return splitAmountEven(
+			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
+			Object.entries(values.to.people)
+				.filter(([, userData]) => userData!.selected)
+				.map(([userId]) => userId)
+		);
+	} else if (values.to.type === "unequal") {
+		return Object.fromEntries(
+			Object.entries(values.to.people)
+				.filter(([, userData]) => userData!.selected)
+				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num!, groupData.value?.currency ?? "gbp")])
+		);
+	} else if (values.to.type === "ratio") {
+		return splitAmountRatio(
+			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
+			Object.fromEntries(
 				Object.entries(values.to.people)
 					.filter(([, userData]) => userData!.selected)
-					.map(([userId]) => userId)
-			);
-		} else if (values.to.type === "unequal") {
-			return Object.fromEntries(
-				Object.entries(values.to.people)
-					.filter(([, userData]) => userData!.selected)
-					.map(([userId, UserData]) => [userId, UserData!.num!])
-			);
-		} else if (values.to.type === "ratio") {
-			return splitAmountRatio(
-				values.amount ?? 0,
-				Object.fromEntries(
-					Object.entries(values.to.people)
-						.filter(([, userData]) => userData!.selected)
-						.map(([userId, userData]) => [userId, userData!.num ?? 0])
-				)
-			);
-		}
-
-		return {};
+					.map(([userId, userData]) => [userId, userData!.num ?? 0])
+			)
+		);
 	}
 
-	return Object.fromEntries(
-		Object.entries(splitBalances()).map(([userId, amount]) => [
-			userId,
-			toFirestoreAmount(amount, groupData.value?.currency ?? "gbp"),
-		])
-	);
+	return {};
 }
 
 const toValue = computed<Record<string, number>>(resolveBalances);
