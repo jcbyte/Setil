@@ -16,7 +16,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
-import { CurrencySettings, formatCurrency } from "@/util/currency";
+import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -137,33 +137,42 @@ const dateValue = computed({
 });
 
 function resolveBalances(): Record<string, number> {
-	if (!values.to?.people) return {};
+	function splitBalances(): Record<string, number> {
+		if (!values.to?.people) return {};
 
-	if (values.to.type === "equal") {
-		return splitAmountEven(
-			values.amount ?? 0,
-			Object.entries(values.to.people)
-				.filter(([, userData]) => userData!.selected)
-				.map(([userId]) => userId)
-		);
-	} else if (values.to.type === "unequal") {
-		return Object.fromEntries(
-			Object.entries(values.to.people)
-				.filter(([, userData]) => userData!.selected)
-				.map(([userId, UserData]) => [userId, UserData!.num!])
-		);
-	} else if (values.to.type === "ratio") {
-		return splitAmountRatio(
-			values.amount ?? 0,
-			Object.fromEntries(
+		if (values.to.type === "equal") {
+			return splitAmountEven(
+				values.amount ?? 0,
 				Object.entries(values.to.people)
 					.filter(([, userData]) => userData!.selected)
-					.map(([userId, userData]) => [userId, userData!.num ?? 0])
-			)
-		);
+					.map(([userId]) => userId)
+			);
+		} else if (values.to.type === "unequal") {
+			return Object.fromEntries(
+				Object.entries(values.to.people)
+					.filter(([, userData]) => userData!.selected)
+					.map(([userId, UserData]) => [userId, UserData!.num!])
+			);
+		} else if (values.to.type === "ratio") {
+			return splitAmountRatio(
+				values.amount ?? 0,
+				Object.fromEntries(
+					Object.entries(values.to.people)
+						.filter(([, userData]) => userData!.selected)
+						.map(([userId, userData]) => [userId, userData!.num ?? 0])
+				)
+			);
+		}
+
+		return {};
 	}
 
-	return {};
+	return Object.fromEntries(
+		Object.entries(splitBalances()).map(([userId, amount]) => [
+			userId,
+			toFirestoreAmount(amount, groupData.value?.currency ?? "gbp"),
+		])
+	);
 }
 
 const toValue = computed<Record<string, number>>(resolveBalances);

@@ -13,7 +13,7 @@ import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currency";
+import { CurrencySettings, getBalanceStr, toFirestoreAmount, type BalanceStr } from "@/util/currency";
 import { getLeftUsersInTransaction } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -98,7 +98,7 @@ const onSubmit = handleSubmit(async (values) => {
 		title: "Setil Up",
 		from: values.from,
 		date: Timestamp.now(),
-		to: { [values.to]: values.amount },
+		to: { [values.to]: toFirestoreAmount(values.amount, groupData.value!.currency) },
 		category: "payment",
 	};
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
