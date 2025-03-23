@@ -72,7 +72,7 @@ const formSchema = toTypedSchema(
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
 		to: z.string().refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
-		amount: z.number().min(0.01, "An amount is required"),
+		amount: z.number().refine((val) => val > 0, "An amount is required"),
 	})
 );
 
