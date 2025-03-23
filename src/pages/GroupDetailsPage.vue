@@ -414,7 +414,7 @@ async function deleteGroup() {
 										:disabled="memberNewName[userId].processing"
 									/>
 									<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
-										<Check />
+										<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
 									</Button>
 									<Button
 										variant="outline"
