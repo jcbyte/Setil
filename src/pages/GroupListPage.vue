@@ -10,11 +10,15 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-const groups = ref<Record<string, ExtendedGroupData> | null>(null);
+const groups = ref<[string, ExtendedGroupData][]>();
 
 onMounted(() => {
 	getUserGroups().then((groupsList) => {
-		groups.value = groupsList;
+		groups.value = Object.entries(groupsList).sort(
+			([, transactionA]: [string, ExtendedGroupData], [, transactionB]: [string, ExtendedGroupData]) => {
+				return transactionB.lastUpdate.seconds - transactionA.lastUpdate.seconds;
+			}
+		);
 	});
 });
 </script>
@@ -36,7 +40,7 @@ onMounted(() => {
 			<div v-if="!groups || Object.keys(groups).length > 0" class="flex flex-wrap gap-4 justify-center w-full">
 				<GroupListItem
 					v-if="groups"
-					v-for="(group, groupId) in groups"
+					v-for="[groupId, group] in groups"
 					:group="group"
 					@click="router.push(`/group/${groupId}`)"
 					class="max-w-[26rem] w-full"
