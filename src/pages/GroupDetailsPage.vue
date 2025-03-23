@@ -371,22 +371,42 @@ async function deleteGroup() {
 							v-for="(user, userId) in Object.fromEntries(
 							Object.entries(users).filter(([, user]) => user.status !== 'history')
 						) as Record<string, GroupUserData>"
-							class="flex justify-between items-center"
+							class="flex justify-between items-center gap-2"
 						>
-							<div class="flex justify-center items-center gap-2">
+							<div class="flex items-center gap-2 flex-1">
 								<Avatar
 									:src="user.photoURL"
 									:name="user.name"
 									:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 								/>
-								<div class="flex flex-col">
+								<div v-if="!(memberNewName[userId]?.updating ?? false)" class="flex flex-col">
 									<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
 									<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
 										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
 									</span>
 								</div>
+								<div v-else class="flex-1 flex gap-2">
+									<Input
+										v-model:model-value="memberNewName[userId].name"
+										autocomplete="off"
+										type="text"
+										placeholder="Name"
+										:disabled="memberNewName[userId].processing"
+									/>
+									<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
+										<Check />
+									</Button>
+									<Button
+										variant="outline"
+										class="size-9"
+										@click="cancelRename(userId)"
+										:disabled="memberNewName[userId].processing"
+									>
+										<X />
+									</Button>
+								</div>
 							</div>
-							<DropdownMenu v-if="currentUser?.uid === groupData?.owner">
+							<DropdownMenu v-if="currentUser?.uid === groupData?.owner && !(memberNewName[userId]?.updating ?? false)">
 								<DropdownMenuTrigger as-child>
 									<Button
 										variant="outline"
