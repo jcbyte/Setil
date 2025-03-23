@@ -104,7 +104,7 @@ async function handleDeleteTransaction() {
 							</div>
 							<div class="flex justify-center items-center gap-2">
 								<span class="text-lg">
-									{{ formatCurrency(calculateTotalTransactionValue(transaction.to) / 100, groupData.currency) }}
+									{{ formatCurrency(calculateTotalTransactionValue(transaction.to), groupData.currency) }}
 								</span>
 								<DropdownMenu>
 									<DropdownMenuTrigger as-child>

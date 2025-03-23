@@ -13,7 +13,7 @@ import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, getBalanceStr, type BalanceStr } from "@/util/currency";
+import { CurrencySettings, getBalanceStr, toFirestoreAmount, type BalanceStr } from "@/util/currency";
 import { getLeftUsersInTransaction } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -72,7 +72,7 @@ const formSchema = toTypedSchema(
 			.string()
 			.refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
 		to: z.string().refine((val) => users.value && Object.keys(users.value).includes(val), "Must select a valid member"),
-		amount: z.number().min(0.01, "An amount is required"),
+		amount: z.number().refine((val) => val > 0, "An amount is required"),
 	})
 );
 
@@ -98,7 +98,7 @@ const onSubmit = handleSubmit(async (values) => {
 		title: "Setil Up",
 		from: values.from,
 		date: Timestamp.now(),
-		to: { [values.to]: values.amount },
+		to: { [values.to]: toFirestoreAmount(values.amount, groupData.value!.currency) },
 		category: "payment",
 	};
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
@@ -267,8 +267,8 @@ const onSubmit = handleSubmit(async (values) => {
 										<Input
 											type="number"
 											class="pl-6"
-											placeholder="0.00"
-											:step="0.01"
+											:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
+											:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 											:disabled="isMakingPayment"
 											v-bind="componentField"
 										/>

@@ -16,7 +16,7 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
-import { CurrencySettings, formatCurrency } from "@/util/currency";
+import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -141,7 +141,7 @@ function resolveBalances(): Record<string, number> {
 
 	if (values.to.type === "equal") {
 		return splitAmountEven(
-			values.amount ?? 0,
+			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
 				.map(([userId]) => userId)
@@ -150,11 +150,11 @@ function resolveBalances(): Record<string, number> {
 		return Object.fromEntries(
 			Object.entries(values.to.people)
 				.filter(([, userData]) => userData!.selected)
-				.map(([userId, UserData]) => [userId, UserData!.num!])
+				.map(([userId, userData]) => [userId, toFirestoreAmount(userData!.num!, groupData.value?.currency ?? "gbp")])
 		);
 	} else if (values.to.type === "ratio") {
 		return splitAmountRatio(
-			values.amount ?? 0,
+			toFirestoreAmount(values.amount ?? 0, groupData.value?.currency ?? "gbp"),
 			Object.fromEntries(
 				Object.entries(values.to.people)
 					.filter(([, userData]) => userData!.selected)
@@ -250,8 +250,8 @@ const onSubmit = handleSubmit(async (values) => {
 											<Input
 												type="number"
 												class="pl-6"
-												placeholder="0.00"
-												:step="0.01"
+												:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
+												:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 												:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
 												v-bind="componentField"
 											/>
@@ -398,8 +398,8 @@ const onSubmit = handleSubmit(async (values) => {
 												<Input
 													type="number"
 													:class="values.to?.type !== 'ratio' && 'pl-6'"
-													:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
-													:step="0.01"
+													:placeholder="values.to?.type !== 'ratio' ? (0).toFixed(CurrencySettings[groupData!.currency].decimals) : '0'"
+													:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 													:model-value="userData?.num"
 													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
 													:disabled="isTransactionUpdating || !userData?.selected"
