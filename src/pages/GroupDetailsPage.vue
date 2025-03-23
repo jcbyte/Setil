@@ -405,12 +405,19 @@ async function deleteGroup() {
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
+									<DropdownMenuItem @click="startRename(userId)">
+										<div class="w-full flex justify-between items-center">
+											<span>Rename</span>
+											<Pencil class="!size-5" />
+										</div>
+									</DropdownMenuItem>
 									<DropdownMenuItem @click="openPromoteDialog({ userId })">
 										<div class="w-full flex justify-between items-center">
 											<span>Promote</span>
 											<ArrowBigUpDash class="!size-5" />
 										</div>
 									</DropdownMenuItem>
+									<DropdownMenuSeparator />
 									<DropdownMenuItem @click="removeMember(userId)">
 										<div class="w-full flex justify-between items-center">
 											<span class="text-red-400">Remove</span>
