@@ -250,8 +250,8 @@ const onSubmit = handleSubmit(async (values) => {
 											<Input
 												type="number"
 												class="pl-6"
-												placeholder="0.00"
-												:step="0.01"
+												:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
+												:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 												:disabled="isTransactionUpdating || values.to?.type === 'unequal'"
 												v-bind="componentField"
 											/>
@@ -398,8 +398,8 @@ const onSubmit = handleSubmit(async (values) => {
 												<Input
 													type="number"
 													:class="values.to?.type !== 'ratio' && 'pl-6'"
-													:placeholder="values.to?.type !== 'ratio' ? '0.00' : '0'"
-													:step="0.01"
+													:placeholder="values.to?.type !== 'ratio' ? (0).toFixed(CurrencySettings[groupData!.currency].decimals) : '0'"
+													:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 													:model-value="userData?.num"
 													@update:modelValue="(val) => setFieldValue(`to.people.${userId}.num`, Number(val))"
 													:disabled="isTransactionUpdating || !userData?.selected"

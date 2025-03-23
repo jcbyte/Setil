@@ -267,8 +267,8 @@ const onSubmit = handleSubmit(async (values) => {
 										<Input
 											type="number"
 											class="pl-6"
-											placeholder="0.00"
-											:step="0.01"
+											:placeholder="(0).toFixed(CurrencySettings[groupData!.currency].decimals)"
+											:step="Math.pow(10, -CurrencySettings[groupData!.currency].decimals)"
 											:disabled="isMakingPayment"
 											v-bind="componentField"
 										/>
