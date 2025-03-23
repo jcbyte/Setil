@@ -15,7 +15,8 @@ export const CurrencySettings: Record<Currency, CurrencyData> = {
 export function formatCurrency(amount: number, currency: Currency): string {
 	const currencySettings = CurrencySettings[currency];
 	const negative = amount < 0;
-	return (negative ? "-" : "") + currencySettings.symbol + Math.abs(amount).toFixed(currencySettings.decimals);
+	const formattedAmount = Math.abs(amount / Math.pow(10, currencySettings.decimals)).toFixed(currencySettings.decimals);
+	return `${negative ? "-" : ""}${currencySettings.symbol}${formattedAmount}`;
 }
 
 export interface BalanceStr {
