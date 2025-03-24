@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import GroupActivity from "@/components/GroupActivity.vue";
-import GroupSummary from "@/components/GroupSummary.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +11,8 @@ import { inviteUser } from "@/util/app";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import GroupActivity from "./GroupActivity.vue";
+import GroupSummary from "./GroupSummary.vue";
 
 const route = useRoute();
 const router = useRouter();

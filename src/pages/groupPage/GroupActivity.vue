@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -7,6 +8,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Button from "@/components/ui/button/Button.vue";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -15,6 +17,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Separator from "@/components/ui/separator/Separator.vue";
+import { useToast } from "@/components/ui/toast";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
@@ -24,9 +27,6 @@ import { getLeftUsersInTransaction } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "lucide-vue-next";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import LoaderIcon from "./LoaderIcon.vue";
-import Button from "./ui/button/Button.vue";
-import { useToast } from "./ui/toast";
 
 const props = defineProps<{
 	groupId: string;

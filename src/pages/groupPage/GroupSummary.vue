@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import Avatar from "@/components/Avatar.vue";
+import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
 import type { GroupData, GroupUserData } from "@/firebase/types";
 import { getBalanceStr, type BalanceStr } from "@/util/currency";
 import { resolveBalance } from "@/util/util";
 import { computed } from "vue";
-import Avatar from "./Avatar.vue";
-import BalanceStrBadge from "./BalanceStrBadge.vue";
 
 const props = defineProps<{
 	groupData: GroupData;
