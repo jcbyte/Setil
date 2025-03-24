@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToast } from "@/components/ui/toast";
 import { joinGroup } from "@/firebase/firestore";
+import { getRouteParam } from "@/util/util";
 import { Loader } from "lucide-vue-next";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -9,10 +10,8 @@ const route = useRoute();
 const router = useRouter();
 const { toast } = useToast();
 
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const routeInviteCode = Array.isArray(route.params.inviteCode)
-	? route.params.inviteCode[0]
-	: route.params.inviteCode || null;
+const routeGroupId = getRouteParam(route.params.groupId);
+const routeInviteCode = getRouteParam(route.params.inviteCode);
 
 onMounted(async () => {
 	function errorHome() {

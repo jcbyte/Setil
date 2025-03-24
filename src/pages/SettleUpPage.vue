@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,8 +13,8 @@ import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, getBalanceStr, toFirestoreAmount, type BalanceStr } from "@/util/currency";
-import { getLeftUsersInTransaction } from "@/util/util";
+import { CurrencySettings, getBalanceStr, toFirestoreAmount } from "@/util/currency";
+import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { ArrowDown, ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
@@ -29,7 +29,7 @@ const route = useRoute();
 const { currentUser } = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	setFieldValue("from", currentUser.value!.uid);
 });

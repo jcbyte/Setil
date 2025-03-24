@@ -2,20 +2,20 @@
 import Avatar from "@/components/Avatar.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -28,33 +28,34 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import {
-  changeUserName,
-  createGroup,
-  deleteGroup as firestoreDeleteGroup,
-  leaveGroup as firestoreLeaveGroup,
-  promoteUser,
-  removeUser,
-  updateGroup,
+	changeUserName,
+	createGroup,
+	deleteGroup as firestoreDeleteGroup,
+	leaveGroup as firestoreLeaveGroup,
+	promoteUser,
+	removeUser,
+	updateGroup,
 } from "@/firebase/firestore";
 import type { GroupUserData } from "@/firebase/types";
 import { type Currency } from "@/firebase/types";
 import { inviteUser } from "@/util/app";
 import { CurrencySettings } from "@/util/currency";
+import { getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import {
-  ArrowBigUpDash,
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  LogOut,
-  Pencil,
-  Plus,
-  Save,
-  Trash,
-  UserRound,
-  UserRoundPlus,
-  X,
+	ArrowBigUpDash,
+	ArrowLeft,
+	Check,
+	ChevronDown,
+	LogOut,
+	Pencil,
+	Plus,
+	Save,
+	Trash,
+	UserRound,
+	UserRoundPlus,
+	X,
 } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, watch } from "vue";
@@ -64,7 +65,7 @@ import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
 
@@ -94,7 +95,7 @@ function cancelRename(userId: string) {
 }
 
 async function acceptRename(userId: string) {
-  // todo add some validation
+	// todo add some validation
 	if (!groupId.value) return;
 
 	memberNewName.value[userId].processing = true;

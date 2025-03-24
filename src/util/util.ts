@@ -35,3 +35,7 @@ export function getLeftUsersInTransaction(transaction: Transaction, users: Recor
 		(userId) => users[userId].status !== "active"
 	);
 }
+
+export function getRouteParam(qp: string | string[]): string | null {
+	return Array.isArray(qp) ? qp[0] : qp || null;
+}

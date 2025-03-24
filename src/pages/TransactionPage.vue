@@ -13,11 +13,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
+import { useGroup } from "@/composables/useGroup";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
-import { getLeftUsersInTransaction, resolveBalance, splitAmountEven, splitAmountRatio } from "@/util/util";
+import {
+	getLeftUsersInTransaction,
+	getRouteParam,
+	resolveBalance,
+	splitAmountEven,
+	splitAmountRatio,
+} from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -27,7 +34,6 @@ import { useForm } from "vee-validate";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
-import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
@@ -36,10 +42,8 @@ const { toast } = useToast();
 
 const isTransactionUpdating = ref<boolean>(false);
 
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
-const routeTransactionId = Array.isArray(route.params.transactionId)
-	? route.params.transactionId[0]
-	: route.params.transactionId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
+const routeTransactionId = getRouteParam(route.params.transactionId);
 
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () => {
 	if (!groupId.value) return;

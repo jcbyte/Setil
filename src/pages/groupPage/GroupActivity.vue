@@ -23,7 +23,7 @@ import { deleteTransaction } from "@/firebase/firestore";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
-import { getLeftUsersInTransaction } from "@/util/util";
+import { getLeftUsersInTransaction, resolveBalance } from "@/util/util";
 import { Calendar, EllipsisVertical, FilePen, Trash, UserRound } from "lucide-vue-next";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -54,10 +54,6 @@ const sortedTransactions = computed(() => {
 		}
 	);
 });
-
-function calculateTotalTransactionValue(transactionAmounts: Record<string, number>): number {
-	return Object.values(transactionAmounts).reduce((acc, value) => acc + value, 0);
-}
 
 async function handleDeleteTransaction() {
 	startDeleteConfirmDialogProcessing();
@@ -104,7 +100,7 @@ async function handleDeleteTransaction() {
 							</div>
 							<div class="flex justify-center items-center gap-2">
 								<span class="text-lg">
-									{{ formatCurrency(calculateTotalTransactionValue(transaction.to), groupData.currency) }}
+									{{ formatCurrency(resolveBalance(transaction.to), groupData.currency) }}
 								</span>
 								<DropdownMenu>
 									<DropdownMenuTrigger as-child>
