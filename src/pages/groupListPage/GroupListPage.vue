@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import GroupListItem from "@/components/GroupListItem.vue";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
@@ -7,6 +6,7 @@ import { getUserGroups, type ExtendedGroupData } from "@/firebase/firestore";
 import { Plus } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import GroupListItem from "./GroupListItem.vue";
 
 const router = useRouter();
 

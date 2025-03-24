@@ -85,6 +85,7 @@ const recordPaymentPulser = useTemplateRef("record-payment-pulser");
 function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
 	setValues({ from: userPayment.userId, to: userPayment.owedUserId, amount: userPayment.owed });
 
+	// todo scroll to the record payment section
 	recordPaymentPulser.value?.classList.add("pulse");
 	setTimeout(() => recordPaymentPulser.value?.classList.remove("pulse"), 500);
 }
