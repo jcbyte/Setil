@@ -1,9 +1,10 @@
 import { useToast } from "@/components/ui/toast";
+import { useCurrentUser } from "@/composables/useCurrentUser";
+import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "@/firebase/firestore";
+import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { defineStore, storeToRefs } from "pinia";
 import { onMounted, ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
-import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "../firebase/firestore";
-import type { GroupData, GroupUserData, Transaction } from "../firebase/types";
 
 const useGroupStore = defineStore("group", () => {
 	const groupId = ref<string | null>(null);
@@ -39,9 +40,21 @@ export function useGroup(
 
 	const { toast } = useToast();
 	const router = useRouter();
+	const { currentUser } = useCurrentUser();
 
 	// Initially get the group data if it has not already been loaded
 	onMounted(async () => {
+		function errorHome() {
+			toast({
+				title: "Group not found",
+				description: "Ensure you are a member of this group",
+				variant: "destructive",
+				duration: 5000,
+			});
+
+			router.push("/");
+		}
+
 		// If we already have the current groupId, then don't update
 		if (groupId === currentGroupId.value) {
 			afterLoad();
@@ -70,19 +83,20 @@ export function useGroup(
 			groupDataUnsubscribe.value = await getLiveGroupData(groupId, groupData);
 		} catch {
 			// If the group cannot be found then return to the home page
-			toast({
-				title: "Group not found",
-				description: "Ensure you are a member of this group",
-				variant: "destructive",
-				duration: 5000,
-			});
-
-			router.push("/");
+			errorHome();
 			return;
 		}
 
 		// Load users data
 		usersUnsubscribe.value = await getLiveUsers(groupId, users);
+
+		// If the user is not active in the group then return to the home page
+		if (users.value![currentUser.value!.uid].status !== "active") {
+			groupDataUnsubscribe.value();
+			usersUnsubscribe.value();
+			errorHome();
+			return;
+		}
 
 		// Load transactions data
 		transactionsUnsubscribe.value = await getLiveTransactions(groupId, transactions);

@@ -255,21 +255,11 @@ async function getLeftUserStatus(
 }
 
 /**
- * User leaves the group.
- * The users data will not be deleted from the group but they will no longer see it in there menu.
+ * User leaves the group, passing on ownership if required.
  * @param groupId id of the group.
  */
 export async function leaveGroup(groupId: string) {
 	const user = getUser();
-
-	// Set the users status to show they have left
-	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
-	const newStatus = await getLeftUserStatus(groupUserRef, true);
-	if (newStatus) await updateDoc(groupUserRef, { status: newStatus });
-
-	// Remove group from users list so it will not show up
-	const userRef = doc(db, "users", user.uid);
-	await updateDoc(userRef, { groups: arrayRemove(groupId) });
 
 	// If user is owner then pass this to a different user
 	const groupRef = doc(db, "groups", groupId);
@@ -279,17 +269,25 @@ export async function leaveGroup(groupId: string) {
 	if (groupData.owner === user.uid) {
 		// Find an active owner
 		const firestoreUsersRef = collection(db, "groups", groupId, "users");
-		const activeUserQuery = query(firestoreUsersRef, where("status", "==", "active"), limit(1));
+		const activeUserQuery = query(firestoreUsersRef, where("status", "==", "active"), limit(2));
 		const userSnaps = await getDocs(activeUserQuery);
 
-		if (userSnaps.empty) {
+		// Exclude ourselves if we are found as the next possible owner
+		const possibleOwners = userSnaps.docs.filter((doc) => doc.id !== user.uid).map((doc) => doc.id);
+
+		if (possibleOwners.length === 0) {
 			// Delete the group if the are no active users left
 			await deleteGroup(groupId);
 		} else {
 			// Set the owner to the new owner found
-			await updateDoc(groupRef, { owner: userSnaps.docs[0].id });
+			await updateDoc(groupRef, { owner: possibleOwners[0] });
 		}
 	}
+
+	// Set the users status to show they have left
+	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+	const newStatus = await getLeftUserStatus(groupUserRef, true);
+	if (newStatus) await updateDoc(groupUserRef, { status: newStatus });
 }
 
 /**
