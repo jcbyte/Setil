@@ -1,3 +1,4 @@
+import type { BalanceStr } from "@/components/BalanceStrBadge.vue";
 import type { Currency } from "@/firebase/types";
 
 export interface CurrencyData {
@@ -22,11 +23,6 @@ export function formatCurrency(amount: number, currency: Currency): string {
 
 export function toFirestoreAmount(amount: number, currency: Currency): number {
 	return Math.floor(amount * Math.pow(10, CurrencySettings[currency].decimals));
-}
-
-export interface BalanceStr {
-	str: string;
-	status: "positive" | "negative" | "neutral";
 }
 
 export function getBalanceStr(

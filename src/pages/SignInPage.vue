@@ -2,28 +2,7 @@
 import GoogleGLogo from "@/assets/GoogleGLogo.svg";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/toast";
-import { signInWithGoogle } from "@/firebase/auth";
-
-const { toast } = useToast();
-
-function signIn() {
-	const persistentToast = toast({
-		title: "Signing In",
-		description: "Please continue in the popup window.",
-		duration: 0,
-	});
-
-	signInWithGoogle()
-		.then((newUser) => {
-			persistentToast.dismiss();
-			toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 5000 });
-		})
-		.catch((error) => {
-			persistentToast.dismiss();
-			toast({ title: "Error Signing In", description: error.code, variant: "destructive", duration: 5000 });
-		});
-}
+import { signIn } from "@/util/app";
 </script>
 
 <template>
