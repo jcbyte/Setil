@@ -82,12 +82,33 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 
 const recordPaymentPulser = useTemplateRef("record-payment-pulser");
 
-function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
+async function scrollToElement(element: HTMLElement): Promise<void> {
+	return new Promise((resolve) => {
+		element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+		// Create an IntersectionObserver to detect when the element is visible
+		const observer = new IntersectionObserver(
+			(entries, observer) => {
+				if (entries[0].isIntersecting) {
+					// Stop observing and resolve
+					observer.disconnect();
+					resolve();
+				}
+			},
+			{ threshold: 0.5 }
+		);
+
+		observer.observe(element);
+	});
+}
+
+async function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
 	setValues({ from: userPayment.userId, to: userPayment.owedUserId, amount: userPayment.owed });
 
-	// todo scroll to the record payment section
-	recordPaymentPulser.value?.classList.add("pulse");
-	setTimeout(() => recordPaymentPulser.value?.classList.remove("pulse"), 500);
+	if (!recordPaymentPulser.value) return;
+	await scrollToElement(recordPaymentPulser.value);
+	recordPaymentPulser.value.classList.add("pulse");
+	setTimeout(() => recordPaymentPulser.value!.classList.remove("pulse"), 500);
 }
 
 const onSubmit = handleSubmit(async (values) => {

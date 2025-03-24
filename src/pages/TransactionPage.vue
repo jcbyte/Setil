@@ -135,11 +135,6 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 	validationSchema: formSchema,
 });
 
-const dateValue = computed({
-	get: () => (values.date ? parseDate(values.date) : undefined),
-	set: (val) => val,
-});
-
 function resolveBalances(): Record<string, number> {
 	if (!values.to?.people) return {};
 
@@ -170,7 +165,13 @@ function resolveBalances(): Record<string, number> {
 	return {};
 }
 
+const dateValue = computed({
+	get: () => (values.date ? parseDate(values.date) : undefined),
+	set: (val) => val,
+});
+
 const toValue = computed<Record<string, number>>(resolveBalances);
+
 const allSelected = computed<boolean>(
 	() => !Object.values(values.to?.people ?? {}).some((userData) => !userData?.selected)
 );
