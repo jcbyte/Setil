@@ -58,7 +58,7 @@ import {
 	X,
 } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 import { useGroup } from "../composables/useGroup";
@@ -82,26 +82,9 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 });
 
 const isGroupDetailsUpdating = ref<boolean>(false);
+const isMyDisplayNameUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
-const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean }>>({});
-
-function startRename(userId: string) {
-	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
-}
-
-function cancelRename(userId: string) {
-	memberNewName.value[userId].updating = false;
-}
-
-async function acceptRename(userId: string) {
-	// todo add some validation
-	if (!groupId.value) return;
-
-	memberNewName.value[userId].processing = true;
-	await changeUserName(groupId.value, userId, memberNewName.value[userId].name);
-	memberNewName.value[userId].updating = false;
-}
 
 const {
 	open: leaveDialogOpen,
@@ -127,8 +110,6 @@ const {
 	closeDialog: closePromoteDialog,
 	data: promoteDialogData,
 } = useControlledDialog<{ userId: string }>();
-
-const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -172,20 +153,21 @@ const onSubmit = handleSubmit(async (values) => {
 	}
 });
 
+const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
+
 const myDisplayName = ref<string | undefined>();
 const myDisplayNameErrors = ref<string | undefined>();
-const myDisplayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
-const isMyDisplayNameUpdating = ref<boolean>(false);
+const displayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
 
-watch(myDisplayName, () => {
-	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+function validateMyDisplayName() {
+	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
 	myDisplayNameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
-});
+}
 
 async function updateDisplayName() {
 	if (!groupId.value) return;
 
-	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
 	if (!parsedName.success) return;
 
 	isMyDisplayNameUpdating.value = true;
@@ -201,12 +183,32 @@ async function updateDisplayName() {
 	});
 }
 
-async function removeMember(userId: string) {
+const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean; errors?: string }>>(
+	{}
+);
+
+function validateMemberName(userId: string) {
+	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	memberNewName.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
+}
+
+function startRename(userId: string) {
+	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
+}
+
+function cancelRename(userId: string) {
+	memberNewName.value[userId].updating = false;
+}
+
+async function acceptRename(userId: string) {
 	if (!groupId.value) return;
 
-	isUpdatingMember.value.push(userId);
-	await removeUser(groupId.value, userId);
-	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
+	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	if (!parsedName.success) return;
+
+	memberNewName.value[userId].processing = true;
+	await changeUserName(groupId.value, userId, parsedName.data);
+	memberNewName.value[userId].updating = false;
 }
 
 async function promoteMember() {
@@ -223,6 +225,14 @@ async function promoteMember() {
 		description: "Long live the new king.",
 		duration: 5000,
 	});
+}
+
+async function removeMember(userId: string) {
+	if (!groupId.value) return;
+
+	isUpdatingMember.value.push(userId);
+	await removeUser(groupId.value, userId);
+	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
 async function addMember() {
@@ -367,6 +377,7 @@ async function deleteGroup() {
 									type="text"
 									placeholder="Name"
 									:disabled="isMyDisplayNameUpdating"
+									@update:model-value="validateMyDisplayName"
 								/>
 								<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
 									<UserRound class="size-4" />
@@ -407,25 +418,31 @@ async function deleteGroup() {
 										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
 									</span>
 								</div>
-								<div v-else class="flex-1 flex gap-2">
-									<Input
-										v-model:model-value="memberNewName[userId].name"
-										autocomplete="off"
-										type="text"
-										placeholder="Name"
-										:disabled="memberNewName[userId].processing"
-									/>
-									<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
-										<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
-									</Button>
-									<Button
-										variant="outline"
-										class="size-9"
-										@click="cancelRename(userId)"
-										:disabled="memberNewName[userId].processing"
-									>
-										<X />
-									</Button>
+								<div v-else class="flex-1 flex flex-col gap-2">
+									<div class="flex gap-2">
+										<Input
+											v-model:model-value="memberNewName[userId].name"
+											autocomplete="off"
+											type="text"
+											placeholder="Name"
+											:disabled="memberNewName[userId].processing"
+											@update:model-value="validateMemberName(userId)"
+										/>
+										<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
+											<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
+										</Button>
+										<Button
+											variant="outline"
+											class="size-9"
+											@click="cancelRename(userId)"
+											:disabled="memberNewName[userId].processing"
+										>
+											<X />
+										</Button>
+									</div>
+									<span v-if="memberNewName[userId]?.errors ?? false" class="text-[12.8px] text-destructive">
+										{{ memberNewName[userId].errors }}
+									</span>
 								</div>
 							</div>
 							<DropdownMenu v-if="currentUser?.uid === groupData?.owner && !(memberNewName[userId]?.updating ?? false)">
