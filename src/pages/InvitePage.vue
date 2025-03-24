@@ -41,8 +41,10 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="flex flex-col items-center justify-center gap-4 border border-border p-8 min-w-80 rounded-lg">
-		<Loader class="animate-spin !size-12" />
-		<span class="text-muted-foreground font-semibold">Validating Invite Link</span>
+	<div class="flex items-center justify-center">
+		<div class="flex flex-col items-center justify-center gap-4 border border-border p-8 min-w-80 rounded-lg">
+			<Loader class="animate-spin !size-12" />
+			<span class="text-muted-foreground font-semibold">Validating Invite Link</span>
+		</div>
 	</div>
 </template>
