@@ -40,6 +40,7 @@ import type { GroupUserData } from "@/firebase/types";
 import { type Currency } from "@/firebase/types";
 import { inviteUser } from "@/util/app";
 import { CurrencySettings } from "@/util/currency";
+import { getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import {
@@ -57,14 +58,14 @@ import {
 	X,
 } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
 const { currentUser } = useCurrentUser();
 const { toast } = useToast();
 
@@ -81,25 +82,9 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 });
 
 const isGroupDetailsUpdating = ref<boolean>(false);
+const isMyDisplayNameUpdating = ref<boolean>(false);
 const isAddingMember = ref<boolean>(false);
 const isUpdatingMember = ref<string[]>([]);
-const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean }>>({});
-
-function startRename(userId: string) {
-	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
-}
-
-function cancelRename(userId: string) {
-	memberNewName.value[userId].updating = false;
-}
-
-async function acceptRename(userId: string) {
-	if (!groupId.value) return;
-
-	memberNewName.value[userId].processing = true;
-	await changeUserName(groupId.value, userId, memberNewName.value[userId].name);
-	memberNewName.value[userId].updating = false;
-}
 
 const {
 	open: leaveDialogOpen,
@@ -125,8 +110,6 @@ const {
 	closeDialog: closePromoteDialog,
 	data: promoteDialogData,
 } = useControlledDialog<{ userId: string }>();
-
-const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -170,20 +153,21 @@ const onSubmit = handleSubmit(async (values) => {
 	}
 });
 
+const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
+
 const myDisplayName = ref<string | undefined>();
 const myDisplayNameErrors = ref<string | undefined>();
-const myDisplayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
-const isMyDisplayNameUpdating = ref<boolean>(false);
+const displayNameValidation = z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters");
 
-watch(myDisplayName, () => {
-	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+function validateMyDisplayName() {
+	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
 	myDisplayNameErrors.value = parsedName.success ? undefined : parsedName.error.issues[0].message;
-});
+}
 
 async function updateDisplayName() {
 	if (!groupId.value) return;
 
-	const parsedName = myDisplayNameValidation.safeParse(myDisplayName.value);
+	const parsedName = displayNameValidation.safeParse(myDisplayName.value);
 	if (!parsedName.success) return;
 
 	isMyDisplayNameUpdating.value = true;
@@ -199,12 +183,32 @@ async function updateDisplayName() {
 	});
 }
 
-async function removeMember(userId: string) {
+const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean; errors?: string }>>(
+	{}
+);
+
+function validateMemberName(userId: string) {
+	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	memberNewName.value[userId].errors = parsedName.success ? undefined : parsedName.error.issues[0].message;
+}
+
+function startRename(userId: string) {
+	memberNewName.value[userId] = { updating: true, name: users.value![userId].name, processing: false };
+}
+
+function cancelRename(userId: string) {
+	memberNewName.value[userId].updating = false;
+}
+
+async function acceptRename(userId: string) {
 	if (!groupId.value) return;
 
-	isUpdatingMember.value.push(userId);
-	await removeUser(groupId.value, userId);
-	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
+	const parsedName = displayNameValidation.safeParse(memberNewName.value[userId].name);
+	if (!parsedName.success) return;
+
+	memberNewName.value[userId].processing = true;
+	await changeUserName(groupId.value, userId, parsedName.data);
+	memberNewName.value[userId].updating = false;
 }
 
 async function promoteMember() {
@@ -221,6 +225,14 @@ async function promoteMember() {
 		description: "Long live the new king.",
 		duration: 5000,
 	});
+}
+
+async function removeMember(userId: string) {
+	if (!groupId.value) return;
+
+	isUpdatingMember.value.push(userId);
+	await removeUser(groupId.value, userId);
+	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
 async function addMember() {
@@ -365,6 +377,7 @@ async function deleteGroup() {
 									type="text"
 									placeholder="Name"
 									:disabled="isMyDisplayNameUpdating"
+									@update:model-value="validateMyDisplayName"
 								/>
 								<span class="absolute left-0 inset-y-0 flex items-center justify-center px-2 text-muted-foreground">
 									<UserRound class="size-4" />
@@ -391,81 +404,89 @@ async function deleteGroup() {
 							v-for="(user, userId) in Object.fromEntries(
 							Object.entries(users).filter(([, user]) => user.status !== 'history')
 						) as Record<string, GroupUserData>"
-							class="flex justify-between items-center gap-2"
+							class="flex flex-col gap-2"
 						>
-							<div class="flex items-center gap-2 flex-1">
-								<Avatar
-									:src="user.photoURL"
-									:name="user.name"
-									:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
-								/>
-								<div v-if="!(memberNewName[userId]?.updating ?? false)" class="flex flex-col">
-									<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
-									<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
-										{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
-									</span>
-								</div>
-								<div v-else class="flex-1 flex gap-2">
-									<Input
-										v-model:model-value="memberNewName[userId].name"
-										autocomplete="off"
-										type="text"
-										placeholder="Name"
-										:disabled="memberNewName[userId].processing"
+							<div class="flex justify-between items-center gap-2">
+								<div class="flex items-center gap-2 flex-1">
+									<Avatar
+										:src="user.photoURL"
+										:name="user.name"
+										:class="`size-9 ${user.status === 'left' && 'opacity-70'}`"
 									/>
-									<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
-										<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
-									</Button>
-									<Button
-										variant="outline"
-										class="size-9"
-										@click="cancelRename(userId)"
-										:disabled="memberNewName[userId].processing"
-									>
-										<X />
-									</Button>
-								</div>
-							</div>
-							<DropdownMenu v-if="currentUser?.uid === groupData?.owner && !(memberNewName[userId]?.updating ?? false)">
-								<DropdownMenuTrigger as-child>
-									<Button
-										variant="outline"
-										:disabled="
-											userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
-										"
-									>
-										<LoaderIcon
-											v-if="user.status === 'active' && userId !== groupData?.owner"
-											:icon="ChevronDown"
-											:loading="isUpdatingMember.includes(userId)"
-										/>
-										<span>
-											{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+									<div v-if="!(memberNewName[userId]?.updating ?? false)" class="flex flex-col">
+										<span :class="`${user.status === 'left' && 'text-muted-foreground'}`">{{ user.name }}</span>
+										<span :class="`text-sm text-muted-foreground ${user.status !== 'active' && 'italic'}`">
+											{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Member") : "Left Group" }}
 										</span>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent>
-									<DropdownMenuItem @click="startRename(userId)">
-										<div class="w-full flex justify-between items-center">
-											<span>Rename</span>
-											<Pencil class="!size-5" />
-										</div>
-									</DropdownMenuItem>
-									<DropdownMenuItem @click="openPromoteDialog({ userId })">
-										<div class="w-full flex justify-between items-center">
-											<span>Promote</span>
-											<ArrowBigUpDash class="!size-5" />
-										</div>
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem @click="removeMember(userId)">
-										<div class="w-full flex justify-between items-center">
-											<span class="text-red-400">Remove</span>
-											<Trash class="text-red-400 !size-5" />
-										</div>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+									</div>
+									<div v-else class="flex-1 flex gap-2">
+										<Input
+											v-model:model-value="memberNewName[userId].name"
+											autocomplete="off"
+											type="text"
+											placeholder="Name"
+											:disabled="memberNewName[userId].processing"
+											@update:model-value="validateMemberName(userId)"
+										/>
+										<Button class="size-9" @click="acceptRename(userId)" :disabled="memberNewName[userId].processing">
+											<LoaderIcon :icon="Check" :loading="memberNewName[userId].processing" />
+										</Button>
+										<Button
+											variant="outline"
+											class="size-9"
+											@click="cancelRename(userId)"
+											:disabled="memberNewName[userId].processing"
+										>
+											<X />
+										</Button>
+									</div>
+								</div>
+								<DropdownMenu
+									v-if="currentUser?.uid === groupData?.owner && !(memberNewName[userId]?.updating ?? false)"
+								>
+									<DropdownMenuTrigger as-child>
+										<Button
+											variant="outline"
+											:disabled="
+												userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
+											"
+										>
+											<LoaderIcon
+												v-if="user.status === 'active' && userId !== groupData?.owner"
+												:icon="ChevronDown"
+												:loading="isUpdatingMember.includes(userId)"
+											/>
+											<span>
+												{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+											</span>
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent>
+										<DropdownMenuItem @click="startRename(userId)">
+											<div class="w-full flex justify-between items-center">
+												<span>Rename</span>
+												<Pencil class="!size-5" />
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuItem @click="openPromoteDialog({ userId })">
+											<div class="w-full flex justify-between items-center">
+												<span>Promote</span>
+												<ArrowBigUpDash class="!size-5" />
+											</div>
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem @click="removeMember(userId)">
+											<div class="w-full flex justify-between items-center">
+												<span class="text-red-400">Remove</span>
+												<Trash class="text-red-400 !size-5" />
+											</div>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
+							<span v-if="memberNewName[userId]?.errors ?? false" class="text-[12.8px] ml-11 text-destructive">
+								{{ memberNewName[userId].errors }}
+							</span>
 						</div>
 
 						<Button variant="outline" :disabled="isAddingMember" @click="addMember">

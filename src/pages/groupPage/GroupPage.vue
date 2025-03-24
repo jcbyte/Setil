@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import GroupActivity from "@/components/GroupActivity.vue";
-import GroupSummary from "@/components/GroupSummary.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,14 +8,17 @@ import Tabs from "@/components/ui/tabs/Tabs.vue";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
 import { inviteUser } from "@/util/app";
+import { getRouteParam } from "@/util/util";
 import { ArrowLeft, ReceiptText, Settings, UserRoundPlus, Wallet } from "lucide-vue-next";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import GroupActivity from "./GroupActivity.vue";
+import GroupSummary from "./GroupSummary.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
 const currentTab = ref(

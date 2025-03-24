@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
-import BalanceStrBadge from "@/components/BalanceStrBadge.vue";
+import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -13,8 +13,8 @@ import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, getBalanceStr, toFirestoreAmount, type BalanceStr } from "@/util/currency";
-import { getLeftUsersInTransaction } from "@/util/util";
+import { CurrencySettings, getBalanceStr, toFirestoreAmount } from "@/util/currency";
+import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
 import { ArrowDown, ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
@@ -29,7 +29,7 @@ const route = useRoute();
 const { currentUser } = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
-const routeGroupId = Array.isArray(route.params.groupId) ? route.params.groupId[0] : route.params.groupId || null;
+const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	setFieldValue("from", currentUser.value!.uid);
 });
@@ -82,11 +82,33 @@ const { isFieldDirty, handleSubmit, setValues, values, setFieldValue } = useForm
 
 const recordPaymentPulser = useTemplateRef("record-payment-pulser");
 
-function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
+async function scrollToElement(element: HTMLElement): Promise<void> {
+	return new Promise((resolve) => {
+		element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+		// Create an IntersectionObserver to detect when the element is visible
+		const observer = new IntersectionObserver(
+			(entries, observer) => {
+				if (entries[0].isIntersecting) {
+					// Stop observing and resolve
+					observer.disconnect();
+					resolve();
+				}
+			},
+			{ threshold: 0.5 }
+		);
+
+		observer.observe(element);
+	});
+}
+
+async function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
 	setValues({ from: userPayment.userId, to: userPayment.owedUserId, amount: userPayment.owed });
 
-	recordPaymentPulser.value?.classList.add("pulse");
-	setTimeout(() => recordPaymentPulser.value?.classList.remove("pulse"), 500);
+	if (!recordPaymentPulser.value) return;
+	await scrollToElement(recordPaymentPulser.value);
+	recordPaymentPulser.value.classList.add("pulse");
+	setTimeout(() => recordPaymentPulser.value!.classList.remove("pulse"), 500);
 }
 
 const onSubmit = handleSubmit(async (values) => {

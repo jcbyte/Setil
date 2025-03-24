@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import GroupDetailsPage from "./pages/GroupDetailsPage.vue";
-import GroupListPage from "./pages/GroupListPage.vue";
-import GroupPage from "./pages/GroupPage.vue";
+import GroupListPage from "./pages/groupListPage/GroupListPage.vue";
+import GroupPage from "./pages/groupPage/GroupPage.vue";
 import InvitePage from "./pages/InvitePage.vue";
 import NotFoundPage from "./pages/NotFoundPage.vue";
 import SettleUpPage from "./pages/SettleUpPage.vue";
