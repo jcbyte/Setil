@@ -20,7 +20,7 @@ export interface GroupUserData {
 	name: string;
 	photoURL: string | null;
 	status: "active" | "left" | "history";
-	balance: Record<string, number>;
+	balance: number;
 	lastUpdate: Timestamp;
 }
 

@@ -3,7 +3,6 @@ import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import type { GroupData, GroupUserData } from "@/firebase/types";
 import { getBalanceStr } from "@/util/currency";
-import { resolveBalance } from "@/util/util";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -16,7 +15,7 @@ const usersBalanceStr = computed<Record<string, BalanceStr>>(() => {
 		Object.entries(props.users).map(([userId, user]) => [
 			userId,
 			getBalanceStr(
-				resolveBalance(user.balance),
+				user.balance,
 				props.groupData.currency,
 				(b) => `is owed ${b}`,
 				(b) => `owes ${b}`,

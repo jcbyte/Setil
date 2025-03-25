@@ -23,6 +23,8 @@ import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
 
+// !! THIS WILL CURRENTLY NOT WORK WITH NEW BALANCE SETUP
+
 const router = useRouter();
 const route = useRoute();
 
