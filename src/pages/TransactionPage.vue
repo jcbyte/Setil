@@ -185,15 +185,20 @@ const onSubmit = handleSubmit(async (values) => {
 
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
 
-	if (routeTransactionId) {
-		await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
-		toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
-	} else {
-		await createTransaction(groupId.value, transaction, leftUsers);
-		toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
+	try {
+		if (routeTransactionId) {
+			await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
+			toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
+		} else {
+			await createTransaction(groupId.value, transaction, leftUsers);
+			toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
+		}
+
+		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+	} catch (e) {
+		toast({ title: "Error Saving Expense Details", description: String(e), variant: "destructive", duration: 5000 });
 	}
 
-	router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	isTransactionUpdating.value = false;
 });
 </script>

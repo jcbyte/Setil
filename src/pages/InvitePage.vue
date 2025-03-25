@@ -14,18 +14,14 @@ const routeGroupId = getRouteParam(route.params.groupId);
 const routeInviteCode = getRouteParam(route.params.inviteCode);
 
 onMounted(async () => {
-	function errorHome() {
+	if (!routeGroupId || !routeInviteCode) {
 		toast({
 			title: "Could not join Group",
-			description: "Ensure this is a valid link and that it has not expired.",
+			description: "Ensure this is a valid link.",
 			variant: "destructive",
 			duration: 5000,
 		});
 		router.push(`/`);
-	}
-
-	if (!routeGroupId || !routeInviteCode) {
-		errorHome();
 		return;
 	}
 
@@ -34,7 +30,13 @@ onMounted(async () => {
 		toast({ title: "Joined group", description: "Time to make cents of things.", duration: 5000 });
 		router.push(`/group/${routeGroupId}`);
 	} else {
-		errorHome();
+		toast({
+			title: "Could not join Group",
+			description: "Ensure this link has not expired.",
+			variant: "destructive",
+			duration: 5000,
+		});
+		router.push(`/`);
 		return;
 	}
 });
