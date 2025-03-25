@@ -1,3 +1,4 @@
+import type { User } from "firebase/auth";
 import {
 	addDoc,
 	arrayUnion,
@@ -14,12 +15,22 @@ import {
 	Timestamp,
 	updateDoc,
 	where,
+	writeBatch,
+	WriteBatch,
 } from "firebase/firestore";
 import { app } from "../firebase";
 import type { GroupData, GroupUserData, Invite, UserData } from "../types";
 import { getLeftUserStatus, getUser } from "./util";
 
 const db = getFirestore(app);
+
+const templateNewUser = (user: User): GroupUserData => ({
+	name: user.displayName ?? "Unknown User",
+	photoURL: user.photoURL,
+	status: "active",
+	balance: 0,
+	lastUpdate: Timestamp.now(),
+});
 
 /**
  * Create a new group and add the user to it.
@@ -35,14 +46,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 
 	// Add the user to the group
 	const groupUsersRef = doc(groupRef, "users", user.uid);
-	const groupUserData: GroupUserData = {
-		name: user.displayName ?? "Unknown User",
-		photoURL: user.photoURL,
-		status: "active",
-		balance: 0,
-		lastUpdate: Timestamp.now(),
-	};
-	await setDoc(groupUsersRef, groupUserData);
+	await setDoc(groupUsersRef, templateNewUser(user));
 
 	// Add the group to the user
 	const userRef = doc(db, "users", user.uid);
@@ -61,7 +65,12 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 export async function updateGroup(groupId: string, groupData: Partial<Omit<GroupData, "owner">>): Promise<void> {
 	// Update the group
 	const groupRef = doc(db, "groups", groupId);
-	await updateDoc(groupRef, groupData);
+
+	try {
+		await updateDoc(groupRef, groupData);
+	} catch (e) {
+		throw `Could not update group: ${e}`;
+	}
 }
 
 /**
@@ -72,7 +81,12 @@ export async function deleteGroup(groupId: string) {
 	// Delete the group
 	// The group will be removed from other users groups when they call `getUserGroups`
 	const groupRef = doc(db, "groups", groupId);
-	await deleteDoc(groupRef);
+
+	try {
+		await deleteDoc(groupRef);
+	} catch (e) {
+		throw `Could not delete group: ${e}`;
+	}
 }
 
 /**
@@ -89,9 +103,12 @@ export async function invite(groupId: string, expiry: number): Promise<string> {
 		expiry: Timestamp.fromMillis(Date.now() + expiry),
 	};
 
-	const inviteRef = await addDoc(groupInvitesRef, inviteData);
-
-	return inviteRef.id;
+	try {
+		const inviteRef = await addDoc(groupInvitesRef, inviteData);
+		return inviteRef.id;
+	} catch (e) {
+		throw `Could not create invite link: ${e}`;
+	}
 }
 
 /**
@@ -99,20 +116,16 @@ export async function invite(groupId: string, expiry: number): Promise<string> {
  * @param groupId id of the group.
  */
 export async function cleanupInvites(groupId: string): Promise<void> {
-	const groupInvitesRef = collection(db, "groups", groupId, "invites");
-
-	const invitesSnap = await getDocs(groupInvitesRef);
-
 	// Find all expired invites
-	const now = Date.now();
-	const expiredInvites = invitesSnap.docs
-		.filter((inviteSnap) => (inviteSnap.data() as Invite).expiry.toMillis() < now)
-		.map((expiredInvite) => expiredInvite.ref);
+	const now = Timestamp.now();
+	const groupInvitesRef = collection(db, "groups", groupId, "invites");
+	const expiredInvitesQuery = query(groupInvitesRef, where("expiry", "<", now));
+	const expiredInvitesSnap = await getDocs(expiredInvitesQuery);
 
 	// Delete each of these
-	for (const expiredInvite of expiredInvites) {
-		deleteDoc(expiredInvite);
-	}
+	const batch: WriteBatch = writeBatch(db);
+	expiredInvitesSnap.forEach((doc) => batch.delete(doc.ref));
+	await batch.commit();
 }
 
 /**
@@ -138,7 +151,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	// Add ourselves to the group
 	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
 
-	// Return true if user is already part of the group
+	// Check if the user had previously been part of the group
 	try {
 		const userSnap = await getDoc(groupUserRef);
 		if (userSnap.exists()) {
@@ -151,19 +164,13 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	} catch {}
 
 	// Join the group
-	const groupUserData: GroupUserData = {
-		name: user.displayName ?? "Unknown User",
-		photoURL: user.photoURL,
-		status: "active",
-		balance: 0,
-		lastUpdate: Timestamp.now(),
-	};
 	try {
-		await setDoc(groupUserRef, { ...groupUserData, customData: { inviteCode } });
+		await setDoc(groupUserRef, { ...templateNewUser(user), customData: { inviteCode } });
 
-		// If this passes then the user is added to the group so now we remove there custom data
+		// Remove the custom data, required to add a doc into the group
 		await updateDoc(groupUserRef, { customData: deleteField() });
 	} catch {
+		// If joined failed return false
 		return false;
 	}
 

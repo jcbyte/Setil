@@ -32,10 +32,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	const newUserTemplate: UserData = {
-		groups: [],
-	};
-	await setDoc(userRef, structuredClone(newUserTemplate));
+	await setDoc(userRef, { groups: [] } as UserData);
 	return true;
 }
 
@@ -56,6 +53,7 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 
 	const userRef = doc(db, "users", user.uid);
 	const userDocSnap = await getDoc(userRef);
+
 	// Throw if the user data has not been initialised
 	if (!userDocSnap.exists()) throw new Error("User data does not exist");
 
@@ -81,9 +79,6 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 
 					// Get the extended group data
 					const groupUsersRef = collection(groupRef, "users");
-					const usersCount = await getCountFromServer(groupUsersRef);
-					const topUsersQuery = query(groupUsersRef, orderBy("lastUpdate"), limit(3));
-					const topUsersSnap = await getDocs(topUsersQuery);
 
 					const myselfSnap = await getDoc(doc(groupUsersRef, user.uid));
 					const myselfData = myselfSnap.data() as GroupUserData;
@@ -93,6 +88,11 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 						unknownGroups.push(id);
 						return null;
 					}
+
+					// Get the last 3 active users to display
+					const usersCount = await getCountFromServer(groupUsersRef);
+					const topUsersQuery = query(groupUsersRef, orderBy("lastUpdate"), limit(3));
+					const topUsersSnap = await getDocs(topUsersQuery);
 
 					const data: ExtendedGroupData = {
 						...baseGroupData,
