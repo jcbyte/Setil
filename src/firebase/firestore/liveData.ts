@@ -1,4 +1,4 @@
-import { collection, doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { collection, CollectionReference, doc, getFirestore, onSnapshot } from "firebase/firestore";
 import type { Ref } from "vue";
 import { app } from "../firebase";
 import type { GroupData, GroupUserData, Transaction } from "../types";
@@ -24,15 +24,42 @@ export async function getLiveGroupData(groupId: string, groupDataRef: Ref<GroupD
 			(doc) => {
 				if (doc.exists()) {
 					groupDataRef.value = doc.data() as GroupData;
+
 					// Only continue once data has been first loaded
 					resolve(unsubscribe);
 				} else {
 					reject(new Error(`Group ${groupId} does not exist.`));
 				}
 			},
-			(e) => {
-				reject(new Error(`Error ${e.message}.`));
-			}
+			(e) => reject(e)
+		);
+	});
+}
+
+async function getLiveCollection<T>(
+	collectionRef: CollectionReference,
+	vueRef: Ref<Record<string, T> | null>
+): Promise<() => void> {
+	// Initialize vueRef with an empty object to reset it
+	vueRef.value = {} as Record<string, T>;
+
+	return new Promise<() => void>((resolve, reject) => {
+		// Setup listener to update ref
+		const unsubscribe = onSnapshot(
+			collectionRef,
+			(snap) => {
+				snap.docChanges().forEach((change) => {
+					if (change.type === "added" || change.type === "modified") {
+						vueRef.value![change.doc.id] = change.doc.data() as T;
+					} else if (change.type === "removed") {
+						delete vueRef.value![change.doc.id];
+					}
+				});
+
+				// Only continue once data has been first loaded
+				resolve(unsubscribe);
+			},
+			(e) => reject(e.message)
 		);
 	});
 }
@@ -47,30 +74,8 @@ export async function getLiveTransactions(
 	groupId: string,
 	transactionsRef: Ref<Record<string, Transaction> | null>
 ): Promise<() => void> {
-	// Clear the transactions ref to reset it
-	transactionsRef.value = null;
-
 	const firestoreTransactionsRef = collection(db, "groups", groupId, "transactions");
-
-	// Initialise transactions if they have not been yet
-	if (!transactionsRef.value) transactionsRef.value = {};
-
-	return await new Promise<() => void>((resolve) => {
-		// Setup listener to update ref
-
-		const unsubscribe = onSnapshot(firestoreTransactionsRef, (snap) => {
-			snap.docChanges().forEach((change) => {
-				if (change.type === "added" || change.type === "modified") {
-					transactionsRef.value![change.doc.id] = change.doc.data() as Transaction;
-				} else if (change.type === "removed") {
-					delete transactionsRef.value![change.doc.id];
-				}
-			});
-
-			// Only continue once data has been first loaded
-			resolve(unsubscribe);
-		});
-	});
+	return getLiveCollection(firestoreTransactionsRef, transactionsRef);
 }
 
 /**
@@ -83,28 +88,6 @@ export async function getLiveUsers(
 	groupId: string,
 	usersRef: Ref<Record<string, GroupUserData> | null>
 ): Promise<() => void> {
-	// Clear the users ref to reset it
-	usersRef.value = null;
-
 	const firestoreUsersRef = collection(db, "groups", groupId, "users");
-
-	// Initialise users if they have not been yet
-	if (!usersRef.value) usersRef.value = {};
-
-	return await new Promise<() => void>((resolve) => {
-		// Setup listener to update ref
-
-		const unsubscribe = onSnapshot(firestoreUsersRef, (snap) => {
-			snap.docChanges().forEach((change) => {
-				if (change.type === "added" || change.type === "modified") {
-					usersRef.value![change.doc.id] = change.doc.data() as GroupUserData;
-				} else if (change.type === "removed") {
-					delete usersRef.value![change.doc.id];
-				}
-			});
-
-			// Only continue once data has been first loaded
-			resolve(unsubscribe);
-		});
-	});
+	return getLiveCollection(firestoreUsersRef, usersRef);
 }
