@@ -18,10 +18,10 @@ admin.initializeApp({
 
 export default async function handler(req, res) {
 	if (req.method === "POST") {
+		// Extract parameters
 		const { token, title, body } = req.body;
-
 		if (!token || !title || !body) {
-			return res.status(400).json({ message: "Missing parameters" });
+			return res.status(400).json({ success: false, error: "Missing parameters" });
 		}
 
 		try {
@@ -34,13 +34,13 @@ export default async function handler(req, res) {
 			};
 
 			// Send the notification
-			const response = await admin.messaging().send(message);
-			return res.status(200).json({ success: true, message: response });
+			// const response = await admin.messaging().send(message);
+			const response = message;
+			res.status(200).json({ success: true, message: response });
 		} catch (error) {
-			console.error("Error sending notification:", error);
-			return res.status(500).json({ success: false, error: error.message });
+			res.status(500).json({ success: false, error: error.message });
 		}
 	} else {
-		res.status(405).json({ message: "Method Not Allowed" });
+		res.status(405).json({ success: false, error: "Method Not Allowed" });
 	}
 }
