@@ -34,9 +34,8 @@ export default async function handler(req, res) {
 			};
 
 			// Send the notification
-			// const response = await admin.messaging().send(message);
-			const response = message;
-			res.status(200).json({ success: true, message: response });
+			await admin.messaging().send(message);
+			res.status(200).json({ success: true });
 		} catch (error) {
 			res.status(500).json({ success: false, error: error.message });
 		}
