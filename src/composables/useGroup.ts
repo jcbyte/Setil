@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/toast";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "@/firebase/firestore";
+import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "@/firebase/firestore/liveData";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { defineStore, storeToRefs } from "pinia";
 import { onMounted, ref, type Ref } from "vue";

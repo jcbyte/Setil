@@ -11,7 +11,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
-import { createTransaction } from "@/firebase/firestore";
+import { createTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction } from "@/firebase/types";
 import { CurrencySettings, fromFirestoreAmount, getBalanceStr, toFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";

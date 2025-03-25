@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
-import { createTransaction, updateTransaction } from "@/firebase/firestore";
+import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";

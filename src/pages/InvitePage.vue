@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useToast } from "@/components/ui/toast";
-import { joinGroup } from "@/firebase/firestore";
+import { joinGroup } from "@/firebase/firestore/group";
 import { getRouteParam } from "@/util/util";
 import { Loader } from "lucide-vue-next";
 import { onMounted } from "vue";

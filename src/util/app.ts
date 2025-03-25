@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/toast";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
-import { cleanupInvites, invite } from "@/firebase/firestore";
+import { cleanupInvites, invite } from "@/firebase/firestore/group";
 
 export function signIn() {
 	const { toast } = useToast();

@@ -35,7 +35,7 @@ import {
 	promoteUser,
 	removeUser,
 	updateGroup,
-} from "@/firebase/firestore";
+} from "@/firebase/firestore/group";
 import type { GroupUserData } from "@/firebase/types";
 import { type Currency } from "@/firebase/types";
 import { inviteUser } from "@/util/app";

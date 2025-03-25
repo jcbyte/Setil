@@ -19,7 +19,7 @@ import {
 import Separator from "@/components/ui/separator/Separator.vue";
 import { useToast } from "@/components/ui/toast";
 import { useControlledDialog } from "@/composables/useControlledDialog";
-import { deleteTransaction } from "@/firebase/firestore";
+import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
