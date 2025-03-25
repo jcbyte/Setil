@@ -59,11 +59,14 @@ async function handleDeleteTransaction() {
 	startDeleteConfirmDialogProcessing();
 
 	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value!.transactionId], props.users);
-	await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
+	try {
+		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
+		toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
+	} catch (e) {
+		toast({ title: "Error deleting expense", description: String(e), variant: "destructive", duration: 5000 });
+	}
 
 	closeDeleteConfirmDialog();
-
-	toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
 }
 </script>
 

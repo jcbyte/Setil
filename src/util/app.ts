@@ -35,6 +35,8 @@ export function signOut() {
 }
 
 export async function inviteUser(groupId: string, groupName: string) {
+	// todo add error handling
+
 	// Cleanup old invites
 	await cleanupInvites(groupId);
 
