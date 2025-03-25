@@ -188,10 +188,14 @@ const onSubmit = handleSubmit(async (values) => {
 	try {
 		if (routeTransactionId) {
 			await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
-			toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
+			toast({
+				title: "Expense Details Updated",
+				description: "Your expense got a makeover, and it's ready to slay.",
+				duration: 5000,
+			});
 		} else {
 			await createTransaction(groupId.value, transaction, leftUsers);
-			toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
+			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
 		}
 
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });

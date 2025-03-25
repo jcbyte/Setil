@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useControlledDialog } from "@/composables/useControlledDialog";
 import { useCurrentUser } from "@/composables/useCurrentUser";
+import { useGroup } from "@/composables/useGroup";
 import {
 	changeUserName,
 	createGroup,
@@ -61,7 +62,6 @@ import { useForm } from "vee-validate";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import * as z from "zod";
-import { useGroup } from "../composables/useGroup";
 
 const router = useRouter();
 const route = useRoute();
@@ -136,7 +136,7 @@ const onSubmit = handleSubmit(async (values) => {
 				currency: values.currency as Currency,
 			});
 
-			toast({ title: "Group Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
+			toast({ title: "Group Details Updated", description: "Like a fresh coat of paint.", duration: 5000 });
 		} else {
 			const newGroupId = await createGroup({
 				name: values.name,
@@ -145,7 +145,7 @@ const onSubmit = handleSubmit(async (values) => {
 				lastUpdate: Timestamp.now(),
 			});
 
-			toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
+			toast({ title: "Group Created", description: "A fellowship of finances has been forged.", duration: 5000 });
 			router.push(`/group/${newGroupId}`);
 		}
 	} catch (e) {
@@ -178,12 +178,12 @@ async function updateDisplayName() {
 		await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
 
 		toast({
-			title: "Display Name Updated",
+			title: "Name Updated",
 			description: "And just like that... a new legend is born!",
 			duration: 5000,
 		});
 	} catch (e) {
-		toast({ title: "Error UPdating Name", description: String(e), variant: "destructive", duration: 5000 });
+		toast({ title: "Error Updating Name", description: String(e), variant: "destructive", duration: 5000 });
 	}
 
 	isMyDisplayNameUpdating.value = false;
@@ -217,12 +217,17 @@ async function acceptRename(userId: string) {
 	try {
 		await changeUserName(groupId.value, userId, parsedName.data);
 		toast({
-			title: "Member's Display Name Updated",
-			description: "ttofdo!",
+			title: `${users.value![userId].name}'s Name Updated`,
+			description: "Identity crisis averted.",
 			duration: 5000,
 		});
 	} catch (e) {
-		toast({ title: "Error Updating Name", description: String(e), variant: "destructive", duration: 5000 });
+		toast({
+			title: `Error Updating ${users.value![userId].name}'s Name`,
+			description: String(e),
+			variant: "destructive",
+			duration: 5000,
+		});
 	}
 
 	memberNewName.value[userId].updating = false;
@@ -259,7 +264,11 @@ async function removeMember(userId: string) {
 
 	try {
 		await removeUser(groupId.value, userId);
-		toast({ title: `Removed ${users.value![userId].name}`, description: "String(e)", duration: 5000 });
+		toast({
+			title: `Removed ${users.value![userId].name}`,
+			description: "They've been erased from existence... well, at least the group.",
+			duration: 5000,
+		});
 	} catch (e) {
 		toast({
 			title: `Error Removing ${users.value![userId].name}`,

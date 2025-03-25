@@ -16,7 +16,7 @@ const routeInviteCode = getRouteParam(route.params.inviteCode);
 onMounted(async () => {
 	if (!routeGroupId || !routeInviteCode) {
 		toast({
-			title: "Could not join Group",
+			title: "Invalid Link",
 			description: "Ensure this is a valid link.",
 			variant: "destructive",
 			duration: 5000,
@@ -27,11 +27,11 @@ onMounted(async () => {
 
 	const joined = await joinGroup(routeGroupId, routeInviteCode);
 	if (joined) {
-		toast({ title: "Joined group", description: "Time to make cents of things.", duration: 5000 });
+		toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
 		router.push(`/group/${routeGroupId}`);
 	} else {
 		toast({
-			title: "Could not join Group",
+			title: "Could Not Join Group",
 			description: "Ensure this link has not expired.",
 			variant: "destructive",
 			duration: 5000,

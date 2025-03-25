@@ -56,8 +56,8 @@ export async function inviteUser(groupId: string, groupName: string) {
 		// Else copy to clipboard and display a confirmation
 		await navigator.clipboard.writeText(inviteLink).then(() => {
 			toast({
-				title: "Copied invite link to Clipboard",
-				description: "Link will be valid for 3 days.",
+				title: "Copied Link to Clipboard",
+				description: "This link will be valid for 3 days.",
 				duration: 5000,
 			});
 		});

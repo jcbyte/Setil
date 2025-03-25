@@ -61,9 +61,9 @@ async function handleDeleteTransaction() {
 	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value!.transactionId], props.users);
 	try {
 		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
-		toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
+		toast({ title: "Expense Deleted", description: "It's like it never happened.", duration: 5000 });
 	} catch (e) {
-		toast({ title: "Error deleting expense", description: String(e), variant: "destructive", duration: 5000 });
+		toast({ title: "Error Deleting Expense", description: String(e), variant: "destructive", duration: 5000 });
 	}
 
 	closeDeleteConfirmDialog();

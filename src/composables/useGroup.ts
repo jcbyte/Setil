@@ -46,8 +46,8 @@ export function useGroup(
 	onMounted(async () => {
 		function errorHome() {
 			toast({
-				title: "Group not found",
-				description: "Ensure you are a member of this group",
+				title: "Group Not Found",
+				description: "Ensure you are a member of this group.",
 				variant: "destructive",
 				duration: 5000,
 			});

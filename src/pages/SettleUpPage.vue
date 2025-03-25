@@ -175,7 +175,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 	try {
 		await createTransaction(groupId.value, transaction, leftUsers);
-		toast({ title: "Payment Recorded", description: "Synchronised to all members", duration: 5000 });
+		toast({ title: "Payment Recorded", description: "Someone's about to be rich!", duration: 5000 });
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast({ title: "Error Saving Payment", description: String(e), variant: "destructive", duration: 5000 });
