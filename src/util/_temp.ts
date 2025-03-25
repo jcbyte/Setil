@@ -45,11 +45,13 @@ export function resolveGroupDebts(
 
 	// Format the debts back into an expected format
 	const formattedDebts = newDebts.reduce<Record<string, Record<string, number>>>((formattedDebts, newDebt) => {
-		if (!formattedDebts[newDebt.from]) formattedDebts[newDebt.from] = {};
-		if (!formattedDebts[newDebt.from][newDebt.to]) formattedDebts[newDebt.from][newDebt.to] = 0;
-		if (!formattedDebts[newDebt.to]) formattedDebts[newDebt.to] = {};
-		if (!formattedDebts[newDebt.to][newDebt.from]) formattedDebts[newDebt.to][newDebt.from] = 0;
+		// Ensure users exist
+		formattedDebts[newDebt.from] = formattedDebts[newDebt.from] ?? {};
+		formattedDebts[newDebt.from][newDebt.to] = formattedDebts[newDebt.from][newDebt.to] ?? 0;
+		formattedDebts[newDebt.to] = formattedDebts[newDebt.to] ?? {};
+		formattedDebts[newDebt.to][newDebt.from] = formattedDebts[newDebt.to][newDebt.from] ?? 0;
 
+		// Add the debt onto them
 		formattedDebts[newDebt.from][newDebt.to] -= newDebt.amount;
 		formattedDebts[newDebt.to][newDebt.from] += newDebt.amount;
 
