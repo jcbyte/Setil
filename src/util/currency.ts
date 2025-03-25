@@ -15,10 +15,12 @@ export const CurrencySettings: Record<Currency, CurrencyData> = {
 
 export function formatCurrency(amount: number, currency: Currency): string {
 	const negative = amount < 0;
-	const formattedAmount = Math.abs(amount / Math.pow(10, CurrencySettings[currency].decimals)).toFixed(
-		CurrencySettings[currency].decimals
-	);
+	const formattedAmount = Math.abs(fromFirestoreAmount(amount, currency)).toFixed(CurrencySettings[currency].decimals);
 	return `${negative ? "-" : ""}${CurrencySettings[currency].symbol}${formattedAmount}`;
+}
+
+export function fromFirestoreAmount(amount: number, currency: Currency) {
+	return Math.floor(amount) / Math.pow(10, CurrencySettings[currency].decimals);
 }
 
 export function toFirestoreAmount(amount: number, currency: Currency): number {

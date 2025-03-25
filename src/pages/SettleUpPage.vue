@@ -13,7 +13,7 @@ import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, getBalanceStr, toFirestoreAmount } from "@/util/currency";
+import { CurrencySettings, fromFirestoreAmount, getBalanceStr, toFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -146,7 +146,11 @@ async function scrollToElement(element: HTMLElement): Promise<void> {
 }
 
 async function fillForm(userPayment: SimpleTransaction) {
-	setValues({ from: userPayment.from, to: userPayment.to, amount: userPayment.amount });
+	setValues({
+		from: userPayment.from,
+		to: userPayment.to,
+		amount: fromFirestoreAmount(userPayment.amount, groupData.value?.currency ?? "gbp"),
+	});
 
 	if (!recordPaymentPulser.value) return;
 	await scrollToElement(recordPaymentPulser.value);
