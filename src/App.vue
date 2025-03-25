@@ -5,6 +5,7 @@ import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { LoaderCircle } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
+import { requestPushNotificationPermission } from "./firebase/messaging";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
@@ -14,6 +15,8 @@ onMounted(() => {
 	getAuth().onAuthStateChanged(() => {
 		firebaseLoaded.value = true;
 	});
+
+	requestPushNotificationPermission();
 });
 
 useColorMode().value = "dark";
