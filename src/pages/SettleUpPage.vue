@@ -7,6 +7,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
@@ -25,7 +26,7 @@ import * as z from "zod";
 
 const router = useRouter();
 const route = useRoute();
-
+const { toast } = useToast();
 const { currentUser } = useCurrentUser();
 const { breakpointSplit } = useScreenSize();
 
@@ -171,9 +172,15 @@ const onSubmit = handleSubmit(async (values) => {
 		category: "payment",
 	};
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
-	await createTransaction(groupId.value, transaction, leftUsers);
 
-	router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+	try {
+		await createTransaction(groupId.value, transaction, leftUsers);
+		toast({ title: "Payment Recorded", description: "Synchronised to all members", duration: 5000 });
+		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+	} catch (e) {
+		toast({ title: "Error Saving Payment", description: String(e), variant: "destructive", duration: 5000 });
+	}
+
 	isMakingPayment.value = false;
 });
 </script>
