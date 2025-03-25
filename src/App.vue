@@ -5,7 +5,7 @@ import { useColorMode } from "@vueuse/core";
 import { getAuth } from "firebase/auth";
 import { LoaderCircle } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
-import { requestPushNotificationPermission } from "./firebase/messaging";
+import NotificationRequester from "./components/NotificationRequester.vue";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
@@ -15,8 +15,6 @@ onMounted(() => {
 	getAuth().onAuthStateChanged(() => {
 		firebaseLoaded.value = true;
 	});
-
-	requestPushNotificationPermission();
 });
 
 useColorMode().value = "dark";
@@ -29,6 +27,7 @@ useColorMode().value = "dark";
 				<SignInPage v-if="!currentUser" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
+					<NotificationRequester />
 					<router-view v-slot="{ Component }">
 						<Transition name="fade-slide" mode="out-in">
 							<component :is="Component" class="overflow-visible" />
