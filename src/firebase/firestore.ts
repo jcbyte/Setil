@@ -1,4 +1,4 @@
-import { resolveBalance } from "@/util/util";
+import { sumRecord } from "@/util/util";
 import { getAuth, type User } from "firebase/auth";
 import {
 	addDoc,
@@ -375,7 +375,7 @@ function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, fro
 
 	// Add the total credit onto the from user
 	const fromUserRef = doc(groupRef, "users", from);
-	batch.update(fromUserRef, { [`balance`]: increment(resolveBalance(otherTo)) });
+	batch.update(fromUserRef, { [`balance`]: increment(sumRecord(otherTo)) });
 
 	// Update each receiver with their new balances
 	Object.entries(otherTo).forEach(([toUser, toAmount]) => {
