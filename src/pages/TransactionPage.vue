@@ -17,7 +17,7 @@ import { useGroup } from "@/composables/useGroup";
 import { createTransaction, updateTransaction } from "@/firebase/firestore";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
-import { CurrencySettings, formatCurrency, toFirestoreAmount } from "@/util/currency";
+import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam, splitAmountEven, splitAmountRatio, sumRecord } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -56,7 +56,7 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			title: transaction.title,
 			date: transactionCalendarDate.toString(),
 			from: transaction.from,
-			amount: sumRecord(transaction.to),
+			amount: fromFirestoreAmount(sumRecord(transaction.to), groupData.value!.currency),
 			category: transaction.category,
 			to: {
 				type: "ratio",
