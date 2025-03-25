@@ -34,15 +34,58 @@ const { groupId, groupData, users } = useGroup(routeGroupId, () => {
 	setFieldValue("from", currentUser.value!.uid);
 });
 
-const usersPayments = computed(() =>
+interface SimpleTransaction {
+	from: string;
+	to: string;
+	amount: number;
+}
+
+function resolveGroupDebts(debts: Record<string, number>): SimpleTransaction[] {
+	const balances = { ...debts };
+
+	// Separate users globally in credit/debt
+	const { creditors, debtors } = Object.entries(balances).reduce<{ creditors: string[]; debtors: string[] }>(
+		({ creditors, debtors }, [userId, resolvedDebt]) => {
+			if (resolvedDebt > 0) creditors.push(userId);
+			else if (resolvedDebt < 0) debtors.push(userId);
+			return { creditors, debtors };
+		},
+		{ creditors: [], debtors: [] }
+	);
+
+	const newDebts: { from: string; to: string; amount: number }[] = [];
+
+	// Match debtors and creditors to minimise transactions
+	let currentCreditor = 0;
+	let currentDebtor = 0;
+
+	while (currentCreditor < creditors.length && currentDebtor < debtors.length) {
+		const creditor = creditors[currentCreditor];
+		const debtor = debtors[currentDebtor];
+
+		// Determine the max amount that can be settled between these two users
+		const amount = Math.min(Math.abs(balances[creditor]), Math.abs(balances[debtor]));
+
+		// Add this transaction
+		newDebts.push({ from: debtor, to: creditor, amount });
+
+		// Subtract remaining debts of these users
+		balances[creditor] -= amount;
+		balances[debtor] += amount;
+
+		// If this creditor/debtor is in ballance then move to the next one
+		if (balances[creditor] === 0) currentCreditor++;
+		if (balances[debtor] === 0) currentDebtor++;
+	}
+
+	return newDebts;
+}
+
+const usersPayments = computed<SimpleTransaction[] | undefined>(() =>
 	users.value
-		? Object.entries(users.value)
-				.map(([userId, user]) =>
-					Object.entries(user.balance)
-						.filter(([, owed]) => owed < 0)
-						.map(([owedUserId, owed]) => ({ userId, owedUserId, owed: -owed }))
-				)
-				.flat()
+		? resolveGroupDebts(
+				Object.fromEntries(Object.entries(users.value).map(([userId, userData]) => [userId, userData.balance]))
+		  )
 		: undefined
 );
 
@@ -102,8 +145,8 @@ async function scrollToElement(element: HTMLElement): Promise<void> {
 	});
 }
 
-async function fillForm(userPayment: { userId: string; owedUserId: string; owed: number }) {
-	setValues({ from: userPayment.userId, to: userPayment.owedUserId, amount: userPayment.owed });
+async function fillForm(userPayment: SimpleTransaction) {
+	setValues({ from: userPayment.from, to: userPayment.to, amount: userPayment.amount });
 
 	if (!recordPaymentPulser.value) return;
 	await scrollToElement(recordPaymentPulser.value);
@@ -163,13 +206,13 @@ const onSubmit = handleSubmit(async (values) => {
 						<div class="flex flex-col sm:flex-row justify-between items-center gap-2">
 							<div class="flex items-center gap-2">
 								<Avatar
-									:src="users![userPayment.userId].photoURL"
-									:name="users![userPayment.userId].name"
+									:src="users![userPayment.from].photoURL"
+									:name="users![userPayment.from].name"
 									class="size-10"
 								/>
 								<div class="flex flex-col gap-1">
-									<span class="text-sm">{{ users![userPayment.userId].name }}</span>
-									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.owed)" />
+									<span class="text-sm">{{ users![userPayment.from].name }}</span>
+									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(-userPayment.amount)" />
 								</div>
 							</div>
 							<div>
@@ -177,14 +220,10 @@ const onSubmit = handleSubmit(async (values) => {
 							</div>
 							<div class="flex items-center gap-2">
 								<div class="flex flex-col gap-1 text-right">
-									<span class="text-sm">{{ users![userPayment.owedUserId].name }}</span>
-									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.owed)" />
+									<span class="text-sm">{{ users![userPayment.to].name }}</span>
+									<BalanceStrBadge :balanceStr="getPaymentBalanceStr(userPayment.amount)" />
 								</div>
-								<Avatar
-									:src="users![userPayment.owedUserId].photoURL"
-									:name="users![userPayment.owedUserId].name"
-									class="size-10"
-								/>
+								<Avatar :src="users![userPayment.to].photoURL" :name="users![userPayment.to].name" class="size-10" />
 							</div>
 						</div>
 						<Button variant="outline" @click="fillForm(userPayment)">Record this payment</Button>

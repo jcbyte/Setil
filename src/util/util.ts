@@ -26,8 +26,8 @@ export function splitAmountRatio(amount: number, people: Record<string, number>)
 	return splitAmount;
 }
 
-export function resolveBalance(balance: Record<string, number>): number {
-	return Object.values(balance).reduce((acc, value) => acc + value, 0);
+export function sumRecord(rec: Record<string, number>): number {
+	return Object.values(rec).reduce((acc, value) => acc + value, 0);
 }
 
 export function getLeftUsersInTransaction(transaction: Transaction, users: Record<string, GroupUserData>) {

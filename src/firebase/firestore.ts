@@ -1,3 +1,4 @@
+import { sumRecord } from "@/util/util";
 import { getAuth, type User } from "firebase/auth";
 import {
 	addDoc,
@@ -194,7 +195,7 @@ export async function createGroup(groupData: Omit<GroupData, "owner">): Promise<
 		name: user.displayName ?? "Unknown User",
 		photoURL: user.photoURL,
 		status: "active",
-		balance: {},
+		balance: 0,
 		lastUpdate: Timestamp.now(),
 	};
 	await setDoc(groupUsersRef, groupUserData);
@@ -247,8 +248,7 @@ async function getLeftUserStatus(
 	if (!forceLeft && groupUser.status === "active") return null;
 
 	// Check if there is any balance left on this user and calculate correct status
-	const hasData = Object.values(groupUser.balance).some((bal) => bal !== 0);
-	const status = hasData ? "left" : "history";
+	const status = groupUser.balance === 0 ? "history" : "left";
 
 	// Return new status if it is modified
 	return groupUser.status === status ? null : status;
@@ -370,18 +370,18 @@ export async function getLiveUsers(
  * @param to  the users receiving teh transaction, with the value.
  */
 function updateGroupBalances(groupRef: DocumentReference, batch: WriteBatch, from: string, to: Record<string, number>) {
+	// Ignore entries where the receiver is the sender
+	const otherTo = Object.fromEntries(Object.entries(to).filter(([userId]) => userId !== from));
+
+	// Add the total credit onto the from user
 	const fromUserRef = doc(groupRef, "users", from);
+	batch.update(fromUserRef, { [`balance`]: increment(sumRecord(otherTo)) });
 
 	// Update each receiver with their new balances
-	Object.entries(to).forEach(([toUser, toAmount]) => {
-		// If the receiver is the sender this will make no changes, so ignore
-		if (toUser === from) return;
-
+	Object.entries(otherTo).forEach(([toUser, toAmount]) => {
+		// Add the given debt to the toUser
 		const userRef = doc(groupRef, "users", toUser);
-
-		// Add credit to the fromUser and debt to the toUser
-		batch.update(fromUserRef, { [`balance.${toUser}`]: increment(toAmount) });
-		batch.update(userRef, { [`balance.${from}`]: increment(-toAmount) });
+		batch.update(userRef, { [`balance`]: increment(-toAmount) });
 	});
 }
 
@@ -624,7 +624,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		name: user.displayName ?? "Unknown User",
 		photoURL: user.photoURL,
 		status: "active",
-		balance: {},
+		balance: 0,
 		lastUpdate: Timestamp.now(),
 	};
 	try {

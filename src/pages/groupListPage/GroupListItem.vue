@@ -3,7 +3,6 @@ import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
 import type { ExtendedGroupData } from "@/firebase/firestore";
 import { getBalanceStr } from "@/util/currency";
-import { resolveBalance } from "@/util/util";
 import { Timestamp } from "firebase/firestore";
 import { ChevronRight } from "lucide-vue-next";
 import { computed } from "vue";
@@ -36,7 +35,7 @@ const lastUpdatedStr = computed<string>(() => {
 
 const yourBalanceStr = computed<BalanceStr>(() =>
 	getBalanceStr(
-		resolveBalance(props.group.myself.balance),
+		props.group.myself.balance,
 		props.group.currency,
 		(b) => `You're owed ${b}`,
 		(b) => `You owe ${b}`,
