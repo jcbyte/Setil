@@ -1,4 +1,4 @@
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken } from "firebase/messaging";
 import { app } from "./firebase";
 
 const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAWAzwh6yqN0mDOA30qeOoyay6p-8";
@@ -19,8 +19,3 @@ export async function requestPushNotificationPermission() {
 		console.error("Error getting FCM token:", error);
 	}
 }
-
-onMessage(messaging, (payload) => {
-	console.log("Message received.");
-	console.log(payload);
-});
