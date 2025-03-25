@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/toast";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
-import { cleanupInvites, invite } from "@/firebase/firestore";
+import { cleanupInvites, invite } from "@/firebase/firestore/group";
 
 export function signIn() {
 	const { toast } = useToast();
@@ -56,8 +56,8 @@ export async function inviteUser(groupId: string, groupName: string) {
 		// Else copy to clipboard and display a confirmation
 		await navigator.clipboard.writeText(inviteLink).then(() => {
 			toast({
-				title: "Copied invite link to Clipboard",
-				description: "Link will be valid for 3 days.",
+				title: "Copied Link to Clipboard",
+				description: "This link will be valid for 3 days.",
 				duration: 5000,
 			});
 		});

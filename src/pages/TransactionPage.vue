@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
-import { createTransaction, updateTransaction } from "@/firebase/firestore";
+import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";
@@ -185,15 +185,24 @@ const onSubmit = handleSubmit(async (values) => {
 
 	const leftUsers = getLeftUsersInTransaction(transaction, users.value!);
 
-	if (routeTransactionId) {
-		await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
-		toast({ title: "Expense Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
-	} else {
-		await createTransaction(groupId.value, transaction, leftUsers);
-		toast({ title: "Expense Created", description: "It's now on the group's tab.", duration: 5000 });
+	try {
+		if (routeTransactionId) {
+			await updateTransaction(groupId.value, routeTransactionId, transaction, leftUsers);
+			toast({
+				title: "Expense Details Updated",
+				description: "Your expense got a makeover, and it's ready to slay.",
+				duration: 5000,
+			});
+		} else {
+			await createTransaction(groupId.value, transaction, leftUsers);
+			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
+		}
+
+		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
+	} catch (e) {
+		toast({ title: "Error Saving Expense Details", description: String(e), variant: "destructive", duration: 5000 });
 	}
 
-	router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	isTransactionUpdating.value = false;
 });
 </script>

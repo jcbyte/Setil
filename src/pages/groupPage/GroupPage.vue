@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Tabs from "@/components/ui/tabs/Tabs.vue";
+import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useGroup } from "@/composables/useGroup";
 import { inviteUser } from "@/util/app";
@@ -17,7 +18,7 @@ import GroupSummary from "./GroupSummary.vue";
 
 const route = useRoute();
 const router = useRouter();
-
+const { toast } = useToast();
 const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
@@ -32,7 +33,11 @@ async function addMember() {
 	if (!groupId.value) return;
 
 	isAddingMember.value = true;
-	await inviteUser(groupId.value, groupData.value!.name);
+	try {
+		await inviteUser(groupId.value, groupData.value!.name);
+	} catch (e) {
+		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
+	}
 	isAddingMember.value = false;
 }
 </script>

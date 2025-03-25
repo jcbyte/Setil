@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/toast";
 import { useCurrentUser } from "@/composables/useCurrentUser";
-import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "@/firebase/firestore";
+import { getLiveGroupData, getLiveTransactions, getLiveUsers } from "@/firebase/firestore/liveData";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { defineStore, storeToRefs } from "pinia";
 import { onMounted, ref, type Ref } from "vue";
@@ -46,8 +46,8 @@ export function useGroup(
 	onMounted(async () => {
 		function errorHome() {
 			toast({
-				title: "Group not found",
-				description: "Ensure you are a member of this group",
+				title: "Group Not Found",
+				description: "Ensure you are a member of this group.",
 				variant: "destructive",
 				duration: 5000,
 			});

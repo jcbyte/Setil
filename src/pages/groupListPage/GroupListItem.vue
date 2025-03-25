@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AvatarStack from "@/components/AvatarStack.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
-import type { ExtendedGroupData } from "@/firebase/firestore";
+import type { ExtendedGroupData } from "@/firebase/firestore/app";
 import { getBalanceStr } from "@/util/currency";
 import { Timestamp } from "firebase/firestore";
 import { ChevronRight } from "lucide-vue-next";

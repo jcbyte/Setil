@@ -19,7 +19,7 @@ import {
 import Separator from "@/components/ui/separator/Separator.vue";
 import { useToast } from "@/components/ui/toast";
 import { useControlledDialog } from "@/composables/useControlledDialog";
-import { deleteTransaction } from "@/firebase/firestore";
+import { deleteTransaction } from "@/firebase/firestore/transaction";
 import type { GroupData, GroupUserData, Transaction } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { formatCurrency } from "@/util/currency";
@@ -59,11 +59,14 @@ async function handleDeleteTransaction() {
 	startDeleteConfirmDialogProcessing();
 
 	const leftUsers = getLeftUsersInTransaction(props.transactions[deleteDialogData.value!.transactionId], props.users);
-	await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
+	try {
+		await deleteTransaction(props.groupId, deleteDialogData.value!.transactionId, leftUsers);
+		toast({ title: "Expense Deleted", description: "It's like it never happened.", duration: 5000 });
+	} catch (e) {
+		toast({ title: "Error Deleting Expense", description: String(e), variant: "destructive", duration: 5000 });
+	}
 
 	closeDeleteConfirmDialog();
-
-	toast({ title: "Expense Deleted", description: "It's like it never happened", duration: 5000 });
 }
 </script>
 
