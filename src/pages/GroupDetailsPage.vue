@@ -124,33 +124,35 @@ const { isFieldDirty, handleSubmit, setValues } = useForm({
 });
 
 const onSubmit = handleSubmit(async (values) => {
-	if (routeGroupId) {
-		if (!groupId.value) return;
+	isGroupDetailsUpdating.value = true;
 
-		isGroupDetailsUpdating.value = true;
+	try {
+		if (routeGroupId) {
+			if (!groupId.value) return;
 
-		await updateGroup(groupId.value, {
-			name: values.name,
-			description: values.description ?? null,
-			currency: values.currency as Currency,
-		});
+			await updateGroup(groupId.value, {
+				name: values.name,
+				description: values.description ?? null,
+				currency: values.currency as Currency,
+			});
 
-		isGroupDetailsUpdating.value = false;
-		toast({ title: "Group Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
-	} else {
-		isGroupDetailsUpdating.value = true;
+			toast({ title: "Group Details Updated", description: "Changes synchronised to all members.", duration: 5000 });
+		} else {
+			const newGroupId = await createGroup({
+				name: values.name,
+				description: values.description ?? null,
+				currency: values.currency as Currency,
+				lastUpdate: Timestamp.now(),
+			});
 
-		const newGroupId = await createGroup({
-			name: values.name,
-			description: values.description ?? null,
-			currency: values.currency as Currency,
-			lastUpdate: Timestamp.now(),
-		});
-
-		router.push(`/group/${newGroupId}`);
-		isGroupDetailsUpdating.value = false;
-		toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
+			toast({ title: "Group Created", description: "Time to invite your friends.", duration: 5000 });
+			router.push(`/group/${newGroupId}`);
+		}
+	} catch (e) {
+		toast({ title: "Error Saving Group", description: String(e), variant: "destructive", duration: 5000 });
 	}
+
+	isGroupDetailsUpdating.value = false;
 });
 
 const currentGroupUser = computed<GroupUserData | null>(() => users.value?.[currentUser.value!.uid] ?? null);
@@ -172,15 +174,19 @@ async function updateDisplayName() {
 
 	isMyDisplayNameUpdating.value = true;
 
-	await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
+	try {
+		await changeUserName(groupId.value, currentUser.value!.uid, parsedName.data);
+
+		toast({
+			title: "Display Name Updated",
+			description: "And just like that... a new legend is born!",
+			duration: 5000,
+		});
+	} catch (e) {
+		toast({ title: "Error UPdating Name", description: String(e), variant: "destructive", duration: 5000 });
+	}
 
 	isMyDisplayNameUpdating.value = false;
-
-	toast({
-		title: "Display Name Updated",
-		description: "And just like that... a new legend is born!",
-		duration: 5000,
-	});
 }
 
 const memberNewName = ref<Record<string, { updating: boolean; name: string; processing: boolean; errors?: string }>>(
@@ -207,7 +213,18 @@ async function acceptRename(userId: string) {
 	if (!parsedName.success) return;
 
 	memberNewName.value[userId].processing = true;
-	await changeUserName(groupId.value, userId, parsedName.data);
+
+	try {
+		await changeUserName(groupId.value, userId, parsedName.data);
+		toast({
+			title: "Member's Display Name Updated",
+			description: "ttofdo!",
+			duration: 5000,
+		});
+	} catch (e) {
+		toast({ title: "Error Updating Name", description: String(e), variant: "destructive", duration: 5000 });
+	}
+
 	memberNewName.value[userId].updating = false;
 }
 
@@ -216,22 +233,42 @@ async function promoteMember() {
 
 	startPromoteDialogProcessing();
 
-	await promoteUser(groupId.value, promoteDialogData.value!.userId);
+	try {
+		await promoteUser(groupId.value, promoteDialogData.value!.userId);
+		toast({
+			title: `${users.value![promoteDialogData.value!.userId].name} Promoted`,
+			description: "Long live the new king.",
+			duration: 5000,
+		});
+	} catch (e) {
+		toast({
+			title: `Error Promoting ${users.value![promoteDialogData.value!.userId].name}`,
+			description: String(e),
+			variant: "destructive",
+			duration: 5000,
+		});
+	}
 
 	closePromoteDialog();
-
-	toast({
-		title: `${users.value![promoteDialogData.value!.userId].name} Promoted`,
-		description: "Long live the new king.",
-		duration: 5000,
-	});
 }
 
 async function removeMember(userId: string) {
 	if (!groupId.value) return;
 
 	isUpdatingMember.value.push(userId);
-	await removeUser(groupId.value, userId);
+
+	try {
+		await removeUser(groupId.value, userId);
+		toast({ title: `Removed ${users.value![userId].name}`, description: "String(e)", duration: 5000 });
+	} catch (e) {
+		toast({
+			title: `Error Removing ${users.value![userId].name}`,
+			description: String(e),
+			variant: "destructive",
+			duration: 5000,
+		});
+	}
+
 	isUpdatingMember.value.splice(isUpdatingMember.value.indexOf(userId), 1);
 }
 
@@ -239,7 +276,13 @@ async function addMember() {
 	if (!groupId.value) return;
 
 	isAddingMember.value = true;
-	await inviteUser(groupId.value, groupData.value!.name);
+
+	try {
+		await inviteUser(groupId.value, groupData.value!.name);
+	} catch (e) {
+		toast({ title: "Error Creating Invite Link", description: String(e), variant: "destructive", duration: 5000 });
+	}
+
 	isAddingMember.value = false;
 }
 
@@ -248,12 +291,15 @@ async function leaveGroup() {
 
 	startLeaveDialogProcessing();
 
-	await firestoreLeaveGroup(groupId.value);
+	try {
+		await firestoreLeaveGroup(groupId.value);
+		router.push("/");
+		toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
+	} catch (e) {
+		toast({ title: "Error Leaving Group", description: String(e), variant: "destructive", duration: 5000 });
+	}
 
-	router.push("/");
 	closeLeaveDialog();
-
-	toast({ title: "Group Left", description: "Your expenses here are now history.", duration: 5000 });
 }
 
 async function deleteGroup() {
@@ -261,12 +307,15 @@ async function deleteGroup() {
 
 	startDeleteDialogProcessing();
 
-	await firestoreDeleteGroup(groupId.value);
+	try {
+		await firestoreDeleteGroup(groupId.value);
+		toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
+		router.push("/");
+	} catch (e) {
+		toast({ title: "Error Deleting Group", description: String(e), variant: "destructive", duration: 5000 });
+	}
 
-	router.push("/");
 	closeDeleteDialog();
-
-	toast({ title: "Group Deleted", description: "All data related to this group has been deleted.", duration: 5000 });
 }
 </script>
 
