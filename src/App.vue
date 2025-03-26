@@ -9,7 +9,7 @@ import NotificationRequester from "./components/NotificationRequester.vue";
 import SignInPage from "./pages/SignInPage.vue";
 
 const firebaseLoaded = ref(false);
-const { currentUser } = useCurrentUser();
+const { currentUser, currentUserInitialised } = useCurrentUser();
 
 onMounted(() => {
 	getAuth().onAuthStateChanged(() => {
@@ -24,7 +24,7 @@ useColorMode().value = "dark";
 	<Transition name="loader-anim">
 		<div v-if="firebaseLoaded" class="flex justify-center items-center p-4">
 			<Transition name="fade-slide" mode="out-in">
-				<SignInPage v-if="!currentUser" />
+				<SignInPage v-if="!currentUser || !currentUserInitialised" />
 				<!-- Extra div so that `Transition` is not directly trying to control `router-view` -->
 				<div v-else class="w-full overflow-hidden">
 					<NotificationRequester />
