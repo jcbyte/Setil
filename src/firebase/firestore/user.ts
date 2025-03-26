@@ -1,7 +1,9 @@
 import {
 	arrayRemove,
 	collection,
+	CollectionReference,
 	doc,
+	DocumentReference,
 	getCountFromServer,
 	getDoc,
 	getDocs,
@@ -11,6 +13,7 @@ import {
 	query,
 	setDoc,
 	updateDoc,
+	WriteBatch,
 } from "firebase/firestore";
 import { app } from "../firebase";
 import type { GroupData, GroupUserData, UserData } from "../types";
@@ -117,4 +120,52 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 	}
 
 	return userGroups;
+}
+
+/**
+ * Works out if the user has left the group with credit/debt or they are history.
+ * @param userBalance balance of the user to test.
+ * @param forceLeft force the user to leave irrespective of what there current status is.
+ * @returns the status of the user given they have left the group, null if it doesn't require a change.
+ */
+export async function getLeftUserStatus(
+	groupUserRef: DocumentReference,
+	forceLeft: boolean
+): Promise<"left" | "history" | null> {
+	const groupUserSnap = await getDoc(groupUserRef);
+	const groupUser = groupUserSnap.data() as GroupUserData;
+
+	// If the user is active then don't change
+	if (!forceLeft && groupUser.status === "active") return null;
+
+	// Check if there is any balance left on this user and calculate correct status
+	const status = groupUser.balance === 0 ? "history" : "left";
+
+	// Return new status if it is modified
+	return groupUser.status === status ? null : status;
+}
+
+/**
+ * Add firebase updates to a batch to update users who have left a group to their valid status.
+ * @param groupUsersRef Collection to the users in the group.
+ * @param batch WriteBatch to add the transactions to.
+ * @param leftUsers Array of userId's which have left and status needs to be recalculated.
+ */
+
+export async function updateLeftUsersStatus(
+	groupUsersRef: CollectionReference,
+	batch: WriteBatch,
+	leftUsers: string[]
+) {
+	await Promise.all(
+		leftUsers.map(async (userId) => {
+			const leftUserRef = doc(groupUsersRef, userId);
+
+			// Check if there status is correct
+			const newStatus = await getLeftUserStatus(leftUserRef, false);
+
+			// If the status needs to be changed add this update
+			if (newStatus) batch.update(leftUserRef, { status: newStatus });
+		})
+	);
 }

@@ -12,7 +12,8 @@ import {
 } from "firebase/firestore";
 import { app } from "../firebase";
 import type { Transaction } from "../types";
-import { updateGroupUpdateTime, updateLeftUsersStatus } from "./util";
+import { updateGroupUpdateTime } from "./group";
+import { updateLeftUsersStatus } from "./user";
 
 const db = getFirestore(app);
 

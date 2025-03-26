@@ -6,6 +6,7 @@ import {
 	deleteDoc,
 	deleteField,
 	doc,
+	DocumentReference,
 	getDoc,
 	getDocs,
 	getFirestore,
@@ -20,7 +21,8 @@ import {
 } from "firebase/firestore";
 import { app } from "../firebase";
 import type { GroupData, GroupUserData, Invite, UserData } from "../types";
-import { getLeftUserStatus, getUser } from "./util";
+import { getLeftUserStatus } from "./user";
+import { getUser } from "./util";
 
 const db = getFirestore(app);
 
@@ -31,6 +33,21 @@ const templateNewUser = (user: User): GroupUserData => ({
 	balance: 0,
 	lastUpdate: Timestamp.now(),
 });
+
+/**
+ * Update the lastUpdated property of this user and the group.
+ * @param groupRef Document of the group to update lastUpdate on.
+ * @param batch WriteBatch to add the transactions to.
+ */
+export function updateGroupUpdateTime(groupRef: DocumentReference, batch: WriteBatch) {
+	// Update the time when the current user has last added a transaction
+	const user = getUser();
+	const thisUserRef = doc(groupRef, "users", user.uid);
+	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
+
+	// Update the last update field for the group
+	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+}
 
 /**
  * Create a new group and add the user to it.
