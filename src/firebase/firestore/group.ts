@@ -158,20 +158,18 @@ export async function joinGroup<T extends boolean>(
 	getData: T = false as T
 ): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
 	const user = getUser();
+	const groupRef = doc(db, "groups", groupId);
+
+	async function getGroupData(): Promise<GroupData> {
+		const groupSnap = await getDoc(groupRef);
+		return groupSnap.data() as GroupData;
+	}
 
 	// Add the group to the user if it is not already there
 	const userRef = doc(db, "users", user.uid);
 	await updateDoc(userRef, {
 		groups: arrayUnion(groupId),
 	});
-
-	// Get group data if required
-	const groupRef = doc(db, "groups", groupId);
-	let groupData: GroupData;
-	if (getData) {
-		const groupSnap = await getDoc(groupRef);
-		groupData = groupSnap.data() as GroupData;
-	}
 
 	// Add ourselves to the group
 	const groupUserRef = doc(groupRef, "users", user.uid);
@@ -186,13 +184,15 @@ export async function joinGroup<T extends boolean>(
 				updateDoc(groupUserRef, { status: "active" });
 
 				// Return that we newly joined the group as we we had previously left
-				return { new: true, ...(getData && { user: userGroupData, group: groupData! }) };
+				return { new: true, ...(getData && { user: userGroupData, group: await getGroupData() }) };
 			}
 
 			// Return that the user was already in the group
-			return { new: false, ...(getData && { user: userGroupData, group: groupData! }) };
+			return { new: false, ...(getData && { user: userGroupData, group: await getGroupData() }) };
 		}
-	} catch {}
+	} catch {
+		// If user does not haver permissions to check the group, hence they are and have never been in it.
+	}
 
 	// Join the group
 	const newUserData = templateNewUser(user);
@@ -207,7 +207,7 @@ export async function joinGroup<T extends boolean>(
 	}
 
 	// Return that the user has joined the group
-	return { new: true, ...(getData && { user: newUserData, group: groupData! }) };
+	return { new: true, ...(getData && { user: newUserData, group: await getGroupData() }) };
 }
 
 /**
