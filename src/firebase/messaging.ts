@@ -5,6 +5,9 @@ const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAW
 
 const messaging = getMessaging(app);
 
+/**
+ * Request notification permission.
+ */
 export async function requestPushNotificationPermission() {
 	try {
 		const token = await getToken(messaging, { vapidKey: VAPID_KEY });
@@ -18,4 +21,23 @@ export async function requestPushNotificationPermission() {
 	} catch (error) {
 		console.error("Error getting FCM token:", error);
 	}
+}
+
+/**
+ * Send a notification to all suers within a specified group.
+ * @param groupId id of the group to send users messages to.
+ * @param title title of the notification.
+ * @param body body of the notification.
+ * @returns true if it was successful.
+ */
+export async function sendNotification(groupId: string, title: string, body: string): Promise<boolean> {
+	const res = await fetch("/api/send-group-notification", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ groupId: groupId, title, body }),
+	}).then((res) => res.json());
+
+	return res.success;
 }

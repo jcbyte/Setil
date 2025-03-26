@@ -38,7 +38,7 @@ export default async function (req, res) {
 		};
 		await admin.messaging().sendEachForMulticast(message);
 
-		res.status(200).json({ success: true, fcmTokens });
+		res.status(200).json({ success: true });
 	} catch (error) {
 		res.status(500).json({ success: false, error: error.message });
 	}
