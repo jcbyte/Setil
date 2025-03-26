@@ -149,9 +149,14 @@ export async function cleanupInvites(groupId: string): Promise<void> {
  * Try and join a group with an invite code.
  * @param groupId id of the group.
  * @param inviteCode invite code to join the group.
+ * @param getData also retries the group and this user in the groups data.
  * @returns true if the user has newly joined the group.
  */
-export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
+export async function joinGroup<T extends boolean>(
+	groupId: string,
+	inviteCode: string,
+	getData: T = false as T
+): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
 	const user = getUser();
 
 	// Add the group to the user if it is not already there
@@ -160,8 +165,16 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		groups: arrayUnion(groupId),
 	});
 
+	// Get group data if required
+	const groupRef = doc(db, "groups", groupId);
+	let groupData: GroupData;
+	if (getData) {
+		const groupSnap = await getDoc(groupRef);
+		groupData = groupSnap.data() as GroupData;
+	}
+
 	// Add ourselves to the group
-	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+	const groupUserRef = doc(groupRef, "users", user.uid);
 
 	// Check if the user had previously been part of the group
 	try {
@@ -173,17 +186,18 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 				updateDoc(groupUserRef, { status: "active" });
 
 				// Return that we newly joined the group as we we had previously left
-				return true;
+				return { new: true, ...(getData && { user: userGroupData, group: groupData! }) };
 			}
 
 			// Return that the user was already in the group
-			return false;
+			return { new: false, ...(getData && { user: userGroupData, group: groupData! }) };
 		}
 	} catch {}
 
 	// Join the group
+	const newUserData = templateNewUser(user);
 	try {
-		await setDoc(groupUserRef, { ...templateNewUser(user), customData: { inviteCode } });
+		await setDoc(groupUserRef, { ...newUserData, customData: { inviteCode } });
 
 		// Remove the custom data, required to add a doc into the group
 		await updateDoc(groupUserRef, { customData: deleteField() });
@@ -193,7 +207,7 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 	}
 
 	// Return that the user has joined the group
-	return true;
+	return { new: true, ...(getData && { user: newUserData, group: groupData! }) };
 }
 
 /**

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToast } from "@/components/ui/toast";
 import { joinGroup } from "@/firebase/firestore/group";
+import { sendNotification } from "@/firebase/messaging";
 import { getRouteParam } from "@/util/util";
 import { Loader } from "lucide-vue-next";
 import { onMounted } from "vue";
@@ -26,13 +27,12 @@ onMounted(async () => {
 	}
 
 	try {
-		const joined = await joinGroup(routeGroupId, routeInviteCode);
+		const { new: joined, user: userData, group: groupData } = await joinGroup(routeGroupId, routeInviteCode, true);
 
 		if (joined) {
 			toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
-			// todo send join notification
+			sendNotification(routeGroupId, groupData.name, `${userData.name} just joined the group!`);
 		}
-
 		router.push(`/group/${routeGroupId}`);
 	} catch {
 		toast({
