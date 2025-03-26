@@ -20,7 +20,7 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { app } from "../firebase";
-import type { GroupData, GroupUserData, Invite, UserData } from "../types";
+import type { GroupData, GroupUserData, Invite } from "../types";
 import { getLeftUserStatus } from "./user";
 import { getUser } from "./util";
 
@@ -156,14 +156,9 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 
 	// Add the group to the user if it is not already there
 	const userRef = doc(db, "users", user.uid);
-	const userSnap = await getDoc(userRef);
-	const userData = userSnap.data() as UserData;
-
-	if (!userData.groups.includes(groupId)) {
-		await updateDoc(userRef, {
-			groups: arrayUnion(groupId),
-		});
-	}
+	await updateDoc(userRef, {
+		groups: arrayUnion(groupId),
+	});
 
 	// Add ourselves to the group
 	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);

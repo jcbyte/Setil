@@ -1,5 +1,6 @@
 import { getMessaging, getToken } from "firebase/messaging";
 import { app } from "./firebase";
+import { addFwcToken } from "./firestore/user";
 import { getUser } from "./firestore/util";
 
 const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAWAzwh6yqN0mDOA30qeOoyay6p-8";
@@ -9,18 +10,18 @@ const messaging = getMessaging(app);
 /**
  * Request notification permission.
  */
-export async function requestPushNotificationPermission() {
+export async function requestPushNotificationPermission(): Promise<void> {
 	try {
 		const token = await getToken(messaging, { vapidKey: VAPID_KEY });
 
 		if (token) {
-			console.log("FCM Token:", token);
-			// Send the token to your backend for push notification subscription
+			// Save the token for the user
+			await addFwcToken(token);
 		} else {
-			console.log("No registration token available.");
+			throw Error("Notifications not available on this device.");
 		}
 	} catch (error) {
-		console.error("Error getting FCM token:", error);
+		// Most likely the user has not given notification permissions which is fine
 	}
 }
 
