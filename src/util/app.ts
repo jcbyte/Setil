@@ -1,9 +1,11 @@
 import { useToast } from "@/components/ui/toast";
+import { useCurrentUser } from "@/composables/useCurrentUser";
 import { firebaseSignOut, signInWithGoogle } from "@/firebase/auth";
 import { cleanupInvites, invite } from "@/firebase/firestore/group";
 
-export function signIn() {
+export async function signIn() {
 	const { toast } = useToast();
+	const { currentUserInitialised } = useCurrentUser();
 
 	const persistentToast = toast({
 		title: "Signing In",
@@ -11,15 +13,16 @@ export function signIn() {
 		duration: 0,
 	});
 
-	signInWithGoogle()
-		.then((newUser) => {
-			persistentToast.dismiss();
-			toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 5000 });
-		})
-		.catch((error) => {
-			persistentToast.dismiss();
-			toast({ title: "Error Signing In", description: error.code, variant: "destructive", duration: 5000 });
-		});
+	try {
+		const newUser = await signInWithGoogle();
+		currentUserInitialised.value = true;
+
+		persistentToast.dismiss();
+		toast({ title: "Signed In", description: newUser ? "Welcome to Setil!" : "Welcome back!", duration: 5000 });
+	} catch (error: any) {
+		persistentToast.dismiss();
+		toast({ title: "Error Signing In", description: error.code, variant: "destructive", duration: 5000 });
+	}
 }
 
 export function signOut() {
