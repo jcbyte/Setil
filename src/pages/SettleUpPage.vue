@@ -190,7 +190,7 @@ const onSubmit = handleSubmit(async (values) => {
 				values.amount,
 				groupData.value!.currency,
 				false
-			)}`
+			)}.`
 		);
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	} catch (e) {

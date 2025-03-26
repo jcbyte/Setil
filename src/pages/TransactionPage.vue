@@ -15,6 +15,7 @@ import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
 import { createTransaction, updateTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";
@@ -196,7 +197,15 @@ const onSubmit = handleSubmit(async (values) => {
 		} else {
 			await createTransaction(groupId.value, transaction, leftUsers);
 			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
-			// todo send new transaction notification
+			sendNotification(
+				groupId.value,
+				groupData.value!.name,
+				`${users.value![values.from].name} added expense ${values.title} for ${formatCurrency(
+					values.amount,
+					groupData.value!.currency,
+					false
+				)}.`
+			);
 		}
 
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
