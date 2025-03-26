@@ -196,6 +196,7 @@ const onSubmit = handleSubmit(async (values) => {
 		} else {
 			await createTransaction(groupId.value, transaction, leftUsers);
 			toast({ title: "Expense Created", description: "It's on the group's tab.", duration: 5000 });
+			// todo send new transaction notification
 		}
 
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });

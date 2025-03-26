@@ -13,9 +13,10 @@ export const CurrencySettings: Record<Currency, CurrencyData> = {
 	eur: { name: "Euro", symbol: "€", decimals: 2 },
 };
 
-export function formatCurrency(amount: number, currency: Currency): string {
-	const negative = amount < 0;
-	const formattedAmount = Math.abs(fromFirestoreAmount(amount, currency)).toFixed(CurrencySettings[currency].decimals);
+export function formatCurrency(amount: number, currency: Currency, firebaseAmount: boolean = true): string {
+	const realAmount = firebaseAmount ? fromFirestoreAmount(amount, currency) : amount;
+	const negative = realAmount < 0;
+	const formattedAmount = Math.abs(realAmount).toFixed(CurrencySettings[currency].decimals);
 	return `${negative ? "-" : ""}${CurrencySettings[currency].symbol}${formattedAmount}`;
 }
 

@@ -30,6 +30,7 @@ onMounted(async () => {
 
 		if (joined) {
 			toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
+			// todo send join notification
 		}
 
 		router.push(`/group/${routeGroupId}`);

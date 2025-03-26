@@ -13,8 +13,15 @@ import { useCurrentUser } from "@/composables/useCurrentUser";
 import { useGroup } from "@/composables/useGroup";
 import { useScreenSize } from "@/composables/useScreenSize";
 import { createTransaction } from "@/firebase/firestore/transaction";
+import { sendNotification } from "@/firebase/messaging";
 import type { Transaction } from "@/firebase/types";
-import { CurrencySettings, fromFirestoreAmount, getBalanceStr, toFirestoreAmount } from "@/util/currency";
+import {
+	CurrencySettings,
+	formatCurrency,
+	fromFirestoreAmount,
+	getBalanceStr,
+	toFirestoreAmount,
+} from "@/util/currency";
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
@@ -176,6 +183,15 @@ const onSubmit = handleSubmit(async (values) => {
 	try {
 		await createTransaction(groupId.value, transaction, leftUsers);
 		toast({ title: "Payment Recorded", description: "Someone's about to be rich!", duration: 5000 });
+		sendNotification(
+			groupId.value,
+			groupData.value!.name,
+			`${users.value![values.from].name} paid ${users.value![values.to].name} ${formatCurrency(
+				values.amount,
+				groupData.value!.currency,
+				false
+			)}`
+		);
 		router.push({ path: `/group/${routeGroupId}`, query: { tab: "activity" } });
 	} catch (e) {
 		toast({ title: "Error Saving Payment", description: String(e), variant: "destructive", duration: 5000 });
