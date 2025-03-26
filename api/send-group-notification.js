@@ -1,6 +1,7 @@
 import admin from "./firebaseAdmin.js";
 
 const db = admin.firestore();
+const auth = admin.auth();
 
 export default async function (req, res) {
 	if (req.method !== "POST") {
@@ -8,12 +9,18 @@ export default async function (req, res) {
 	}
 
 	// Extract parameters
-	const { groupId, title, body } = req.body;
-	if (!groupId || !title || !body) {
+	const { jwt, groupId, title, body } = req.body;
+	if (!jwt || !groupId || !title || !body) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
 
-	// todo authenticate user is in group
+	// Get user who performed the request
+	let user;
+	try {
+		user = await auth.verifyIdToken(jwt);
+	} catch (e) {
+		return res.status(401).json({ success: false, error: "Unauthorized" });
+	}
 
 	try {
 		// Get list of all userId's who are active in the group (without getting all their data)
@@ -21,10 +28,15 @@ export default async function (req, res) {
 		const groupUsersMetaSnap = await groupUsersRef.where("status", "==", "active").select().get();
 		const userIds = groupUsersMetaSnap.docs.map((doc) => doc.id);
 
+		// Verify that the user asking for the notification is in the group
+		if (!userIds.some((userId) => userId === user.uid)) {
+			return res.status(401).json({ success: false, error: "Unauthorized" });
+		}
+
 		// Get list of all fcm tokens for active users
 		const fcmTokens = [];
-		for (let userMetaDoc of groupUsersMetaSnap.docs) {
-			const userSnap = await db.doc(`users/${userMetaDoc.id}`).get();
+		for (let userId of userIds) {
+			const userSnap = await db.doc(`users/${userId}`).get();
 			fcmTokens.push(...userSnap.get("fcmTokens"));
 		}
 
@@ -38,8 +50,8 @@ export default async function (req, res) {
 		};
 		await admin.messaging().sendEachForMulticast(message);
 
-		res.status(200).json({ success: true });
+		return res.status(200).json({ success: true });
 	} catch (error) {
-		res.status(500).json({ success: false, error: error.message });
+		return res.status(500).json({ success: false, error: error.message });
 	}
 }

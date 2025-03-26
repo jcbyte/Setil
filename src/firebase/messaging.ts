@@ -1,5 +1,6 @@
 import { getMessaging, getToken } from "firebase/messaging";
 import { app } from "./firebase";
+import { getUser } from "./firestore/util";
 
 const VAPID_KEY = "BNTO7GezdnZI2F6tcCs-IENFqIrp0BJ27_lmVEaz19VtOgDaA6uhnzYl0AdAWAzwh6yqN0mDOA30qeOoyay6p-8";
 
@@ -31,12 +32,14 @@ export async function requestPushNotificationPermission() {
  * @returns true if it was successful.
  */
 export async function sendNotification(groupId: string, title: string, body: string): Promise<boolean> {
+	const user = getUser();
+
 	const res = await fetch("/api/send-group-notification", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ groupId: groupId, title, body }),
+		body: JSON.stringify({ jwt: await user.getIdToken(), groupId: groupId, title, body }),
 	}).then((res) => res.json());
 
 	return res.success;
