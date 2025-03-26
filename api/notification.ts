@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// Send the notification
 			// await admin.messaging().send(message);
 			res.status(200).json({ success: true });
-		} catch (error) {
+		} catch (error: any) {
 			res.status(500).json({ success: false, error: error.message });
 		}
 	} else {
