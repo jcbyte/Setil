@@ -6,6 +6,7 @@ import {
 	deleteDoc,
 	deleteField,
 	doc,
+	DocumentReference,
 	getDoc,
 	getDocs,
 	getFirestore,
@@ -19,8 +20,9 @@ import {
 	WriteBatch,
 } from "firebase/firestore";
 import { app } from "../firebase";
-import type { GroupData, GroupUserData, Invite, UserData } from "../types";
-import { getLeftUserStatus, getUser } from "./util";
+import type { GroupData, GroupUserData, Invite } from "../types";
+import { getLeftUserStatus } from "./user";
+import { getUser } from "./util";
 
 const db = getFirestore(app);
 
@@ -31,6 +33,21 @@ const templateNewUser = (user: User): GroupUserData => ({
 	balance: 0,
 	lastUpdate: Timestamp.now(),
 });
+
+/**
+ * Update the lastUpdated property of this user and the group.
+ * @param groupRef Document of the group to update lastUpdate on.
+ * @param batch WriteBatch to add the transactions to.
+ */
+export function updateGroupUpdateTime(groupRef: DocumentReference, batch: WriteBatch) {
+	// Update the time when the current user has last added a transaction
+	const user = getUser();
+	const thisUserRef = doc(groupRef, "users", user.uid);
+	batch.update(thisUserRef, { lastUpdate: Timestamp.now() });
+
+	// Update the last update field for the group
+	batch.update(groupRef, { lastUpdate: Timestamp.now() });
+}
 
 /**
  * Create a new group and add the user to it.
@@ -132,24 +149,32 @@ export async function cleanupInvites(groupId: string): Promise<void> {
  * Try and join a group with an invite code.
  * @param groupId id of the group.
  * @param inviteCode invite code to join the group.
- * @returns true if the user joins (or is already in) the group.
+ * @param getData also retries the group and this user in the groups data.
+ * @returns true if the user has newly joined the group.
  */
-export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
+export async function joinGroup<T extends boolean>(
+	groupId: string,
+	inviteCode: string,
+	getData: T = false as T
+): Promise<{ new: boolean } & (T extends true ? { user: GroupUserData; group: GroupData } : {})> {
 	const user = getUser();
 
 	// Add the group to the user if it is not already there
 	const userRef = doc(db, "users", user.uid);
-	const userSnap = await getDoc(userRef);
-	const userData = userSnap.data() as UserData;
+	await updateDoc(userRef, {
+		groups: arrayUnion(groupId),
+	});
 
-	if (!userData.groups.includes(groupId)) {
-		await updateDoc(userRef, {
-			groups: arrayUnion(groupId),
-		});
+	// Get group data if required
+	const groupRef = doc(db, "groups", groupId);
+	let groupData: GroupData;
+	if (getData) {
+		const groupSnap = await getDoc(groupRef);
+		groupData = groupSnap.data() as GroupData;
 	}
 
 	// Add ourselves to the group
-	const groupUserRef = doc(db, "groups", groupId, "users", user.uid);
+	const groupUserRef = doc(groupRef, "users", user.uid);
 
 	// Check if the user had previously been part of the group
 	try {
@@ -157,24 +182,32 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		if (userSnap.exists()) {
 			// Set ourselves to active in the group if we had previously been part of it
 			const userGroupData = userSnap.data() as GroupUserData;
-			if (userGroupData.status !== "active") updateDoc(groupUserRef, { status: "active" });
+			if (userGroupData.status !== "active") {
+				updateDoc(groupUserRef, { status: "active" });
 
-			return true;
+				// Return that we newly joined the group as we we had previously left
+				return { new: true, ...(getData && { user: userGroupData, group: groupData! }) };
+			}
+
+			// Return that the user was already in the group
+			return { new: false, ...(getData && { user: userGroupData, group: groupData! }) };
 		}
 	} catch {}
 
 	// Join the group
+	const newUserData = templateNewUser(user);
 	try {
-		await setDoc(groupUserRef, { ...templateNewUser(user), customData: { inviteCode } });
+		await setDoc(groupUserRef, { ...newUserData, customData: { inviteCode } });
 
 		// Remove the custom data, required to add a doc into the group
 		await updateDoc(groupUserRef, { customData: deleteField() });
 	} catch {
-		// If joined failed return false
-		return false;
+		// If joined failed then throw
+		throw Error("Invalid code");
 	}
 
-	return true;
+	// Return that the user has joined the group
+	return { new: true, ...(getData && { user: newUserData, group: groupData! }) };
 }
 
 /**

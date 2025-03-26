@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { getUserGroups, type ExtendedGroupData } from "@/firebase/firestore/app";
+import { getUserGroups, type ExtendedGroupData } from "@/firebase/firestore/user";
 import { Plus } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
