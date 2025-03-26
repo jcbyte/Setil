@@ -1,4 +1,3 @@
-import { type VercelRequest, type VercelResponse } from "@vercel/node";
 import admin from "firebase-admin";
 
 admin.initializeApp({
@@ -17,7 +16,7 @@ admin.initializeApp({
 	}),
 });
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function (req, res) {
 	if (req.method === "POST") {
 		// Extract parameters
 		const { token, title, body } = req.body;
@@ -37,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// Send the notification
 			await admin.messaging().send(message);
 			res.status(200).json({ success: true });
-		} catch (error: any) {
+		} catch (error) {
 			res.status(500).json({ success: false, error: error.message });
 		}
 	} else {
