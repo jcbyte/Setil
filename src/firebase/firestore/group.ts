@@ -149,7 +149,7 @@ export async function cleanupInvites(groupId: string): Promise<void> {
  * Try and join a group with an invite code.
  * @param groupId id of the group.
  * @param inviteCode invite code to join the group.
- * @returns true if the user joins (or is already in) the group.
+ * @returns true if the user has newly joined the group.
  */
 export async function joinGroup(groupId: string, inviteCode: string): Promise<boolean> {
 	const user = getUser();
@@ -169,9 +169,15 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		if (userSnap.exists()) {
 			// Set ourselves to active in the group if we had previously been part of it
 			const userGroupData = userSnap.data() as GroupUserData;
-			if (userGroupData.status !== "active") updateDoc(groupUserRef, { status: "active" });
+			if (userGroupData.status !== "active") {
+				updateDoc(groupUserRef, { status: "active" });
 
-			return true;
+				// Return that we newly joined the group as we we had previously left
+				return true;
+			}
+
+			// Return that the user was already in the group
+			return false;
 		}
 	} catch {}
 
@@ -182,10 +188,11 @@ export async function joinGroup(groupId: string, inviteCode: string): Promise<bo
 		// Remove the custom data, required to add a doc into the group
 		await updateDoc(groupUserRef, { customData: deleteField() });
 	} catch {
-		// If joined failed return false
-		return false;
+		// If joined failed then throw
+		throw Error("Invalid code");
 	}
 
+	// Return that the user has joined the group
 	return true;
 }
 

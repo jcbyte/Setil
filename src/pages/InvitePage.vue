@@ -25,11 +25,15 @@ onMounted(async () => {
 		return;
 	}
 
-	const joined = await joinGroup(routeGroupId, routeInviteCode);
-	if (joined) {
-		toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
+	try {
+		const joined = await joinGroup(routeGroupId, routeInviteCode);
+
+		if (joined) {
+			toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
+		}
+
 		router.push(`/group/${routeGroupId}`);
-	} else {
+	} catch {
 		toast({
 			title: "Could Not Join Group",
 			description: "Ensure this link has not expired.",
@@ -37,7 +41,6 @@ onMounted(async () => {
 			duration: 5000,
 		});
 		router.push(`/`);
-		return;
 	}
 });
 </script>
