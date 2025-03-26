@@ -32,7 +32,7 @@ export async function initialiseUserData(): Promise<boolean> {
 	if (userDocSnap.exists()) return false;
 
 	// Create the users data area
-	await setDoc(userRef, { groups: [] } as UserData);
+	await setDoc(userRef, { groups: [], fcmTokens: [] } as UserData);
 	return true;
 }
 

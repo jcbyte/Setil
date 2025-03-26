@@ -6,6 +6,7 @@ export type TransactionCategory = "expense" | "payment";
 
 export interface UserData {
 	groups: string[];
+	fcmTokens: string[];
 }
 
 export interface GroupData {
