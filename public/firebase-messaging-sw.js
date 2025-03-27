@@ -17,32 +17,42 @@ firebase.initializeApp(firebaseConfig);
 messaging = firebase.messaging();
 
 // Handle messages when in the background
-messaging.onBackgroundMessage(function (payload) {
+messaging.onBackgroundMessage((payload) => {
 	const { title, body, route } = payload.data;
 	const notificationOptions = {
 		body,
 		icon: "https://setil.vercel.app/icon/icon-192.png",
 		badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
+		data: {
+			route: route,
+		},
 	};
 
 	self.registration.showNotification(title, notificationOptions);
 });
 
 self.addEventListener("notificationclick", (event) => {
-	console.log("On notification click: ", event.notification.tag);
+	// CLose the notification once clicked on
 	event.notification.close();
 
-	// This looks to see if the current is already open and focuses if it is
+	// Extract the route
+	const route = event.notification.data.route;
+	// todo go to this route
+
+	// Open the PWA app at the given route
+	const url = "http://localhost:3000/";
+
+	// Check if the app is already open
 	event.waitUntil(
-		clients
-			.matchAll({
-				type: "window",
-			})
-			.then((clientList) => {
-				for (const client of clientList) {
-					if (client.url === "/" && "focus" in client) return client.focus();
-				}
-				if (clients.openWindow) return clients.openWindow("/");
-			})
+		clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+			// If there's already an open client (window) then focus on it
+			const openClient = clientList.find((client) => client.url === url);
+			if (openClient) {
+				openClient.focus();
+			} else {
+				// If not then open the URL in a new window/tab
+				clients.openWindow(url);
+			}
+		})
 	);
 });
