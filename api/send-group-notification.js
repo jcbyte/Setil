@@ -43,18 +43,17 @@ export default async function (req, res) {
 			fcmTokens.push(...userSnap.get("fcmTokens"));
 		}
 
-		let message;
 		if (fcmTokens.length > 0) {
 			// Send notification to all users' fcm tokens
 			// https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
-			message = {
+			const message = {
 				tokens: fcmTokens,
 				data: { title, body, route: route ?? "/" },
 			};
 			await messaging.sendEachForMulticast(message);
 		}
 
-		return res.status(200).json({ success: true, message });
+		return res.status(200).json({ success: true });
 	} catch (error) {
 		return res.status(500).json({ success: false, error: error.message });
 	}

@@ -35,7 +35,7 @@ self.addEventListener("notificationclick", (event) => {
 	// CLose the notification once clicked on
 	event.notification.close();
 
-	const url = "http://localhost:3000";
+	const url = self.location.origin;
 	// Extract the route
 	const { route } = event.notification.data;
 	const wantedRoute = route && `${url}${route}`;
