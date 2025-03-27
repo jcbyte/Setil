@@ -15,14 +15,13 @@ export default async function (req, res) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
 
-	// todo reenable auth
-	// // Get user who performed the request
-	// let user;
-	// try {
-	// 	user = await auth.verifyIdToken(jwt);
-	// } catch (e) {
-	// 	return res.status(401).json({ success: false, error: "Unauthorized" });
-	// }
+	// Get user who performed the request
+	let user;
+	try {
+		user = await auth.verifyIdToken(jwt);
+	} catch (e) {
+		return res.status(401).json({ success: false, error: "Unauthorized" });
+	}
 
 	try {
 		// Get list of all userId's who are active in the group (without getting all their data)
@@ -30,11 +29,10 @@ export default async function (req, res) {
 		const groupUsersMetaSnap = await groupUsersRef.where("status", "==", "active").select().get();
 		const userIds = groupUsersMetaSnap.docs.map((doc) => doc.id);
 
-		// todo reenable auth
-		// // Verify that the user asking for the notification is in the group
-		// if (!userIds.some((userId) => userId === user.uid)) {
-		// 	return res.status(401).json({ success: false, error: "Unauthorized" });
-		// }
+		// Verify that the user asking for the notification is in the group
+		if (!userIds.some((userId) => userId === user.uid)) {
+			return res.status(401).json({ success: false, error: "Unauthorized" });
+		}
 
 		// Get list of all fcm tokens for active users
 		const fcmTokens = [];

@@ -31,7 +31,12 @@ onMounted(async () => {
 
 		if (joined) {
 			toast({ title: "Joined Group", description: "Time to make cents of things.", duration: 5000 });
-			sendNotification(routeGroupId, groupData.name, `${userData.name} just joined the group!`);
+			sendNotification(
+				routeGroupId,
+				groupData.name,
+				`${userData.name} just joined the group!`,
+				`/group/${routeGroupId}`
+			);
 		}
 		router.push(`/group/${routeGroupId}`);
 	} catch {

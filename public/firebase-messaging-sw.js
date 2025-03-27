@@ -31,6 +31,7 @@ messaging.onBackgroundMessage((payload) => {
 	self.registration.showNotification(title, notificationOptions);
 });
 
+// Handle clicking on a notification
 self.addEventListener("notificationclick", (event) => {
 	// CLose the notification once clicked on
 	event.notification.close();
