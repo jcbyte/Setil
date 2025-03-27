@@ -14,6 +14,7 @@ import {
 	query,
 	setDoc,
 	updateDoc,
+	where,
 	WriteBatch,
 } from "firebase/firestore";
 import { app } from "../firebase";
@@ -94,8 +95,9 @@ export async function getUserGroups(removeUnknownGroups: boolean = true): Promis
 					}
 
 					// Get the last 3 active users to display
-					const usersCount = await getCountFromServer(groupUsersRef);
-					const topUsersQuery = query(groupUsersRef, orderBy("lastUpdate"), limit(3));
+					const activeUsersQuery = query(groupUsersRef, where("status", "==", "active"));
+					const usersCount = await getCountFromServer(activeUsersQuery);
+					const topUsersQuery = query(activeUsersQuery, orderBy("lastUpdate"), limit(3));
 					const topUsersSnap = await getDocs(topUsersQuery);
 
 					const data: ExtendedGroupData = {
