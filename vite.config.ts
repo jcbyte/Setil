@@ -13,7 +13,7 @@ const manifest: Partial<ManifestOptions> = {
 	background_color: "#09090b",
 	theme_color: "#09090b",
 	icons: [
-		{ src: "/icon/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32" },
+		{ src: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32" },
 		{ src: "/icon/icon-192.png", type: "image/png", sizes: "192x192" },
 		{ src: "/icon/icon-512.png", type: "image/png", sizes: "512x512" },
 		{ src: "/icon/icon-192-maskable.png", type: "image/png", sizes: "192x192", purpose: "maskable" },
