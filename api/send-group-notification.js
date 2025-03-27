@@ -49,17 +49,7 @@ export default async function (req, res) {
 			// https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
 			message = {
 				tokens: fcmTokens,
-				notification: { title, body },
-				// https://developer.mozilla.org/en-US/docs/Web/API/Notification
-				webpush: {
-					notification: {
-						icon: "https://setil.vercel.app/icon/icon-192.png",
-						badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
-					},
-				},
-				data: {
-					route,
-				},
+				data: { title, body, route },
 			};
 			await messaging.sendEachForMulticast(message);
 		}

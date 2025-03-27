@@ -16,6 +16,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 messaging = firebase.messaging();
 
+// Handle messages when in the background
+messaging.onBackgroundMessage(function (payload) {
+	const { title, body, route } = payload.data;
+	const notificationOptions = {
+		body,
+		icon: "https://setil.vercel.app/icon/icon-192.png",
+		badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
+	};
+
+	self.registration.showNotification(title, notificationOptions);
+});
+
 self.addEventListener("notificationclick", (event) => {
 	console.log("On notification click: ", event.notification.tag);
 	event.notification.close();
