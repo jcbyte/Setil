@@ -49,7 +49,7 @@ export default async function (req, res) {
 			// https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
 			message = {
 				tokens: fcmTokens,
-				data: { title, body, route },
+				data: { title, body, route: route ?? "/" },
 			};
 			await messaging.sendEachForMulticast(message);
 		}

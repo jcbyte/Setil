@@ -24,7 +24,7 @@ messaging.onBackgroundMessage((payload) => {
 		icon: "https://setil.vercel.app/icon/icon-192.png",
 		badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
 		data: {
-			route: route,
+			route,
 		},
 	};
 
@@ -35,23 +35,23 @@ self.addEventListener("notificationclick", (event) => {
 	// CLose the notification once clicked on
 	event.notification.close();
 
+	const url = "http://localhost:3000";
 	// Extract the route
-	const route = event.notification.data.route;
-	// todo go to this route
-
-	// Open the PWA app at the given route
-	const url = "http://localhost:3000/";
+	const { route } = event.notification.data;
+	const wantedRoute = route && `${url}${route}`;
 
 	// Check if the app is already open
 	event.waitUntil(
 		clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
 			// If there's already an open client (window) then focus on it
-			const openClient = clientList.find((client) => client.url === url);
+			const openClient = clientList.find((client) => new URL(client.url).origin === url);
 			if (openClient) {
+				console.log(openClient);
 				openClient.focus();
+				// if (wantedRoute) openClient.navigate(wantedRoute); // ! This causes issues as the `openClient` is not being controlled by this sw
 			} else {
 				// If not then open the URL in a new window/tab
-				clients.openWindow(url);
+				clients.openWindow(wantedRoute ?? url);
 			}
 		})
 	);

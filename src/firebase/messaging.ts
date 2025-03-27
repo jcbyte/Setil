@@ -32,7 +32,7 @@ export async function requestPushNotificationPermission(): Promise<void> {
  * @param body body of the notification.
  * @returns true if it was successful.
  */
-export async function sendNotification(groupId: string, title: string, body: string): Promise<boolean> {
+export async function sendNotification(groupId: string, title: string, body: string, route?: string): Promise<boolean> {
 	const user = getUser();
 
 	const res = await fetch("/api/send-group-notification", {
@@ -40,7 +40,7 @@ export async function sendNotification(groupId: string, title: string, body: str
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ jwt: await user.getIdToken(), groupId: groupId, title, body }),
+		body: JSON.stringify({ jwt: await user.getIdToken(), groupId: groupId, title, body, ...(route && { route }) }),
 	}).then((res) => res.json());
 
 	return res.success;
