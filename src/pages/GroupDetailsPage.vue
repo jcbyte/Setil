@@ -505,17 +505,15 @@ async function deleteGroup() {
 									<DropdownMenuTrigger as-child>
 										<Button
 											variant="outline"
-											:disabled="
-												userId === groupData?.owner || user.status !== 'active' || isUpdatingMember.includes(userId)
-											"
+											:disabled="userId === groupData?.owner || isUpdatingMember.includes(userId)"
 										>
 											<LoaderIcon
-												v-if="user.status === 'active' && userId !== groupData?.owner"
+												v-if="userId !== groupData?.owner"
 												:icon="ChevronDown"
 												:loading="isUpdatingMember.includes(userId)"
 											/>
 											<span>
-												{{ user.status === "active" ? (userId === groupData?.owner ? "Owner" : "Actions") : "Left" }}
+												{{ userId === groupData?.owner ? "Owner" : "Actions" }}
 											</span>
 										</Button>
 									</DropdownMenuTrigger>
@@ -526,14 +524,14 @@ async function deleteGroup() {
 												<Pencil class="!size-5" />
 											</div>
 										</DropdownMenuItem>
-										<DropdownMenuItem @click="openPromoteDialog({ userId })">
+										<DropdownMenuItem @click="openPromoteDialog({ userId })" :disabled="user.status !== 'active'">
 											<div class="w-full flex justify-between items-center">
 												<span>Promote</span>
 												<ArrowBigUpDash class="!size-5" />
 											</div>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
-										<DropdownMenuItem @click="removeMember(userId)">
+										<DropdownMenuItem @click="removeMember(userId)" :disabled="user.status !== 'active'">
 											<div class="w-full flex justify-between items-center">
 												<span class="text-red-400">Remove</span>
 												<Trash class="text-red-400 !size-5" />
