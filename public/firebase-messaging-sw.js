@@ -15,40 +15,21 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-const messaging = firebase.messaging();
-
-// Handle messages when in the background
-// messaging.onBackgroundMessage(function (payload) {
-// 	const notificationTitle = payload.notification.title;
-// 	const notificationOptions = {
-// 		body: payload.notification.body,
-// 		icon: "/icon/icon-192.png",
-// 	};
-
-// 	self.registration.showNotification(notificationTitle, notificationOptions);
-// });
-
-self.addEventListener("notificationclick", function (event) {
-	// Close the notification
+self.addEventListener("notificationclick", (event) => {
+	console.log("On notification click: ", event.notification.tag);
 	event.notification.close();
 
-	const appLink = "https://setil.vercel.app";
-	// Extract route to open too
-	const route = event.notification.data?.route;
-	console.log(route);
-	// todo load route
-
+	// This looks to see if the current is already open and focuses if it is
 	event.waitUntil(
-		clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-			// Focus on the open tab if it exists
-			for (let client of clientList) {
-				if (client.url === appLink && "focus" in client) {
-					return client.focus();
+		clients
+			.matchAll({
+				type: "window",
+			})
+			.then((clientList) => {
+				for (const client of clientList) {
+					if (client.url === "/" && "focus" in client) return client.focus();
 				}
-			}
-
-			// Open a new tab if no matching window is open
-			return clients.openWindow(appLink);
-		})
+				if (clients.openWindow) return clients.openWindow("/");
+			})
 	);
 });

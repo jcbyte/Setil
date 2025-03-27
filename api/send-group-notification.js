@@ -56,9 +56,9 @@ export default async function (req, res) {
 						icon: "https://setil.vercel.app/icon/icon-192.png",
 						badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
 					},
-					// data: {
-					// 	route,
-					// },
+				},
+				data: {
+					route,
 				},
 			};
 			await messaging.sendEachForMulticast(message);
