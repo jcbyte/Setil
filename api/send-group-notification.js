@@ -43,10 +43,11 @@ export default async function (req, res) {
 			fcmTokens.push(...userSnap.get("fcmTokens"));
 		}
 
+		let message;
 		if (fcmTokens.length > 0) {
 			// Send notification to all users' fcm tokens
 			// https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
-			const message = {
+			message = {
 				tokens: fcmTokens,
 				notification: { title, body },
 				// https://developer.mozilla.org/en-US/docs/Web/API/Notification
@@ -55,15 +56,15 @@ export default async function (req, res) {
 						icon: "https://setil.vercel.app/icon/icon-192.png",
 						badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
 					},
-				},
-				data: {
-					route,
+					// data: {
+					// 	route,
+					// },
 				},
 			};
 			await messaging.sendEachForMulticast(message);
 		}
 
-		return res.status(200).json({ success: true });
+		return res.status(200).json({ success: true, message });
 	} catch (error) {
 		return res.status(500).json({ success: false, error: error.message });
 	}
