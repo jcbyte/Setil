@@ -204,7 +204,8 @@ const onSubmit = handleSubmit(async (values) => {
 					values.amount,
 					groupData.value!.currency,
 					false
-				)}.`
+				)}.`,
+				`/group/${groupId.value}?tab=activity`
 			);
 		}
 
