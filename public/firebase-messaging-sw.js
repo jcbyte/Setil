@@ -28,27 +28,27 @@
 // 	self.registration.showNotification(notificationTitle, notificationOptions);
 // });
 
-self.addEventListener("notificationclick", function (event) {
-	// Close the notification
-	event.notification.close();
+// self.addEventListener("notificationclick", function (event) {
+// 	// Close the notification
+// 	event.notification.close();
 
-	// Extract route to open too
-	const appLink = "https://setil.vercel.app";
-	const route = event.notification.data?.route;
-	console.log(route);
-	// todo load route
+// 	// Extract route to open too
+// 	const appLink = "https://setil.vercel.app";
+// 	const route = event.notification.data?.route;
+// 	console.log(route);
+// 	// todo load route
 
-	event.waitUntil(
-		clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-			// Focus on the open tab if it exists
-			for (let client of clientList) {
-				if (client.url === appLink && "focus" in client) {
-					return client.focus();
-				}
-			}
+// 	event.waitUntil(
+// 		clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+// 			// Focus on the open tab if it exists
+// 			for (let client of clientList) {
+// 				if (client.url === appLink && "focus" in client) {
+// 					return client.focus();
+// 				}
+// 			}
 
-			// Open a new tab if no matching window is open
-			return clients.openWindow(appLink);
-		})
-	);
-});
+// 			// Open a new tab if no matching window is open
+// 			return clients.openWindow(appLink);
+// 		})
+// 	);
+// });
