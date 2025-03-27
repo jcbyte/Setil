@@ -10,7 +10,7 @@ export default async function (req, res) {
 	}
 
 	// Extract parameters
-	const { jwt, groupId, title, body } = req.body;
+	const { jwt, groupId, title, body, route } = req.body;
 	if (!jwt || !groupId || !title || !body) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
@@ -53,13 +53,12 @@ export default async function (req, res) {
 				webpush: {
 					notification: {
 						icon: "https://setil.vercel.app/icon/icon-192.png",
-						badge:
-							"https://raw.githubusercontent.com/jcbyte/Setil/refs/heads/60-two-push-notifications-are-sent/public/icon/mask-monochrome-96.png",
+						badge: "https://setil.vercel.app/icon/mask-monochrome-96.png",
 					},
 				},
-				// data: {
-				// 	route: "/specific-route",
-				// },
+				data: {
+					route,
+				},
 			};
 			await messaging.sendEachForMulticast(message);
 		}
