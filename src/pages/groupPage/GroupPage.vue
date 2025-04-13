@@ -93,7 +93,7 @@ async function addMember() {
 							},
 							{
 								icon: Wallet,
-								title: 'Settle Up',
+								title: 'Setil Up',
 								description: 'Settle member\'s debts',
 								onClick: () => router.push(`/group/${groupId}/settle`),
 							},

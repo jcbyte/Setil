@@ -209,7 +209,7 @@ const onSubmit = handleSubmit(async (values) => {
 				<Button variant="ghost" class="size-9" @click="router.push(`/group/${routeGroupId}`)">
 					<ArrowLeft class="!size-6" />
 				</Button>
-				<span class="text-lg font-semibold">Settle Up</span>
+				<span class="text-lg font-semibold">Setil Up</span>
 			</div>
 			<div class="flex gap-2 justify-center items-center">
 				<YourAccountSettings />
