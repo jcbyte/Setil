@@ -393,7 +393,7 @@ async function deleteGroup() {
 										</FormControl>
 										<SelectContent>
 											<SelectItem v-for="(currency, currencyId) in CurrencySettings" :value="currencyId">
-												{{ currency.name }} ({{ currency.symbol }})
+												{{ currency.name }} ({{ currency.symbol.trim() }})
 											</SelectItem>
 										</SelectContent>
 									</Select>
