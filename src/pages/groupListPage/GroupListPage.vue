@@ -2,24 +2,28 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { getUserGroups, type ExtendedGroupData } from "@/firebase/firestore/user";
+import { useGroupList } from "@/composables/useGroupList";
+import type { ExtendedGroupData } from "@/firebase/firestore/user";
 import { Plus } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import GroupListItem from "./GroupListItem.vue";
 
 const router = useRouter();
 
-const groups = ref<[string, ExtendedGroupData][]>();
+const { groupList, refreshList } = useGroupList();
+const groups = computed<[string, ExtendedGroupData][] | null>(() =>
+	groupList.value
+		? Object.entries(groupList.value).sort(
+				([, transactionA]: [string, ExtendedGroupData], [, transactionB]: [string, ExtendedGroupData]) => {
+					return transactionB.lastUpdate.seconds - transactionA.lastUpdate.seconds;
+				}
+		  )
+		: null
+);
 
 onMounted(() => {
-	getUserGroups().then((groupsList) => {
-		groups.value = Object.entries(groupsList).sort(
-			([, transactionA]: [string, ExtendedGroupData], [, transactionB]: [string, ExtendedGroupData]) => {
-				return transactionB.lastUpdate.seconds - transactionA.lastUpdate.seconds;
-			}
-		);
-	});
+	refreshList();
 });
 </script>
 
