@@ -1,6 +1,6 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type Currency = "gbp" | "usd" | "eur";
+export type Currency = "gbp" | "usd" | "eur" | "pln";
 
 export type TransactionCategory = "expense" | "payment";
 

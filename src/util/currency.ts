@@ -4,6 +4,8 @@ import type { Currency } from "@/firebase/types";
 export interface CurrencyData {
 	name: string;
 	symbol: string;
+	symbolAfter?: boolean;
+	separator?: string;
 	decimals: number;
 }
 
@@ -11,13 +13,23 @@ export const CurrencySettings: Record<Currency, CurrencyData> = {
 	gbp: { name: "Pound Sterling", symbol: "£", decimals: 2 },
 	usd: { name: "US Dollar", symbol: "$", decimals: 2 },
 	eur: { name: "Euro", symbol: "€", decimals: 2 },
+	pln: { name: "Polish Zloty", symbol: " zł", symbolAfter: true, separator: ",", decimals: 2 },
 };
 
 export function formatCurrency(amount: number, currency: Currency, firebaseAmount: boolean = true): string {
+	const currencySetting = CurrencySettings[currency];
+
 	const realAmount = firebaseAmount ? fromFirestoreAmount(amount, currency) : amount;
 	const negative = realAmount < 0;
-	const formattedAmount = Math.abs(realAmount).toFixed(CurrencySettings[currency].decimals);
-	return `${negative ? "-" : ""}${CurrencySettings[currency].symbol}${formattedAmount}`;
+	let formattedAmount = Math.abs(realAmount).toFixed(currencySetting.decimals);
+	if (currencySetting.separator) formattedAmount = formattedAmount.replace(".", currencySetting.separator);
+
+	return (
+		(negative ? "-" : "") +
+		(!currencySetting.symbolAfter ? currencySetting.symbol : "") +
+		formattedAmount +
+		(currencySetting.symbolAfter ? currencySetting.symbol : "")
+	);
 }
 
 export function fromFirestoreAmount(amount: number, currency: Currency) {
