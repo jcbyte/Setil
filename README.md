@@ -4,7 +4,7 @@ A cost-splitting web app that allows you to create groups, invite others, and ea
 
 ## Production Build
 
-https://setil.vercel.app/
+[setil.joelcutler.dev/](https://setil.joelcutler.dev/)
 
 ## Run Locally
 
