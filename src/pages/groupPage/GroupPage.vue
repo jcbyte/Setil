@@ -22,9 +22,18 @@ const { toast } = useToast();
 const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
-const currentTab = ref(
-	route.query.tab && ["summary", "activity"].includes(String(route.query.tab)) ? String(route.query.tab) : "summary"
+type Tab = "summary" | "activity";
+const tabSettings: Record<Tab, { title: string }> = {
+	summary: { title: "Summary" },
+	activity: { title: "Activity" },
+};
+const tabOrder: Tab[] = ["summary", "activity"];
+const currentTab = ref<Tab>(
+	typeof route.query.tab === "string" && tabOrder.includes(route.query.tab as Tab)
+		? (route.query.tab as Tab)
+		: tabOrder[0]
 );
+
 watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 
 const isAddingMember = ref<boolean>(false);
@@ -40,6 +49,41 @@ async function addMember() {
 	}
 	isAddingMember.value = false;
 }
+
+let touchStartX = 0;
+
+function tabViewTouchStart(e: TouchEvent) {
+	touchStartX = e.changedTouches[0].clientX;
+}
+
+function tabViewTouchEnd(e: TouchEvent) {
+	const touchEndX = e.changedTouches[0].clientX;
+	const deltaX = touchEndX - touchStartX;
+
+	const swipeThreshold = 50; // px
+
+	const originalTabIndex = tabOrder.indexOf(currentTab.value);
+	let newTabIndex = originalTabIndex;
+
+	// Swiped right, go to previous tab
+	if (deltaX > swipeThreshold) newTabIndex--;
+	// Swiped left, go to next tab
+	else if (deltaX < -swipeThreshold) newTabIndex++;
+
+	newTabIndex = Math.max(0, Math.min(newTabIndex, tabOrder.length - 1));
+
+	if (newTabIndex != originalTabIndex) {
+		currentTab.value = tabOrder[newTabIndex];
+	}
+}
+
+const tabTransition = ref<"fade-slide" | "fade-slide-right">("fade-slide");
+
+watch(currentTab, (newTab, oldTab) => {
+	const oldIndex = tabOrder.indexOf(oldTab);
+	const newIndex = tabOrder.indexOf(newTab);
+	tabTransition.value = newIndex <= oldIndex ? "fade-slide" : "fade-slide-right";
+});
 </script>
 
 <template>
@@ -62,17 +106,16 @@ async function addMember() {
 
 		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
 			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
-				<Tabs :default-value="route.query.tab ? String(route.query.tab) : 'summary'" v-model:model-value="currentTab">
+				<Tabs v-model:model-value="currentTab">
 					<TabsList class="grid w-full grid-cols-2">
-						<TabsTrigger value="summary">Summary</TabsTrigger>
-						<TabsTrigger value="activity">Activity</TabsTrigger>
+						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div v-if="groupId" class="relative">
-					<Transition name="fade-slide" mode="out-in">
+				<div v-if="groupId" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
+					<Transition :name="tabTransition" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
 						<GroupActivity
-							v-else
+							v-else-if="currentTab === 'activity'"
 							:group-id="groupId"
 							:group-data="groupData!"
 							:users="users!"
