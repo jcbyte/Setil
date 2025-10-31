@@ -19,6 +19,7 @@ import { sendNotification } from "@/firebase/messaging";
 import type { Transaction, TransactionCategory } from "@/firebase/types";
 import { CategorySettings } from "@/util/category";
 import { CurrencySettings, formatCurrency, fromFirestoreAmount, toFirestoreAmount } from "@/util/currency";
+import { gcdN } from "@/util/math";
 import { getLeftUsersInTransaction, getRouteParam, splitAmountEven, splitAmountRatio, sumRecord } from "@/util/util";
 import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -53,6 +54,15 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			transactionDate.getDate()
 		);
 
+		// Only include active members (Unless this transaction contains an inactive member)
+		const transactionTo = Object.fromEntries(
+			Object.entries(users.value!)
+				.filter(([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from)
+				.map(([userId]) => [userId, transaction.to[userId]])
+		);
+		// Remove the `undefined` and `0` values in gcd calculation
+		const transactionGcd = gcdN(Object.values(transactionTo).filter((v) => v));
+
 		setValues({
 			title: transaction.title,
 			date: transactionCalendarDate.toString(),
@@ -61,13 +71,11 @@ const { groupId, groupData, users, transactions } = useGroup(routeGroupId, () =>
 			category: transaction.category,
 			to: {
 				type: "ratio",
-				// Only include active members (Unless this transaction contains an inactive member)
 				people: Object.fromEntries(
-					Object.entries(users.value!)
-						.filter(
-							([userId, user]) => user.status === "active" || transaction.to[userId] || userId === transaction.from
-						)
-						.map(([userId]) => [userId, { selected: Boolean(transaction.to[userId]), num: transaction.to[userId] }])
+					Object.entries(transactionTo).map(([userId, amount]) => [
+						userId,
+						{ selected: Boolean(amount), num: amount ? amount / transactionGcd : undefined },
+					])
 				),
 			},
 		});
