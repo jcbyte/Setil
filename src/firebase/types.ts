@@ -2,7 +2,7 @@ import type { Timestamp } from "firebase/firestore";
 
 export type Currency = "gbp" | "usd" | "eur" | "pln";
 
-export type TransactionCategory = "expense" | "payment";
+export type TransactionCategory = "expense" | "food" | "transport" | "fuel" | "event" | "bill" | "payment";
 
 export interface UserData {
 	groups: string[];

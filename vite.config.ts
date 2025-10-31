@@ -2,6 +2,7 @@ import vue from "@vitejs/plugin-vue";
 import path from "node:path";
 import { defineConfig } from "vite";
 import { ManifestOptions, VitePWA } from "vite-plugin-pwa";
+import pkg from "./package.json";
 
 const manifest: Partial<ManifestOptions> = {
 	name: "Setil",
@@ -31,5 +32,8 @@ export default defineConfig({
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
 		},
+	},
+	define: {
+		__APP_VERSION__: JSON.stringify(pkg.version),
 	},
 });

@@ -3,6 +3,7 @@ import GoogleGLogo from "@/assets/GoogleGLogo.svg";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { signIn } from "@/util/app";
+const version = __APP_VERSION__;
 </script>
 
 <template>
@@ -17,6 +18,6 @@ import { signIn } from "@/util/app";
 			<span class="font-semibold">Continue with Google</span>
 		</Button>
 		<!-- Update here when version increases -->
-		<span class="text-sm text-muted-foreground text-center">Setil v1.0.0 by Joel Cutler</span>
+		<span class="text-sm text-muted-foreground text-center">Setil v{{ version }} by Joel Cutler</span>
 	</div>
 </template>
