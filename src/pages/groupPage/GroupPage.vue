@@ -76,6 +76,14 @@ function tabViewTouchEnd(e: TouchEvent) {
 		currentTab.value = tabOrder[newTabIndex];
 	}
 }
+
+const tabTransition = ref<"fade-slide" | "fade-slide-right">("fade-slide");
+
+watch(currentTab, (newTab, oldTab) => {
+	const oldIndex = tabOrder.indexOf(oldTab);
+	const newIndex = tabOrder.indexOf(newTab);
+	tabTransition.value = newIndex <= oldIndex ? "fade-slide" : "fade-slide-right";
+});
 </script>
 
 <template>
@@ -104,7 +112,7 @@ function tabViewTouchEnd(e: TouchEvent) {
 					</TabsList>
 				</Tabs>
 				<div v-if="groupId" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
-					<Transition name="fade-slide" mode="out-in">
+					<Transition :name="tabTransition" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
 						<GroupActivity
 							v-else-if="currentTab === 'activity'"

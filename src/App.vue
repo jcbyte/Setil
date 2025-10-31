@@ -65,6 +65,7 @@ useColorMode().value = "dark";
 </style>
 
 <style>
+/* Slide left (default) */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
 	transition: 0.1s ease;
@@ -77,5 +78,20 @@ useColorMode().value = "dark";
 .fade-slide-leave-to {
 	opacity: 0;
 	transform: translateX(1rem);
+}
+
+/* Slide right */
+.fade-slide-right-enter-active,
+.fade-slide-right-leave-active {
+	transition: 0.1s ease;
+}
+
+.fade-slide-right-enter-from {
+	opacity: 0;
+	transform: translateX(1rem);
+}
+.fade-slide-right-leave-to {
+	opacity: 0;
+	transform: translateX(-1rem);
 }
 </style>
