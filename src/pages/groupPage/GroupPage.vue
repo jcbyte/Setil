@@ -49,6 +49,33 @@ async function addMember() {
 	}
 	isAddingMember.value = false;
 }
+
+let touchStartX = 0;
+
+function tabViewTouchStart(e: TouchEvent) {
+	touchStartX = e.changedTouches[0].clientX;
+}
+
+function tabViewTouchEnd(e: TouchEvent) {
+	const touchEndX = e.changedTouches[0].clientX;
+	const deltaX = touchEndX - touchStartX;
+
+	const swipeThreshold = 50; // px
+
+	const originalTabIndex = tabOrder.indexOf(currentTab.value);
+	let newTabIndex = originalTabIndex;
+
+	// Swiped right, go to previous tab
+	if (deltaX > swipeThreshold) newTabIndex--;
+	// Swiped left, go to next tab
+	else if (deltaX < -swipeThreshold) newTabIndex++;
+
+	newTabIndex = Math.max(0, Math.min(newTabIndex, tabOrder.length - 1));
+
+	if (newTabIndex != originalTabIndex) {
+		currentTab.value = tabOrder[newTabIndex];
+	}
+}
 </script>
 
 <template>
@@ -76,7 +103,7 @@ async function addMember() {
 						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<div v-if="groupId" class="relative">
+				<div v-if="groupId" class="relative" @touchstart="tabViewTouchStart" @touchend="tabViewTouchEnd">
 					<Transition name="fade-slide" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
 						<GroupActivity
