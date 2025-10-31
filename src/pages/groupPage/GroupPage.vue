@@ -22,9 +22,18 @@ const { toast } = useToast();
 const routeGroupId = getRouteParam(route.params.groupId);
 const { groupId, groupData, users, transactions } = useGroup(routeGroupId);
 
-const currentTab = ref(
-	route.query.tab && ["summary", "activity"].includes(String(route.query.tab)) ? String(route.query.tab) : "summary"
+type Tab = "summary" | "activity";
+const tabSettings: Record<Tab, { title: string }> = {
+	summary: { title: "Summary" },
+	activity: { title: "Activity" },
+};
+const tabOrder: Tab[] = ["summary", "activity"];
+const currentTab = ref<Tab>(
+	typeof route.query.tab === "string" && tabOrder.includes(route.query.tab as Tab)
+		? (route.query.tab as Tab)
+		: tabOrder[0]
 );
+
 watch(currentTab, (newTab) => router.push({ query: { tab: newTab } }));
 
 const isAddingMember = ref<boolean>(false);
@@ -62,17 +71,16 @@ async function addMember() {
 
 		<div class="flex flex-col justify-center md:flex-row gap-2 w-full">
 			<div class="flex-1 flex flex-col gap-2 w-full md:max-w-[36rem]">
-				<Tabs :default-value="route.query.tab ? String(route.query.tab) : 'summary'" v-model:model-value="currentTab">
+				<Tabs v-model:model-value="currentTab">
 					<TabsList class="grid w-full grid-cols-2">
-						<TabsTrigger value="summary">Summary</TabsTrigger>
-						<TabsTrigger value="activity">Activity</TabsTrigger>
+						<TabsTrigger v-for="tab in tabOrder" :value="tab">{{ tabSettings[tab].title }}</TabsTrigger>
 					</TabsList>
 				</Tabs>
 				<div v-if="groupId" class="relative">
 					<Transition name="fade-slide" mode="out-in">
 						<GroupSummary v-if="currentTab === 'summary'" :group-data="groupData!" :users="users!" />
 						<GroupActivity
-							v-else
+							v-else-if="currentTab === 'activity'"
 							:group-id="groupId"
 							:group-data="groupData!"
 							:users="users!"
