@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
 import { getPaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
@@ -229,7 +230,8 @@ async function clearDetails() {
 					</div>
 
 					<form class="flex flex-col gap-4" @submit="onSubmit">
-						<div class="flex flex-col gap-2">
+						<Skeleton v-if="isInitialLoading" class="rounded-lg h-[300px] w-full" />
+						<div v-else class="flex flex-col gap-2">
 							<FormField v-slot="{ componentField }" name="system" :validate-on-blur="!isFieldDirty">
 								<FormItem>
 									<FormLabel>Banking System</FormLabel>
@@ -437,7 +439,7 @@ async function clearDetails() {
 						<div class="flex gap-2 justify-between items-center">
 							<Button
 								type="button"
-								:disabled="isDetailsUpdating"
+								:disabled="isDetailsUpdating || isInitialLoading"
 								variant="outline"
 								class="w-fit place-self-end"
 								@click="clearDetails()"
@@ -445,7 +447,7 @@ async function clearDetails() {
 								<LoaderIcon :icon="CircleX" :loading="isDetailsUpdating" />
 								<span>Clear Details</span>
 							</Button>
-							<Button type="submit" :disabled="isDetailsUpdating" class="w-fit place-self-end">
+							<Button type="submit" :disabled="isDetailsUpdating || isInitialLoading" class="w-fit place-self-end">
 								<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
 								<span>Save</span>
 							</Button>
