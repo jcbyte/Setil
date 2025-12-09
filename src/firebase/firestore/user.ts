@@ -1,3 +1,4 @@
+import type { PaymentDetails } from "@/util/paymentDetails";
 import {
 	arrayRemove,
 	arrayUnion,
@@ -48,7 +49,7 @@ export interface ExtendedGroupData extends GroupData {
 }
 
 /**
- * Get a list of the user's groups, including there extended data.
+ * Get a list of the user's groups, including their extended data.
  * @param removeUnknownGroups if true, groups that the user does not have access to or have been deleted will be removed from the user.
  * @returns a list of the user's groups, including there data.
  * @throws an error if the user does not exist.
@@ -185,4 +186,24 @@ export async function addFwcToken(fcmToken: string): Promise<void> {
 	await updateDoc(userRef, {
 		fcmTokens: arrayUnion(fcmToken),
 	});
+}
+
+// TODO encryption
+export async function getPaymentDetails(userId?: string) {
+	const userRef = doc(db, "users", userId ?? getUser().uid);
+	const paymentDetailsRef = doc(userRef, "public", "paymentDetails");
+
+	const detailsSnap = await getDoc(paymentDetailsRef);
+	const details = detailsSnap.data() as PaymentDetails;
+
+	return details;
+}
+
+export async function setPaymentDetails(details: PaymentDetails) {
+	const user = getUser();
+
+	const userRef = doc(db, "users", user.uid);
+	const paymentDetailsRef = doc(userRef, "public", "paymentDetails");
+
+	await setDoc(paymentDetailsRef, details);
 }

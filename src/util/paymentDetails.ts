@@ -1,3 +1,16 @@
+export type BankingSystem = "UK" | "US" | "SEPA" | "SWIFT";
+
+export interface BankingSystemData {
+	name: string;
+}
+
+export const BankingSystemSettings: Record<BankingSystem, BankingSystemData> = {
+	UK: { name: "UK (Sort Code & Account Number)" },
+	US: { name: "US (Routing & Account Number)" },
+	SEPA: { name: "SEPA (IBAN & BIC)" },
+	SWIFT: { name: "SWIFT (International)" },
+};
+
 export interface UK_PaymentDetails {
 	name: string;
 	sortCode: string;
@@ -18,13 +31,19 @@ export interface SEPA_PaymentDetails {
 
 export interface SWIFT_PaymentDetails {
 	name: string;
-	IBAN: string;
 	SWIFT: string;
+	IBAN: string;
+	bankName?: string;
+	bankAddress?: string;
 }
 
-export type PaymentDetails =
-	| { type: "none" }
-	| ({ type: "UK" } & UK_PaymentDetails)
-	| ({ type: "US" } & US_PaymentDetails)
-	| ({ type: "SEPA" } & SEPA_PaymentDetails)
-	| ({ type: "SWIFT" } & SWIFT_PaymentDetails);
+export interface PaymentDetailMap {
+	UK: UK_PaymentDetails;
+	US: US_PaymentDetails;
+	SEPA: SEPA_PaymentDetails;
+	SWIFT: SWIFT_PaymentDetails;
+}
+
+export type PaymentDetails = {
+	[K in keyof PaymentDetailMap]: { type: K } & PaymentDetailMap[K];
+}[keyof PaymentDetailMap];
