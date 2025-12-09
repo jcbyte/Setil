@@ -189,7 +189,7 @@ export async function addFwcToken(fcmToken: string): Promise<void> {
 }
 
 // TODO encryption
-export async function getPaymentDetails(userId?: string) {
+export async function getPaymentDetails(userId?: string): Promise<PaymentDetails | null> {
 	const userRef = doc(db, "users", userId ?? getUser().uid);
 	const paymentDetailsRef = doc(userRef, "public", "paymentDetails");
 
@@ -199,7 +199,7 @@ export async function getPaymentDetails(userId?: string) {
 	return details;
 }
 
-export async function setPaymentDetails(details: PaymentDetails) {
+export async function setPaymentDetails(details: PaymentDetails | null) {
 	const user = getUser();
 
 	const userRef = doc(db, "users", user.uid);

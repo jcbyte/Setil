@@ -26,15 +26,15 @@ export interface US_PaymentDetails {
 export interface SEPA_PaymentDetails {
 	name: string;
 	IBAN: string;
-	BIC?: string;
+	BIC: string | null;
 }
 
 export interface SWIFT_PaymentDetails {
 	name: string;
 	SWIFT: string;
 	IBAN: string;
-	bankName?: string;
-	bankAddress?: string;
+	bankName: string | null;
+	bankAddress: string | null;
 }
 
 export interface PaymentDetailMap {

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { BankingSystemSettings } from "@/util/paymentDetails";
+import { setPaymentDetails } from "@/firebase/firestore/user";
+import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetails";
 import { toTypedSchema } from "@vee-validate/zod";
 import { ArrowLeft, Save } from "lucide-vue-next";
 import { useForm } from "vee-validate";
@@ -94,9 +95,42 @@ const onSubmit = handleSubmit(async (values) => {
 	isDetailsUpdating.value = true;
 
 	try {
-		// todo update details
+		let paymentDetails: PaymentDetails | null = null;
+		if (values.system === "UK") {
+			paymentDetails = {
+				type: "UK",
+				name: values.name,
+				sortCode: values.UK_sortCode!,
+				accountNumber: values.UK_accountNumber!,
+			};
+		} else if (values.system === "US") {
+			paymentDetails = {
+				type: "US",
+				name: values.name,
+				routingNumber: values.US_routingNumber!,
+				accountNumber: values.US_accountNumber!,
+			};
+		} else if (values.system === "SEPA") {
+			paymentDetails = {
+				type: "SEPA",
+				name: values.name,
+				IBAN: values.SEPA_IBAN!,
+				BIC: values.SEPA_BIC ?? null,
+			};
+		} else if (values.system === "SWIFT") {
+			paymentDetails = {
+				type: "SWIFT",
+				name: values.name,
+				SWIFT: values.SWIFT_SWIFT!,
+				IBAN: values.SWIFT_IBAN!,
+				bankName: values.SWIFT_bankName ?? null,
+				bankAddress: values.SWIFT_bankAddress ?? null,
+			};
+		}
 
-		toast({ title: "Details Updated", description: "todo some quirky description.", duration: 5000 });
+		await setPaymentDetails(paymentDetails);
+
+		toast({ title: "Details Updated", description: "The universe may now shower me with funds.", duration: 5000 });
 	} catch (e) {
 		toast({ title: "Error Updating Details", description: String(e), variant: "destructive", duration: 5000 });
 	}
@@ -130,7 +164,7 @@ const onSubmit = handleSubmit(async (values) => {
 							<FormField v-slot="{ componentField }" name="system" :validate-on-blur="!isFieldDirty">
 								<FormItem>
 									<FormLabel>Banking System</FormLabel>
-									<Select v-bind="componentField">
+									<Select v-bind="componentField" :disabled="isDetailsUpdating">
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue />
