@@ -20,26 +20,68 @@ const { toast } = useToast();
 const isDetailsUpdating = ref<boolean>(false);
 
 const formSchema = toTypedSchema(
-	z.object({
-		system: z
-			.string()
-			.refine((val) => Object.keys(BankingSystemSettings).includes(val), "Must select a valid banking system"),
-		name: z.string().min(1, "Name is required"),
-		// UK
-		UK_sortCode: z.string().regex(/^(?:\d{2}[- ]?\d{2}[- ]?\d{2})$/, "Invalid Sort code format"),
-		UK_accountNumber: z.string().length(8, "Account number must be 8 digits"),
-		// US
-		US_routingNumber: z.string(),
-		US_accountNumber: z.string(),
-		// SEPA
-		SEPA_IBAN: z.string(),
-		SEPA_BIC: z.string(),
-		// SWIFT
-		SWIFT_SWIFT: z.string(),
-		SWIFT_IBAN: z.string(),
-		SWIFT_bankName: z.string(),
-		SWIFT_bankAddress: z.string(),
-	})
+	z
+		.object({
+			system: z
+				.string()
+				.refine((val) => Object.keys(BankingSystemSettings).includes(val), "Must select a valid banking system"),
+			name: z.string().min(1, "Name is required"),
+			// UK
+			UK_sortCode: z
+				.string()
+				.regex(/^(?:\d{2}[- ]?\d{2}[- ]?\d{2})$/, "Invalid Sort code format")
+				.optional(),
+			UK_accountNumber: z
+				.string()
+				.length(8, "Account number must be 8 digits")
+				.regex(/^\d+$/, "Account number must contain digits only")
+				.optional(),
+			// US
+			US_routingNumber: z
+				.string()
+				.length(9, "Routing number must be 9 digits")
+				.regex(/^\d+$/, "Routing number must contain digits only")
+				.optional(),
+			US_accountNumber: z
+				.string()
+				.min(8, "Account number must be at least 8 digits")
+				.max(17, "Account number must not be longer than 17 digits")
+				.regex(/^\d+$/, "Account number must contain digits only")
+				.optional(),
+			// SEPA
+			SEPA_IBAN: z.string().optional(),
+			SEPA_BIC: z.string().optional(),
+			// SWIFT
+			SWIFT_SWIFT: z.string().optional(),
+			SWIFT_IBAN: z.string().optional(),
+			SWIFT_bankName: z.string().optional(),
+			SWIFT_bankAddress: z.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (data.system === "UK") {
+				if (!data.UK_sortCode)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["UK_sortCode"], message: "Sort Code required" });
+				if (!data.UK_accountNumber)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["UK_accountNumber"], message: "Account Number required" });
+			} else if (data.system === "US") {
+				if (!data.US_routingNumber)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["US_routingNumber"], message: "Routing Number required" });
+				if (!data.US_accountNumber)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["US_accountNumber"], message: "Account Number required" });
+			} else if (data.system === "SEPA") {
+				if (!data.SEPA_IBAN)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["SEPA_IBAN"], message: "IBAN required" });
+			} else if (data.system === "SWIFT") {
+				if (!data.SWIFT_SWIFT)
+					ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["SWIFT_SWIFT"], message: "SWIFT / BIC code required" });
+				if (!data.SWIFT_IBAN)
+					ctx.addIssue({
+						code: z.ZodIssueCode.custom,
+						path: ["SWIFT_IBAN"],
+						message: "Account number / IBAN required",
+					});
+			}
+		})
 );
 
 const { isFieldDirty, handleSubmit, setValues, values } = useForm({
@@ -61,9 +103,6 @@ const onSubmit = handleSubmit(async (values) => {
 
 	isDetailsUpdating.value = false;
 });
-
-// ! !!!!!!!!!!!!!!!!!!!!!!
-// https://v0.app/chat/payment-details-component-ha2ZskaEagg
 </script>
 
 <template>
@@ -211,7 +250,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 								<FormField v-slot="{ componentField }" name="SEPA_BIC" :validate-on-blur="!isFieldDirty">
 									<FormItem>
-										<FormLabel>BIC / SWIFT code</FormLabel>
+										<FormLabel>BIC / SWIFT code (Optional)</FormLabel>
 										<FormControl>
 											<Input
 												autocomplete="off"
@@ -260,7 +299,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 								<FormField v-slot="{ componentField }" name="SWIFT_bankName" :validate-on-blur="!isFieldDirty">
 									<FormItem>
-										<FormLabel>Bank Name</FormLabel>
+										<FormLabel>Bank Name (Optional)</FormLabel>
 										<FormControl>
 											<Input
 												autocomplete="off"
@@ -276,7 +315,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 								<FormField v-slot="{ componentField }" name="SWIFT_bankAddress" :validate-on-blur="!isFieldDirty">
 									<FormItem>
-										<FormLabel>Bank Address</FormLabel>
+										<FormLabel>Bank Address (Optional)</FormLabel>
 										<FormControl>
 											<Input
 												autocomplete="off"
