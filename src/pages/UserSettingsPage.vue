@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import YourAccountSettings from "@/components/YourAccountSettings.vue";
-import { setPaymentDetails } from "@/firebase/firestore/user";
+import { getPaymentDetails, setPaymentDetails } from "@/firebase/firestore/user";
+import { getUser } from "@/firebase/firestore/util";
 import { BankingSystemSettings, type PaymentDetails } from "@/util/paymentDetails";
 import { toTypedSchema } from "@vee-validate/zod";
-import { ArrowLeft, Save } from "lucide-vue-next";
+import { ArrowLeft, CircleX, Save } from "lucide-vue-next";
 import { useForm } from "vee-validate";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import * as z from "zod";
 
@@ -19,6 +20,7 @@ const router = useRouter();
 const { toast } = useToast();
 
 const isDetailsUpdating = ref<boolean>(false);
+const isInitialLoading = ref<boolean>(true);
 
 const formSchema = toTypedSchema(
 	z
@@ -89,7 +91,53 @@ const { isFieldDirty, handleSubmit, setValues, values } = useForm({
 	validationSchema: formSchema,
 });
 
-// todo initially retrieve details
+onMounted(async () => {
+	const paymentDetails = await getPaymentDetails();
+
+	if (paymentDetails) {
+		if (paymentDetails.type === "UK") {
+			setValues({
+				system: "UK",
+				name: paymentDetails.name,
+				UK_accountNumber: paymentDetails.accountNumber,
+				UK_sortCode: paymentDetails.sortCode,
+			});
+		} else if (paymentDetails.type === "US") {
+			setValues({
+				system: "US",
+				name: paymentDetails.name,
+				US_routingNumber: paymentDetails.routingNumber,
+				US_accountNumber: paymentDetails.accountNumber,
+			});
+		} else if (paymentDetails.type === "SEPA") {
+			setValues({
+				system: "SEPA",
+				name: paymentDetails.name,
+				SEPA_IBAN: paymentDetails.IBAN,
+				SEPA_BIC: paymentDetails.BIC ?? undefined,
+			});
+		} else if (paymentDetails.type === "SWIFT") {
+			setValues({
+				system: "SWIFT",
+				name: paymentDetails.name,
+				SWIFT_SWIFT: paymentDetails.SWIFT,
+				SWIFT_IBAN: paymentDetails.IBAN,
+				SWIFT_bankName: paymentDetails.bankName ?? undefined,
+				SWIFT_bankAddress: paymentDetails.bankAddress ?? undefined,
+			});
+		}
+	} else {
+		setValues(
+			{
+				system: "UK",
+				name: getUser().displayName ?? undefined,
+			},
+			false
+		);
+	}
+
+	isInitialLoading.value = false;
+});
 
 const onSubmit = handleSubmit(async (values) => {
 	isDetailsUpdating.value = true;
@@ -137,6 +185,27 @@ const onSubmit = handleSubmit(async (values) => {
 
 	isDetailsUpdating.value = false;
 });
+
+async function clearDetails() {
+	isDetailsUpdating.value = true;
+	setValues(
+		{
+			UK_accountNumber: undefined,
+			UK_sortCode: undefined,
+			US_accountNumber: undefined,
+			US_routingNumber: undefined,
+			SEPA_BIC: undefined,
+			SEPA_IBAN: undefined,
+			SWIFT_IBAN: undefined,
+			SWIFT_SWIFT: undefined,
+			SWIFT_bankAddress: undefined,
+			SWIFT_bankName: undefined,
+		},
+		false
+	);
+	await setPaymentDetails(null);
+	isDetailsUpdating.value = false;
+}
 </script>
 
 <template>
@@ -365,10 +434,22 @@ const onSubmit = handleSubmit(async (values) => {
 							</div>
 						</div>
 
-						<Button type="submit" :disabled="isDetailsUpdating" class="w-fit place-self-end">
-							<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
-							<span>Save</span>
-						</Button>
+						<div class="flex gap-2 justify-between items-center">
+							<Button
+								type="button"
+								:disabled="isDetailsUpdating"
+								variant="outline"
+								class="w-fit place-self-end"
+								@click="clearDetails()"
+							>
+								<LoaderIcon :icon="CircleX" :loading="isDetailsUpdating" />
+								<span>Clear Details</span>
+							</Button>
+							<Button type="submit" :disabled="isDetailsUpdating" class="w-fit place-self-end">
+								<LoaderIcon :icon="Save" :loading="isDetailsUpdating" />
+								<span>Save</span>
+							</Button>
+						</div>
 					</form>
 				</div>
 			</div>

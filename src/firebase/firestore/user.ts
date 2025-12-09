@@ -4,6 +4,7 @@ import {
 	arrayUnion,
 	collection,
 	CollectionReference,
+	deleteDoc,
 	doc,
 	DocumentReference,
 	getCountFromServer,
@@ -205,5 +206,6 @@ export async function setPaymentDetails(details: PaymentDetails | null) {
 	const userRef = doc(db, "users", user.uid);
 	const paymentDetailsRef = doc(userRef, "public", "paymentDetails");
 
-	await setDoc(paymentDetailsRef, details);
+	if (details) await setDoc(paymentDetailsRef, details);
+	else await deleteDoc(paymentDetailsRef);
 }
