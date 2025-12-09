@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import Avatar from "@/components/Avatar.vue";
 import BalanceStrBadge, { type BalanceStr } from "@/components/BalanceStrBadge.vue";
+import CopyButton from "@/components/CopyButton.vue";
 import LoaderIcon from "@/components/LoaderIcon.vue";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,7 +36,7 @@ import {
 import { getLeftUsersInTransaction, getRouteParam } from "@/util/util";
 import { toTypedSchema } from "@vee-validate/zod";
 import { Timestamp } from "firebase/firestore";
-import { ArrowDown, ArrowLeft, ArrowRight, Wallet } from "lucide-vue-next";
+import { ArrowDown, ArrowLeft, ArrowRight, Landmark, Wallet } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { computed, ref, useTemplateRef } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -371,10 +382,38 @@ const onSubmit = handleSubmit(async (values) => {
 						</FormField>
 					</div>
 
-					<Button type="submit" :disabled="isMakingPayment" class="w-fit place-self-end">
-						<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
-						<span>Record Payment</span>
-					</Button>
+					<div class="flex gap-2 justify-between items-center">
+						<Dialog>
+							<DialogTrigger as-child>
+								<Button type="button" :disabled="!values.to" class="w-fit" variant="outline">
+									<Landmark />
+									<span>View Bank Details</span>
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Bank Details</DialogTitle>
+									<DialogDescription>
+										Where {{ users?.[values.to!].name ?? "Unloaded User" }} would like payment.
+									</DialogDescription>
+								</DialogHeader>
+
+								<div>todo list bank details here</div>
+								<CopyButton text="Content Here" />
+
+								<DialogFooter>
+									<DialogClose as-child>
+										<Button type="button">Close</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+
+						<Button type="submit" :disabled="isMakingPayment" class="w-fit">
+							<LoaderIcon :icon="Wallet" :loading="isMakingPayment" />
+							<span>Record Payment</span>
+						</Button>
+					</div>
 				</form>
 			</div>
 			<Skeleton v-else class="w-full max-w-[32rem] h-72" />
