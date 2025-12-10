@@ -220,7 +220,10 @@ const bankDetails = ref<PaymentDetails | null>(null);
 
 watch(isBankDetailsDialogOpen, async () => {
 	bankDetailsLoading.value = true;
-	bankDetails.value = await getPaymentDetails(values.to!);
+
+	if (!values.to || !groupId.value) bankDetails.value = null;
+	else bankDetails.value = await getPaymentDetails(values.to, groupId.value);
+
 	bankDetailsLoading.value = false;
 });
 </script>

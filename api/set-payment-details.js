@@ -23,9 +23,10 @@ export default async function (req, res) {
 	}
 
 	// TODO encryption
+	const encryptedPaymentDetails = paymentDetails;
 
 	const paymentDetailsRef = db.doc(`/users/${user.uid}/public/paymentDetails`);
-	await paymentDetailsRef.set({ enc: paymentDetails });
+	await paymentDetailsRef.set({ enc: encryptedPaymentDetails });
 
 	return res.status(200).json({ success: true });
 }
