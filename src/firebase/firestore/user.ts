@@ -231,8 +231,9 @@ export async function setPaymentDetails(details: PaymentDetails | null): Promise
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
+			Authorization: `Bearer ${await user.getIdToken()}`,
 		},
-		body: JSON.stringify({ jwt: await user.getIdToken(), paymentDetails: JSON.stringify(details) }),
+		body: JSON.stringify({ paymentDetails: JSON.stringify(details) }),
 	}).then((res) => res.json());
 
 	return res.success;

@@ -9,7 +9,12 @@ export default async function (req, res) {
 	}
 
 	// Extract parameters
-	const { jwt, paymentDetails } = req.body;
+	const authHeader = req.headers.authorization;
+	let jwt;
+	if (authHeader && authHeader.startsWith("Bearer ")) {
+		jwt = authHeader.split(" ")[1];
+	}
+	const { paymentDetails } = req.body;
 	if (!jwt || !paymentDetails) {
 		return res.status(400).json({ success: false, error: "Missing parameters" });
 	}
