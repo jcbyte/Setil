@@ -189,6 +189,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 async function clearDetails() {
 	isDetailsUpdating.value = true;
+
 	setValues(
 		{
 			UK_accountNumber: undefined,
@@ -204,7 +205,14 @@ async function clearDetails() {
 		},
 		false
 	);
-	await setPaymentDetails(null);
+
+	try {
+		await setPaymentDetails(null);
+		toast({ title: "Details Cleared", description: "Poof! My payment info has vanished.", duration: 5000 });
+	} catch (e) {
+		toast({ title: "Error Clearing Details", description: String(e), variant: "destructive", duration: 5000 });
+	}
+
 	isDetailsUpdating.value = false;
 }
 </script>
