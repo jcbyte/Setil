@@ -355,7 +355,7 @@ async function clearDetails() {
 
 								<FormField v-slot="{ componentField }" name="SEPA_BIC" :validate-on-blur="!isFieldDirty">
 									<FormItem>
-										<FormLabel>BIC / SWIFT code (Optional)</FormLabel>
+										<FormLabel>BIC / SWIFT Code (Optional)</FormLabel>
 										<FormControl>
 											<Input
 												autocomplete="off"
@@ -372,7 +372,7 @@ async function clearDetails() {
 							<div v-else-if="values.system === 'SWIFT'">
 								<FormField v-slot="{ componentField }" name="SWIFT_SWIFT" :validate-on-blur="!isFieldDirty">
 									<FormItem>
-										<FormLabel>BIC / SWIFT code</FormLabel>
+										<FormLabel>BIC / SWIFT Code</FormLabel>
 										<FormControl>
 											<Input
 												autocomplete="off"
