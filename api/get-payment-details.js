@@ -1,4 +1,5 @@
 import admin from "./firebaseAdmin.js";
+import { decrypt } from "./_utils/crypt.js";
 
 const db = admin.firestore();
 const auth = admin.auth();
@@ -47,16 +48,15 @@ export default async function (req, res) {
 	}
 
 	try {
-		const paymentDetailsRef = db.doc(`/users/${userId}/public/paymentDetails`);
+		const paymentDetailsRef = db.doc(`/users/${userId}/private/paymentDetails`);
 		const paymentDetailsSnap = await paymentDetailsRef.get();
 
 		if (!paymentDetailsSnap.exists) {
 			return res.status(200).json({ success: true, paymentDetails: JSON.stringify(null) });
 		}
 
-		const encryptedPaymentDetails = paymentDetailsSnap.data()["enc"];
-		// TODO decryption
-		const paymentDetails = encryptedPaymentDetails;
+		const encryptedPaymentDetails = paymentDetailsSnap.data();
+		const paymentDetails = decrypt(encryptedPaymentDetails);
 
 		return res.status(200).json({ success: true, paymentDetails });
 	} catch (error) {

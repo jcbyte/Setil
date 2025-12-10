@@ -1,4 +1,5 @@
 import admin from "./firebaseAdmin.js";
+import { encrypt } from "./_utils/crypt.js";
 
 const db = admin.firestore();
 const auth = admin.auth();
@@ -27,11 +28,10 @@ export default async function (req, res) {
 		return res.status(401).json({ success: false, error: "Unauthorized" });
 	}
 
-	// TODO encryption
-	const encryptedPaymentDetails = paymentDetails;
+	const encryptedPaymentDetails = encrypt(paymentDetails);
 
-	const paymentDetailsRef = db.doc(`/users/${user.uid}/public/paymentDetails`);
-	await paymentDetailsRef.set({ enc: encryptedPaymentDetails });
+	const paymentDetailsRef = db.doc(`/users/${user.uid}/private/paymentDetails`);
+	await paymentDetailsRef.set(encryptedPaymentDetails);
 
 	return res.status(200).json({ success: true });
 }
