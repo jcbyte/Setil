@@ -418,7 +418,7 @@ watch(isBankDetailsDialogOpen, async () => {
 									v-else-if="!bankDetails"
 									class="text-center text-muted-foreground p-4 border border-border rounded-lg"
 								>
-									Looks like {{ users?.[values.to!].name ?? "Unloaded User" }} hasn’t added their bank info yet.
+									Looks like {{ users?.[values.to!].name ?? "Unloaded User" }} hasn't added their bank info yet.
 								</div>
 								<div v-else class="mx-2 py-2 border border-border rounded-lg">
 									<div v-if="bankDetails.type === 'UK'" class="grid grid-cols-2 gap-y-1 gap-x-2 items-center">
