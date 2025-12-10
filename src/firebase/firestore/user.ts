@@ -4,7 +4,6 @@ import {
 	arrayUnion,
 	collection,
 	CollectionReference,
-	deleteDoc,
 	doc,
 	DocumentReference,
 	getCountFromServer,
@@ -200,12 +199,16 @@ export async function getPaymentDetails(userId?: string): Promise<PaymentDetails
 	return details;
 }
 
-export async function setPaymentDetails(details: PaymentDetails | null) {
+export async function setPaymentDetails(details: PaymentDetails | null): Promise<boolean> {
 	const user = getUser();
 
-	const userRef = doc(db, "users", user.uid);
-	const paymentDetailsRef = doc(userRef, "public", "paymentDetails");
+	const res = await fetch("/api/set-payment-details", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ jwt: await user.getIdToken(), paymentDetails: JSON.stringify(details) }),
+	}).then((res) => res.json());
 
-	if (details) await setDoc(paymentDetailsRef, details);
-	else await deleteDoc(paymentDetailsRef);
+	return res.success;
 }
